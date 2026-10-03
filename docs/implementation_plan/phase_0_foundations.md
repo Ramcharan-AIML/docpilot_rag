@@ -85,7 +85,7 @@ test `.env` file does **not** show up in `git status`.
 **Run**
 
 ```powershell
-python --version                 # must be 3.11 or newer
+python --version                 # must be 3.12 or newer (D-015)
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
@@ -106,7 +106,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "docpilot"
 version = "0.1.0"
-requires-python = ">=3.11"
+requires-python = ">=3.12"     # numpy 2.5 needs 3.12+ (D-015)
 
 [tool.setuptools.packages.find]
 where = ["src"]           # code lives in src/docpilot (decision D-013)
@@ -121,7 +121,7 @@ testpaths = ["tests"]
 First dependencies (Phase 0 only): `sentence-transformers`, `numpy`, `pytest`, `ruff`.
 
 ```powershell
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # runtime + dev tools (D-016)
 pip install -e .                 # editable install: src/docpilot importable everywhere
 python -c "import docpilot; print('ok')"
 ```

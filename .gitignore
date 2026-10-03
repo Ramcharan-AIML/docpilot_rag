@@ -1,0 +1,56 @@
+# ---------------------------------------------------------------
+# Secrets: API keys must never reach git (Rule 6).
+# .env.example (empty values) IS committed so others know what to set.
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------
+# Downloaded docs: license reasons, and the download script can
+# recreate them. The ".gitkeep" exception keeps the empty folder in git.
+# ---------------------------------------------------------------
+data/docs/*
+!data/docs/.gitkeep
+data/processed/
+
+# ---------------------------------------------------------------
+# Local vector and database files: large, binary, rebuilt by scripts
+# ---------------------------------------------------------------
+qdrant_local/
+qdrant_storage/
+*.sqlite
+*.db
+*.duckdb
+
+# ---------------------------------------------------------------
+# Models and caches: hundreds of MB, downloaded on demand
+# ---------------------------------------------------------------
+*.safetensors
+*.bin
+*.onnx
+.cache/
+hf_cache/
+
+# ---------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---------------------------------------------------------------
+# Editor and OS clutter
+# ---------------------------------------------------------------
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

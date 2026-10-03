@@ -1,0 +1,6 @@
+# Runtime dependencies: what the product needs to run.
+# Exact versions (Rule 5). Checked on PyPI on 2026-10-03; see docs/decisions.md.
+# Full resolved list (including torch, transformers): requirements-lock.txt
+
+sentence-transformers==6.1.0   # embedding model loader (BGE), pulls in torch + transformers
+numpy==2.5.3                   # vector maths (cosine similarity in the labs)

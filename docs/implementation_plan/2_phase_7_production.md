@@ -12,13 +12,14 @@ Part 2 covers **shipping**: 7.7 to 7.12.
 
 ```dockerfile
 # ---------- stage 1: build wheels (has compilers; thrown away afterwards) ----------
-FROM python:3.11-slim AS builder          # VERIFY: pin an exact patch tag, check arm64
+# VERIFY: pin an exact patch tag and check arm64. Same minor version as dev (D-015).
+FROM python:3.13-slim AS builder
 WORKDIR /build
 COPY requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 # ---------- stage 2: runtime (small, no compilers) ----------
-FROM python:3.11-slim
+FROM python:3.13-slim
 # a normal user: if someone breaks into the app, they are not root in the container
 RUN useradd --create-home --uid 1000 app
 WORKDIR /app
@@ -96,8 +97,8 @@ jobs:
     steps:
       - uses: actions/checkout@vX
       - uses: actions/setup-python@vX
-        with: {python-version: "3.11"}
-      - run: pip install -r requirements.txt && pip install -e .
+        with: {python-version: "3.13"}
+      - run: pip install -r requirements-dev.txt && pip install -e .
       - run: ruff check . && ruff format --check .
       - run: pytest -q
       - run: python scripts/check_file_lengths.py          # Rule 1: max 500 lines

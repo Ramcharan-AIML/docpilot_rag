@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 0 / Phase 1 setup |
-| Current step | 0.1 Project skeleton (see `implementation_plan/phase_0_foundations.md`) |
-| Next step | 0.2 Virtual environment and first pinned dependencies |
+| Current step | 0.3 Lab 1: embeddings and cosine similarity |
+| Next step | 0.4 Lab 2: keyword vs meaning search |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | Read `teaching/phase_0_foundations.md` sections 1 to 4 |
 
@@ -23,8 +23,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 ### Phase 0: Foundations
 | Step | What | Status |
 |---|---|---|
-| 0.1 | Project skeleton (folders, `.gitignore`, `.env.example`) | not started |
-| 0.2 | Virtual environment, `pyproject.toml`, pinned `requirements.txt` | not started |
+| 0.1 | Project skeleton (folders, `.gitignore`, `.env.example`) | done (commit pending) |
+| 0.2 | Virtual environment, `pyproject.toml`, pinned `requirements.txt` | done (commit pending) |
 | 0.3 | `labs/lab1_embeddings.py` (embeddings and cosine similarity) | not started (doc says done; file missing here) |
 | 0.4 | Lab 2: keyword vs meaning search | not started |
 | Gate | tag `phase-0` | not started |
@@ -143,6 +143,18 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-03, session 2
+- Docs merged into `main`; working on branch `phase-0-foundations`.
+- Step 0.1 done: `.gitignore`, `.env.example` (added `LLM_MODEL`, which Phase 1 `config.py` reads),
+  `src/docpilot/__init__.py`, and `.gitkeep` placeholders (git does not track empty folders).
+- Verified: a test `.env` and a test file in `data/docs/` are both ignored (`git check-ignore -v`).
+- Step 0.2 done: reused existing `.venv` (Python 3.13.2). Versions checked on PyPI today.
+  `pyproject.toml`, `requirements.txt` (runtime), `requirements-dev.txt` (pytest, ruff),
+  generated `requirements-lock.txt`. New decisions D-015 (Python 3.12+, numpy needs it) and
+  D-016 (requirements split + lock). Plan docs updated from 3.11 to 3.12+/3.13.
+- Verified: `import docpilot` works from another folder; torch is `2.14.1+cpu`;
+  `pip check` clean; `ruff check src/` clean.
 
 ### 2026-10-03, session 1
 - Read `PROJECT_DOCUMENTATION.md` fully.

@@ -1,0 +1,7 @@
+# Development tools: needed on your laptop and in CI, never in the production image.
+# Checked on PyPI on 2026-10-03; see docs/decisions.md.
+
+-r requirements.txt            # everything the product needs, plus:
+
+pytest==9.1.1                  # test runner
+ruff==0.16.10                  # linter + formatter
