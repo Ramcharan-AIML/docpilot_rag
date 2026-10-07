@@ -13,7 +13,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | ID | Decision | Status | Date | Verified on | Evidence |
 |---|---|---|---|---|---|
 | D-001 | Domain: technical documentation | accepted | 2026-10-03 | n/a | n/a |
-| D-002 | Embeddings: `bge-small-en-v1.5` | accepted (revisit Phase 3) | 2026-10-03 | not yet | n/a |
+| D-002 | Embeddings: `bge-small-en-v1.5` | accepted (revisit Phase 3) | 2026-10-03 | 2026-10-07 (model card) | n/a |
 | D-003 | Vector DB: Qdrant, local mode then Docker | accepted | 2026-10-03 | not yet | n/a |
 | D-004 | OpenAI-compatible LLM client; Groq default, Ollama fallback | accepted | 2026-10-03 | not yet | n/a |
 | D-005 | Settings in `config.py`, secrets in `.env` | accepted | 2026-10-03 | n/a | n/a |
@@ -45,6 +45,11 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 - **Alternatives:** `bge-base`, `bge-m3`, `nomic-embed-text`, `e5`; paid OpenAI/Cohere.
 - **Why not paid:** costs money and sends data off the machine.
 - **Revisit:** Phase 3 embedding comparison with eval numbers.
+- **Model card check (2026-10-07):** 384 dimensions; max input **512 tokens** (longer text is
+  silently truncated: matters for Phase 2 chunk sizes); MIT license; query prefix
+  `Represent this sentence for searching relevant passages: ` (questions only); last module
+  is `Normalize`, so output vectors already have length 1 (cosine == dot product).
+  Pinned revision `5c38ec7c405ec4b44b94cc5a9bb96e735b38267a` (last changed 2024-02-22).
 
 ### D-003 Vector DB: Qdrant
 - **Why:** open source, dense + sparse vectors in one place, payload filters, runs in Docker.

@@ -12,7 +12,7 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Current step | 0.3 Lab 1: embeddings and cosine similarity |
 | Next step | 0.4 Lab 2: keyword vs meaning search |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
-| Homework | Read `teaching/phase_0_foundations.md` sections 1 to 4 |
+| Homework | Predict Lab 1 results BEFORE running; then run it and record real scores in the session log |
 
 ---
 
@@ -25,7 +25,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 |---|---|---|
 | 0.1 | Project skeleton (folders, `.gitignore`, `.env.example`) | done (commit pending) |
 | 0.2 | Virtual environment, `pyproject.toml`, pinned `requirements.txt` | done (commit pending) |
-| 0.3 | `labs/lab1_embeddings.py` (embeddings and cosine similarity) | not started (doc says done; file missing here) |
+| 0.3 | `labs/lab1_embeddings.py` (embeddings and cosine similarity) | built; waiting for learner's prediction + run |
 | 0.4 | Lab 2: keyword vs meaning search | not started |
 | Gate | tag `phase-0` | not started |
 
@@ -143,6 +143,15 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-07, session 3
+- Step 0.3: verified the bge-small model card (384 dims, 512-token limit, MIT, query prefix,
+  built-in Normalize module); recorded in D-002 with pinned revision.
+- Wrote `labs/lab1_embeddings.py` (plan version + vector length printout + pinned revision).
+- Smoke test: ruff clean; cosine function correct on known vectors (1, 0, -1, with tiny
+  floating-point error); model downloads and returns 384 numbers. Pair scores deliberately
+  not run, so the learner predicts first.
+- Learner's real Lab 1 scores: n/a (to be filled after the learner's run).
 
 ### 2026-10-03, session 2
 - Docs merged into `main`; working on branch `phase-0-foundations`.
