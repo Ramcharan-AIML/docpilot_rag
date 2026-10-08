@@ -5,6 +5,9 @@ Start here. Every session begins with `progress.md`.
 | I want to... | Open |
 |---|---|
 | Know where we are and what is next | [progress.md](progress.md) |
+| Read the step-by-step story of what was done | [USER_GUIDE.md](USER_GUIDE.md) |
+| Continue in a new chat without losing context | [CHAT_CONTEXT.md](CHAT_CONTEXT.md) |
+| See the rules Claude Code loads every session | [../CLAUDE.md](../CLAUDE.md) |
 | Know the rules (500 lines, numbers, secrets, gates) | [RULEBOOK.md](RULEBOOK.md) |
 | Read the source of truth (scope, phases, targets) | [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md) |
 | See the whole system design | [architecture/architecture.md](architecture/architecture.md) -> [part 2](architecture/2_architecture.md) |
@@ -20,6 +23,8 @@ docs/
 ├── PROJECT_DOCUMENTATION.md   source of truth (written by the learner)
 ├── RULEBOOK.md                rules for every session
 ├── progress.md                status, next step, session log
+├── USER_GUIDE.md              the story so far, step by step, with real results
+├── CHAT_CONTEXT.md            handoff summary for a new chat
 ├── decisions.md               decision log + version pins + free-tier checks
 ├── interview_notes.md         learner's own answers (own words only)
 ├── architecture/              target system design (2 parts)

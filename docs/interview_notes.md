@@ -12,6 +12,9 @@ Rule: no copy-paste from the model answers. An interviewer can tell.
 ## Phase 0
 1. What is an embedding? Explain it to a 10-year-old.
 2. Why does meaning search beat keyword search on paraphrases, and lose on exact names?
+3. Why do retrieval models use different handling for queries and documents?
+4. What happens to a retriever if you feed it the same document twice?
+
 
 ## Phase 1
 1. Walk me through your baseline pipeline, file by file.

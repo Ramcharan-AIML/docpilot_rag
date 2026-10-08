@@ -9,10 +9,10 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 0 / Phase 1 setup |
-| Current step | 0.3 Lab 1: embeddings and cosine similarity |
-| Next step | 0.4 Lab 2: keyword vs meaning search |
+| Current step | 0.4 Lab 2: keyword vs meaning search |
+| Next step | Phase 0 gate (interview notes, tag `phase-0`) |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
-| Homework | Predict Lab 1 results BEFORE running; then run it and record real scores in the session log |
+| Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
 ---
 
@@ -23,10 +23,10 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 ### Phase 0: Foundations
 | Step | What | Status |
 |---|---|---|
-| 0.1 | Project skeleton (folders, `.gitignore`, `.env.example`) | done (commit pending) |
-| 0.2 | Virtual environment, `pyproject.toml`, pinned `requirements.txt` | done (commit pending) |
-| 0.3 | `labs/lab1_embeddings.py` (embeddings and cosine similarity) | built; waiting for learner's prediction + run |
-| 0.4 | Lab 2: keyword vs meaning search | not started |
+| 0.1 | Project skeleton (folders, `.gitignore`, `.env.example`) | done (commit 497a9a4) |
+| 0.2 | Virtual environment, `pyproject.toml`, pinned `requirements.txt` | done (commit 497a9a4) |
+| 0.3 | `labs/lab1_embeddings.py` (embeddings and cosine similarity) | done (commit 5924b95) |
+| 0.4 | Lab 2: keyword vs meaning search | run done; waiting for learner's two own-words sentences |
 | Gate | tag `phase-0` | not started |
 
 ### Phase 1: Naive baseline, eval harness, mini API
@@ -144,6 +144,41 @@ None yet. Every number will come from a real run and be copied here from
 
 ## Session log
 
+### 2026-10-08, session 5
+- Recorded Lab 2 results (see session 4). Fixed stale "commit pending" for 0.1/0.2.
+- Wrote `docs/USER_GUIDE.md` (story of every step so far), `CLAUDE.md` (root rules file
+  Claude Code loads automatically), `docs/CHAT_CONTEXT.md` (handoff for a new chat).
+  Linked them in `docs/README.md`.
+
+### 2026-10-08, session 4
+- Step 0.4: wrote `labs/lab2_keyword_vs_meaning.py` (plan version + regex word splitting so
+  punctuation does not block matches, a "picks" line per method, and a meaning-without-prefix
+  column). Ruff clean; helper functions tested on made-up text; model loads.
+- Real questions deliberately not run, so the learner predicts first.
+- Learner's predictions (written before running):
+  Q1 "what does max_length do": keyword -> doc 1, meaning -> doc 1.
+  Q2 "how do I check incoming data is correct": keyword -> no match in any doc,
+  meaning -> doc 2. Prefix bonus: no prediction.
+- Learner's real Lab 2 run (bge-small, revision 5c38ec7c, CPU):
+  | Question | Doc | keyword | meaning (prefix) | meaning (no prefix) |
+  |---|---|---|---|---|
+  | Q1 max_length | 1 Query(max_length) | 1 | **0.742** | 0.775 |
+  | Q1 | 2 Pydantic | 0 | 0.539 | 0.592 |
+  | Q1 | 3 Docker | 0 | 0.490 | 0.534 |
+  | Q2 check data | 1 Query(max_length) | 0 | 0.578 | 0.564 |
+  | Q2 | 2 Pydantic | 0 | **0.659** | 0.670 |
+  | Q2 | 3 Docker | 0 | 0.502 | 0.529 |
+  Picks: Q1 keyword doc 1, meaning doc 1. Q2 keyword NOTHING (all tied at 0), meaning doc 2.
+- All four predictions correct.
+- Findings: (a) keyword search failed Q2 completely: zero shared words with any doc;
+  (b) meaning search got both; Q1 margin 0.742 vs 0.539, Q2 margin only 0.659 vs 0.578;
+  (c) the prefix lowered 5 of 6 scores and changed no winner; it widened the Q1 gap
+  (0.203 vs 0.183) but narrowed the Q2 gap (0.081 vs 0.106). Two questions cannot show
+  whether the prefix helps: that needs the Phase 1 eval set.
+- Honest limit: this lab did NOT show meaning search failing. Q1 (an exact name) was won by
+  both methods. A harder test (e.g. max_length vs min_length docs) would be needed; real
+  evidence comes from per-type evals in Phase 3 (hybrid search).
+
 ### 2026-10-07, session 3
 - Step 0.3: verified the bge-small model card (384 dims, 512-token limit, MIT, query prefix,
   built-in Normalize module); recorded in D-002 with pinned revision.
@@ -151,7 +186,20 @@ None yet. Every number will come from a real run and be copied here from
 - Smoke test: ruff clean; cosine function correct on known vectors (1, 0, -1, with tiny
   floating-point error); model downloads and returns 384 numbers. Pair scores deliberately
   not run, so the learner predicts first.
-- Learner's real Lab 1 scores: n/a (to be filled after the learner's run).
+- Learner's real Lab 1 run (bge-small, revision 5c38ec7c, CPU): vector size 384, length of
+  vector 0 = 1.0. Cosine: validate-request vs Pydantic-body **0.708**; validate-request vs
+  cat **0.379**; Pydantic-body vs cat **0.388**.
+- Learner predicted: highest pair, lowest pair, length 1.0 — all correct. Missing: the
+  "why" for the lowest pair. Lessons noted: unrelated text still scores ~0.38 (scores rank,
+  they are not percentages); 0.379 vs 0.388 is a tie, not a winner.
+- Break-it run (sentence 2 -> "Make sure the data a client sends is correct."):
+  validate-request vs paraphrase **0.799**; validate-request vs cat **0.379** (unchanged,
+  same two sentences); paraphrase vs cat **0.410**. No prediction was written before this
+  run. Honest note: the paraphrase still shares the word "data", so it was not a perfect
+  zero-shared-words test. Lesson: a restated question scores higher than an answer-style
+  sentence (0.799 vs 0.708), the reason BGE uses a query prefix (Lab 2).
+- Lab file restored to the original sentences (committed version matches recorded scores).
+- Step 0.3 done.
 
 ### 2026-10-03, session 2
 - Docs merged into `main`; working on branch `phase-0-foundations`.
