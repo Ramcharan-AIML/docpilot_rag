@@ -4,3 +4,4 @@
 
 sentence-transformers==6.1.0   # embedding model loader (BGE), pulls in torch + transformers
 numpy==2.5.3                   # vector maths (cosine similarity in the labs)
+python-dotenv==1.2.4           # reads .env into environment variables (D-026, checked 2026-10-09)

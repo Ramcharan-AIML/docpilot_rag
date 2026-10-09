@@ -44,6 +44,8 @@ QDRANT_PATH = PROJECT_ROOT / "qdrant_local"   # local-mode Qdrant stores files h
 
 # --- embeddings (decision D-002) ---
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+# Fixed 2026-10-09: the plan forgot the pinned revision the labs use (D-002, D-026).
+EMBEDDING_REVISION = "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
 EMBEDDING_DIM = 384
 # BGE v1.5 was trained with this instruction on the QUESTION side only.
 # VERIFY: exact text on the model card on build day.

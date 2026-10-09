@@ -1,5 +1,5 @@
 # GENERATED FILE - do not edit by hand.
-# Every package and exact version installed on 2026-10-03 (Python 3.13.2, Windows, CPU).
+# Every package and exact version installed on 2026-10-09 (Python 3.13.2, Windows, CPU).
 # Regenerate after changing requirements*.txt:
 #   python -m pip freeze --exclude-editable > requirements-lock.txt  (then re-add this header)
 annotated-doc==0.0.5
@@ -30,6 +30,7 @@ packaging==26.3
 pluggy==1.6.0
 Pygments==2.21.0
 pytest==9.1.1
+python-dotenv==1.2.4
 PyYAML==6.0.3
 regex==2026.9.29
 rich==15.0.0

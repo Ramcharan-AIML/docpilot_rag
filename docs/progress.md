@@ -8,9 +8,9 @@ Update this file at the end of every session. Newest session log entry goes on t
 
 | Item | Value |
 |---|---|
-| Current phase | Phase 0 / Phase 1 setup |
-| Current step | 0.4 Lab 2: keyword vs meaning search |
-| Next step | Phase 0 gate (interview notes, tag `phase-0`) |
+| Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
+| Current step | 1a.1 `config.py`: done (2026-10-09) |
+| Next step | 1a.2 `loader.py`; Phase 0 gate (notes, tag `phase-0`) done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -32,7 +32,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 ### Phase 1: Naive baseline, eval harness, mini API
 | Step | What | Status |
 |---|---|---|
-| 1a.1 | `config.py` | not started |
+| 1a.1 | `config.py` (+ python-dotenv 1.2.4, D-026) | done (run 2026-10-09; not yet committed) |
 | 1a.2 | `loader.py` | not started |
 | 1a.3 | `chunker.py` + `tests/test_chunker.py` | not started |
 | 1a.4 | `embedder.py` | not started |
@@ -44,11 +44,13 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1c | Golden dataset v0 (about 30 questions, dev/test) | not started |
 | 1d | Retrieval eval harness, record C0 | not started |
 | 1e | Mini FastAPI `POST /ask` | not started |
+| 1f | Git workflow: public repo, PR template, CI `test`, branch protection | not started |
 | Gate | tag `phase-1` | not started |
 
 ### Phase 2: Ingestion quality and chunking
 | Step | What | Status |
 |---|---|---|
+| 2.0 | MLflow tracking; re-log C0 | not started |
 | 2.1 | Refactor into `ingestion/` package | not started |
 | 2.2 | Cleaner (HTML noise) | not started |
 | 2.3 | Include resolver (`{* ... *}` markers) | not started |
@@ -58,12 +60,14 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.7 | Docling for PDF/HTML | not started |
 | 2.8 | Add more corpora (Docker, Pydantic, ...) + grow golden set | not started |
 | 2.9 | Index per strategy, run evals, per-type breakdown | not started |
+| 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | not started |
 | Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | not started |
 
 ### Phase 3: Retrieval upgrade
 | Step | What | Status |
 |---|---|---|
 | 3.1 | Docker primer; Qdrant in Docker | not started |
+| 3.1b | SeaweedFS + boto3 object storage; MLflow server | not started |
 | 3.2 | Sparse (BM25) vectors | not started |
 | 3.3 | Manual RRF | not started |
 | 3.4 | Qdrant server-side fusion | not started |
@@ -113,18 +117,25 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | Step | What | Status |
 |---|---|---|
 | 7.1 | FastAPI hardening (async, SSE, health, logs) | not started |
-| 7.2 | Auth (API keys) | not started |
+| 7.2 | Auth (API keys) + Postgres | not started |
 | 7.3 | Redis: rate limit, exact cache, semantic cache | not started |
 | 7.4 | Hand-made fallback, then LiteLLM | not started |
-| 7.5 | Tracing (decide D-009) | not started |
+| 7.5 | Tracing (decide D-009: Langfuse / Phoenix / MLflow) | not started |
 | 7.6 | Prometheus + Grafana | not started |
-| 7.7 | Dockerfile + full Compose | not started |
-| 7.8 | GitHub Actions (CI, eval gate, build, deploy) | not started |
-| 7.9 | Deploy to free VM with HTTPS | not started |
-| 7.10 | Load test | not started |
-| 7.11 | Incremental ingestion | not started |
-| 7.12 | README, demo UI, big interview file | not started |
-| Gate | public URL, gate proven; tag `phase-7` | not started |
+| 7.7 | RAG monitoring (scores, sampled groundedness, refusals, drift, alerts) | not started |
+| 7.8 | Dockerfile, multi-arch (amd64 + arm64) | not started |
+| 7.9 | Full Compose stack (profiles) | not started |
+| 7.10 | CI/CD: audit, terraform-check, OIDC -> ECR + GHCR, SSM deploy | not started |
+| 7.11 | AWS account (record date!), safety, budgets, CLI, Terraform warm-up | not started |
+| 7.12 | Terraform AWS infra (state, VPC, SG, IAM, S3, ECR, CloudWatch, EC2) | not started |
+| 7.13 | First deploy on EC2 (Compose) + HTTPS | not started |
+| 7.14 | k3s on EC2; production on Kubernetes | not started |
+| 7.15 | EKS exercise (plan-only default; destroy same session) | not started |
+| 7.16 | Load test | not started |
+| 7.17 | Incremental ingestion (CronJob) | not started |
+| 7.18 | Oracle module + rehearsal; move before month 6 | not started |
+| 7.19 | README, demo UI, big interview file | not started |
+| Gate | public URL, all infra via Terraform, gate proven; tag `phase-7` | not started |
 
 ### Phase 8: Stretch (optional)
 Not planned until Phase 7 is done.
@@ -143,6 +154,39 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-09, session 7: Phase 1 step 1a.1 (config.py)
+
+- Learner chose to start Phase 1 before closing the Phase 0 gate (Lab 2 sentences, Phase 0
+  interview notes, tag `phase-0`); those stay open. This breaks the phase-gate rule once,
+  on purpose, and is recorded here.
+- python-dotenv 1.2.4 checked on PyPI (2026-10-09), pinned in `requirements.txt`, added to
+  the lock file, decision D-026.
+- Plan bug fixed openly: the plan's `config.py` had no `EMBEDDING_REVISION`, so Phase 1
+  would have loaded unpinned model files while the labs used pinned ones. Added it.
+- `src/docpilot/config.py` built (47 lines); ruff check + format pass; import works.
+- Learner prediction for `print(config.DOCS_DIR)`: none written (gap, again). Bonus
+  prediction (`LLM_MODEL` without `.env`): none written.
+- Real output: `C:\Users\rajes\OneDrive\Desktop\1\AIML\9_DOCPILOT_RAG_BASED\docpilot_rag\data\docs`.
+  Done-when check passes. Learner first read this as "no output": the one printed line IS
+  the output (a `print` of a path shows only the path, with no label).
+
+### 2026-10-08, session 6: scope change v1.1 (new technologies)
+- Learner added: AWS (EC2, S3, ECR, IAM, CloudWatch, VPC) as main target on the free plan
+  with Oracle as fallback; Terraform; MinIO + boto3; k3s planned; EKS exercise; MLflow from
+  Phase 2; RAG monitoring; stronger Git workflow; and asked for child-level teaching of evals
+  and guardrails.
+- Verified on the web (2026-10-08): AWS free plan terms; EKS USD 0.10/h, no free tier; public
+  IPv4 USD 0.005/h; MinIO community edition archived (Apr 2026) and images/binaries removed
+  (Sep 2026); MLflow 3 has GenAI tracing; Terraform BSL / OpenTofu MPL; k3s 2 GB RAM minimum.
+- Learner decisions: SeaweedFS replaces MinIO; AWS account created at start of Phase 7;
+  long-term home = Oracle (move before month 6).
+- Wrote 10 new primers (`teaching/primer_*.md`), `architecture/3_architecture.md`,
+  `implementation_plan/3_` and `4_phase_7_production.md`, `interview/2_phase_7_interview.md`;
+  updated plans (1f, 2.0, 2.10, 3.1b, Phase 7 renumbered 7.1-7.19), architecture, teaching,
+  interview files, decisions D-017 to D-025, RULEBOOK (Rules 2, 12, 14, new 17),
+  PROJECT_DOCUMENTATION v1.1, USER_GUIDE, CHAT_CONTEXT, CLAUDE.md.
+- Estimated total time now 10-12 weeks.
 
 ### 2026-10-08, session 5
 - Recorded Lab 2 results (see session 4). Fixed stale "commit pending" for 0.1/0.2.
