@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.1 `config.py`: done (2026-10-09) |
-| Next step | 1a.2 `loader.py`; Phase 0 gate (notes, tag `phase-0`) done later by the learner |
+| Current step | 1a.2 `loader.py`: done (2026-10-10) |
+| Next step | 1a.3 `chunker.py`; Phase 0 gate (notes, tag `phase-0`) done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -33,7 +33,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | Step | What | Status |
 |---|---|---|
 | 1a.1 | `config.py` (+ python-dotenv 1.2.4, D-026) | done (run 2026-10-09; not yet committed) |
-| 1a.2 | `loader.py` | not started |
+| 1a.2 | `loader.py` + `tests/test_loader.py` | done (run 2026-10-10; 4 tests pass) |
 | 1a.3 | `chunker.py` + `tests/test_chunker.py` | not started |
 | 1a.4 | `embedder.py` | not started |
 | 1a.5 | `vector_store.py` | not started |
@@ -154,6 +154,24 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-09, session 7b: Phase 1 step 1a.2 (loader.py)
+
+- 1a.1 committed by the learner (`f016014`).
+- `src/docpilot/loader.py` (34 lines) + `tests/test_loader.py` (4 tests on fake folders).
+  ruff passes; 4 tests pass on made-up data.
+- Plan bugs fixed openly: missing folder returned `[]` silently (now `FileNotFoundError`);
+  a folder named `*.md` crashed `read_text` (now `is_file()`); `sorted(Path)` order differs
+  Windows vs Linux (now sort by `source` string).
+- Learner predictions (2026-10-10, written before the run):
+  (1) "if there is no file in the folder it returns an error and if not folder also";
+  (2) missing folder: "if not folder.is_dir() ... raises FileNotFoundError ... line 19".
+- Real output: (1) real `data/docs` (only `.gitkeep`) -> `[]`, no error. Prediction 1
+  **wrong**: an existing but empty folder is not an error; only a missing folder is.
+  (2) `no_such_folder` -> `FileNotFoundError: Docs folder not found: no_such_folder`,
+  raised at loader.py line 19. Prediction 2 **correct**. pytest: 4 passed in 0.16s.
+- Open question for 1a.8: should `02_ingest.py` stop when `load_documents` returns `[]`?
+  (Yes: the loader returns facts, the script decides what is fatal.)
 
 ### 2026-10-09, session 7: Phase 1 step 1a.1 (config.py)
 

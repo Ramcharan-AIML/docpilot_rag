@@ -106,8 +106,17 @@ def load_documents(folder: Path) -> list[Document]:
 Why sorted: the same input must give the same chunks in the same order every run, or eval
 numbers drift for no reason.
 
+**Fixed while building (2026-10-09), see `src/docpilot/loader.py`:**
+1. A missing folder silently returned `[]` (`rglob` on a missing path yields nothing), so
+   ingest would build an empty index without complaint. Now raises `FileNotFoundError`.
+2. A *folder* named like `old.md` passed the suffix check and crashed `read_text`. Now
+   `path.is_file()` is checked first.
+3. `sorted(Path)` is case-insensitive on Windows and case-sensitive on Linux, so the order
+   could differ between the laptop and CI. Now sorts by the `source` string.
+
 **Test:** `tests/test_loader.py` writes two small files into pytest's `tmp_path` and checks
-both come back with the right `source`, and that a `.png` file is ignored.
+both come back with the right `source`, and that a `.png` file is ignored. Added for the
+fixes: a folder named `old.md` is skipped; a missing folder raises `FileNotFoundError`.
 
 ---
 
