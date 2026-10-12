@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.5 `vector_store.py`: done (2026-10-12) |
-| Next step | 1a.6 `llm.py` (needs openai: PyPI check + decision; free provider key + model check); Phase 0 gate done later by the learner |
+| Current step | 1a.6 `llm.py`: done (2026-10-12) |
+| Next step | 1a.7 `rag.py`; Phase 0 gate done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -37,7 +37,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.3 | `chunker.py` + `tests/test_chunker.py` | done (run 2026-10-12; 9 tests pass) |
 | 1a.4 | `embedder.py` + `tests/test_embedder.py` | done (commit 8eff576; learner run skipped) |
 | 1a.5 | `vector_store.py` + `tests/test_vector_store.py` (qdrant-client 1.19.1, D-027) | done (run 2026-10-12; 5 tests pass) |
-| 1a.6 | `llm.py` | not started |
+| 1a.6 | `llm.py` + `tests/test_llm.py` (openai 3.29.0, gpt-oss-120b, D-028) | done (run 2026-10-12; first real Groq call) |
 | 1a.7 | `rag.py` | not started |
 | 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` | not started |
 | 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | not started |
@@ -154,6 +154,37 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-12, session 7f: Phase 1 step 1a.6 (llm.py)
+
+- 1a.5 committed by the learner (`e298493`).
+- `.env` checked without reading values: GROQ, OPENROUTER, GEMINI keys set; `LLM_MODEL`
+  empty.
+- openai 3.29.0 checked on PyPI, installed, pinned, lock regenerated; Groq docs (models,
+  rate limits, reasoning) and the account's `/models` list checked; decision D-028
+  (model `openai/gpt-oss-120b`). Free-plan rate limits: n/a (docs show the Developer table).
+- Plan bugs fixed: empty answer silently returned as `""`; defaults frozen at import;
+  `KeyError` for unknown provider.
+- `src/docpilot/llm.py` + `tests/test_llm.py` (5 tests, fake client). Full suite: 27
+  passed (13.3 s warm; 56.9 s on the first cold run after installing openai).
+- Learner concern (2026-10-12): "I am not having OpenAI, I want the free one". Clarified:
+  `openai` is a free open-source client library (no account); `openai/gpt-oss-120b` is an
+  open-weight model hosted free on Groq; nothing is paid, no OpenAI account is used.
+- Learner predictions (before the run): (a) temperature 0 does not guarantee identical
+  answers, "there might be some changes"; (b) `llama-3.3-70b-versatile` "is deprecated";
+  Groq will not pick another model by itself; raises an error, "404 I think, not sure".
+- Real output (`LLM_MODEL=openai/gpt-oss-120b`): two calls both returned
+  `'FastAPI is a modern, high‑performance Python web framework for building APIs with
+  automatic documentation.'`; identical: True; 2.1 s for 2 calls. `llama-3.3-70b-versatile`
+  -> `openai.NotFoundError: Error code: 404 ... model_not_found` ("does not exist or you do
+  not have access to it"). Learner's extra call with `gpt-oss-120b` and "hi": "Hello! How
+  can I help you today?". pytest: 5 passed in 0.93 s.
+- Verdict: (a) learner called it a mistake, but the reasoning was sound: temperature 0 is
+  not a guarantee; 1 identical pair out of 1 is too small to prove it (D-007 spirit: no
+  over-claiming). (b) correct (error, 404, no silent switch); "deprecated" is not shown:
+  the message says "does not exist or you do not have access".
+- Noticed: the answer has a non-breaking hyphen (U+2011) in "high‑performance". Evals that
+  compare text (e.g. NOT_FOUND_PHRASE) must normalise text first (step 1d/3.9 note).
 
 ### 2026-10-12, session 7e: Phase 1 step 1a.5 (vector_store.py)
 

@@ -352,6 +352,18 @@ def chat(client: OpenAI, system: str, user: str, model: str = config.LLM_MODEL) 
     return response.choices[0].message.content or ""
 ```
 
+**Changed while building (2026-10-12), see `src/docpilot/llm.py` and D-028:**
+- Model chosen: `openai/gpt-oss-120b` on Groq. The account's `/models` list has no Llama
+  3.x, although the docs page lists them. gpt-oss is a reasoning model: thinking comes back
+  in `message.reasoning`, the answer in `message.content`.
+- **Bug fixed:** `content or ""` turned an empty answer into `""`. A reasoning model can
+  spend the default 1024-token budget thinking and return no answer; evals would score it
+  as a normal wrong answer. Now `chat()` raises with the `finish_reason`.
+- `provider` and `model` default to `None` and read `config` at call time (default
+  arguments are frozen at import time, which breaks tests and late `.env` changes).
+- Unknown provider -> `ValueError` listing the options (was a bare `KeyError`).
+- `tests/test_llm.py`: 5 tests with a fake client (no network, no quota spent).
+
 ---
 
 ## Step 1a.7: `src/docpilot/rag.py`

@@ -15,7 +15,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | D-001 | Domain: technical documentation | accepted | 2026-10-03 | n/a | n/a |
 | D-002 | Embeddings: `bge-small-en-v1.5` | accepted (revisit Phase 3) | 2026-10-03 | 2026-10-07 (model card) | n/a |
 | D-003 | Vector DB: Qdrant, local mode then Docker | accepted | 2026-10-03 | 2026-10-12 (local-mode lock checked) | n/a |
-| D-004 | OpenAI-compatible LLM client; Groq default, Ollama fallback | accepted | 2026-10-03 | not yet | n/a |
+| D-004 | OpenAI-compatible LLM client; Groq default, Ollama fallback | accepted | 2026-10-03 | 2026-10-12 (Groq base URL) | n/a |
 | D-005 | Settings in `config.py`, secrets in `.env` | accepted | 2026-10-03 | n/a | n/a |
 | D-006 | Fixed-size chunking as weak baseline | accepted | 2026-10-03 | n/a | n/a |
 | D-007 | Evals before features | accepted | 2026-10-03 | n/a | n/a |
@@ -39,6 +39,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | D-025 | RAG monitoring on live traffic (Prometheus/Grafana) + CloudWatch for the machine | accepted | 2026-10-08 | n/a | n/a |
 | D-026 | `python-dotenv` reads `.env`; `config.py` pins the embedding model revision | accepted | 2026-10-09 | 2026-10-09 (PyPI) | n/a |
 | D-027 | `qdrant-client` 1.19.1, local mode, `query_points` API | accepted | 2026-10-12 | 2026-10-12 (PyPI + installed API) | n/a |
+| D-028 | `openai` 3.29.0 client library; Groq `openai/gpt-oss-120b` as Phase 1 model | accepted | 2026-10-12 | 2026-10-12 (PyPI, Groq docs, Groq /models with learner key) | n/a |
 
 ---
 
@@ -274,6 +275,33 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 - **Trade-off:** local mode is single-process and not meant for large data. Fine for
   Phase 1 and 2; replaced by Qdrant in Docker in Phase 3.
 
+### D-028 openai client library + Groq model for Phase 1
+- **What:** `openai==3.29.0` (Apache-2.0, requires Python >=3.10, released 2026-10-11; PyPI
+  checked 2026-10-12). Only the client library: no OpenAI account. It talks to any
+  OpenAI-compatible server through `base_url`. Pulls in httpx2, httpcore2, jiter, sniffio,
+  truststore. Defaults checked on the installed version: `max_retries=2` (retries 429 and
+  5xx errors by itself); `chat.completions.create` accepts `temperature`.
+- **Model:** `LLM_MODEL=openai/gpt-oss-120b` on Groq (production model, 131,072-token
+  context). Checked 2026-10-12 with the learner's key on `GET /openai/v1/models`: the
+  account sees allam-2-7b, gpt-oss-120b, gpt-oss-20b, gpt-oss-safeguard-20b, qwen3.8-27b
+  (preview), prompt-guard, whisper, orpheus. The Llama 3.x models in the docs page are
+  **not** offered to this account. Fallback: `openai/gpt-oss-20b` (same family, faster).
+- **gpt-oss is a reasoning model (Groq docs, 2026-10-12):** the thinking is returned in
+  `message.reasoning`, the answer in `message.content`; `max_completion_tokens` defaults
+  to 1024; temperature range 0.0 to 2.0. Risk: long reasoning can use up the budget and
+  leave `content` empty, so `chat()` raises instead of returning "".
+- **Free limits:** n/a. The docs page shows the Developer-plan table; the free-plan numbers
+  were not readable and `/models` returns no rate-limit headers. Read them from the
+  `x-ratelimit-*` headers of a real chat call or the console limits page (step 1a.8).
+- **Why gpt-oss-120b:** strongest production model the account has, same documented limits
+  as 20b; following "cite every fact" and "say NOT_FOUND" needs a capable model.
+- **Alternatives:** gpt-oss-20b (faster, weaker); qwen3.8-27b (preview: "may be
+  discontinued at short notice", bad for a baseline); provider SDK `groq` (one more
+  dependency, locks us to one provider); LiteLLM (a library before the raw version).
+- **Trade-off:** reasoning tokens make answers slower and may count toward limits
+  (not stated in the docs: n/a). `temperature=0` for repeatable evals, against Groq's
+  general 0.5 to 0.7 advice.
+
 ---
 
 ## Version pins (filled when verified)
@@ -287,7 +315,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | transformers (indirect) | 5.18.0 | 2026-10-03 | via sentence-transformers |
 | setuptools (build) | >=68 (84.0.0 installed) | 2026-10-03 | build backend only |
 | qdrant-client | 1.19.1 | 2026-10-12 | D-027; Apache-2.0; pulls pydantic 2.14.1, grpcio, pywin32 (Windows) |
-| openai | n/a | n/a | |
+| openai | 3.29.0 | 2026-10-12 | D-028; Apache-2.0; client library only |
 | python-dotenv | 1.2.4 | 2026-10-09 | D-026; BSD-3-Clause, requires Python >=3.10 |
 | fastapi | n/a | n/a | |
 | uvicorn | n/a | n/a | |
@@ -298,7 +326,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 
 | Service | What was checked | Result | Verified on |
 |---|---|---|---|
-| Groq | models, rate limits | n/a | n/a |
+| Groq | models, rate limits | models seen by the account: gpt-oss-120b/20b (production), qwen3.8-27b (preview), no Llama 3.x; free-plan limits n/a (docs show Developer table) | 2026-10-12 |
 | Gemini | free limits, data-use terms | n/a | n/a |
 | OpenRouter | current free models | n/a | n/a |
 | Oracle Cloud | Always Free allowance, region | n/a | n/a |
