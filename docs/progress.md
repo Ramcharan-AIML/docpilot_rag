@@ -9,9 +9,9 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.8 scripts: built, waiting for learner's prediction + run |
-| Next step | 1b: ask 10 questions, write `docs/failure_log_phase1.md`; Phase 0 gate done later by the learner |
-| Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
+| Current step | 1b done (run by the mentor at the learner's request); learner rewrites the three summary lines in own words |
+| Next step | 1c: golden dataset v0 (the 10 from 1b + about 20 new); Phase 0 gate done later by the learner |
+| Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
 ---
@@ -39,8 +39,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.5 | `vector_store.py` + `tests/test_vector_store.py` (qdrant-client 1.19.1, D-027) | done (run 2026-10-12; 5 tests pass) |
 | 1a.6 | `llm.py` + `tests/test_llm.py` (openai 3.29.0, gpt-oss-120b, D-028) | done (run 2026-10-12; first real Groq call) |
 | 1a.7 | `rag.py` + `tests/test_rag.py` | done (demo run 2026-10-12) |
-| 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` (D-029) | built, lint passes; learner run pending |
-| 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | not started |
+| 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` (D-029) | done (run 2026-10-12 by the mentor: 51 chunks, ingest 7.5 s) |
+| 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | done (run 2026-10-12; 10 rows + mentor's draft summary) |
 | 1c | Golden dataset v0 (about 30 questions, dev/test) | not started |
 | 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | not started |
 | 1e | Mini FastAPI `POST /ask` | not started |
@@ -154,6 +154,43 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-12, session 8: Phase 1 step 1b (failure log), set up
+
+- Picked up from session 7i by handoff. Git: learner committed 1a.8 (`d5eb042`) and the
+  v1.2 docs (`bb4709f`). `data/docs/fastapi/` already holds the 4 pages and a
+  `qdrant_local/` folder exists; the learner still re-runs 01 and 02 so the index is
+  fresh from the committed code.
+- Learner asked to implement step 1b. Done: `docs/failure_log_phase1.md` (10 questions,
+  one or more per type: how-to, not-in-docs, factual x2, exact identifier, paraphrase,
+  comparison, code, table/list, multi-hop; an answer key with page + section, written
+  from reading the pages; a "Prediction" column added to the plan's table so every row is
+  predicted before it is run; the three summary lines).
+- `03_ask.py --full`: prints whole chunks. Why: the 200-char preview cannot show whether
+  the right passage is in a chunk. Ruff passes. No new dependency.
+- Q3 (status code) is deliberately a trap: judge the answer only against the 4 pages.
+- Learner predictions (2026-10-12, before any run, no reasons given): Q1 "perfect answer
+  from the docs"; Q2 "it will say it is not in the document"; Q3 "takes the retrieved
+  text, adds some LLM content, and answers". Q4 to Q10 and the 1a.8 chunk/latency
+  predictions: n/a (not given). Real output: n/a (pending).
+- Learner asked: how can I know what is in the docs without reading them all (answer:
+  search with Select-String, read only the section), and "is this what evals are?"
+  (answer: 1b is manual error analysis; 1c + 1d turn it into evals).
+- Learner then said "no time, you run it all and note it". Mentor ran 01, 02 and the 10
+  questions (`--full`) on 2026-10-12, laptop CPU, Groq `openai/gpt-oss-120b`.
+- 1a.8 real: 4 pages downloaded (commit d623544); chunks body 10, first-steps 21,
+  path-params 13, query-params 7 = **51**; ingest 7.5 s (2 batches).
+- 1b real: right chunk in top 4 (at least partly) for 8/8 answerable questions; answers:
+  6 fully right, 2 partly (Q1 ungrounded code "from the docs", Q10 multi-hop missing the
+  how), 1 wrong (Q7 `NOT_FOUND` because only include markers were indexed); both
+  abstention questions (Q2 PostgreSQL, Q3 status code: "422" is in none of the 4 pages)
+  gave `NOT_FOUND`. Q2 irrelevant top score 0.705 > Q5 correct chunk 0.700.
+- Timings, 10 single cold runs (one process each, so each includes the model load):
+  embed_query 2017 to 2204 ms, search 1.3 to 1.9 ms, llm 896 to 1553 ms, total 2983 to
+  3717 ms. These are not p50/p95 and not warm; L0 comes in 1d.
+- Bug found and fixed: `03_ask.py` `UnicodeEncodeError` (cp1252) when output is redirected
+  on Windows; `sys.stdout.reconfigure(encoding="utf-8")`. Citation format: `【n】` in 3/10
+  answers.
 
 ### 2026-10-12, session 7i: scope v1.2 (wider corpus) + latency
 

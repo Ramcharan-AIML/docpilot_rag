@@ -1,6 +1,7 @@
 """Ask DocPilot one question from the command line and see what was retrieved.
 
 Run: python scripts/03_ask.py "How do I make a query parameter optional?"
+     python scripts/03_ask.py --full "..."   (print whole chunks, not a preview)
 """
 
 import argparse
@@ -15,9 +16,15 @@ PREVIEW_CHARS = 200
 
 
 def main() -> None:
+    # Windows uses cp1252 when output goes to a file (`> out.txt`); docs contain emoji and
+    # LLM answers contain characters like U+202F, so printing crashed. Force UTF-8.
+    sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="Ask a question about the indexed docs.")
     parser.add_argument("question", help="the question, in quotes")
-    question = parser.parse_args().question
+    # Step 1b: a 200-char preview is not enough to judge "is the right chunk here?"
+    parser.add_argument("--full", action="store_true", help="print whole chunk texts")
+    args = parser.parse_args()
+    question = args.question
 
     client = get_client(config.QDRANT_PATH)
     try:
@@ -31,9 +38,12 @@ def main() -> None:
     print(f"A: {result['answer']}\n")
     print("Sources (number = citation):")
     for number, hit in enumerate(result["sources"], start=1):
-        preview = hit["text"][:PREVIEW_CHARS].replace("\n", " ")  # one line per source
         print(f"[{number}] {hit['source']} #{hit['chunk_number']}  score {hit['score']:.3f}")
-        print(f"    {preview}...")
+        if args.full:
+            print(hit["text"] + "\n" + "-" * 60)
+        else:
+            preview = hit["text"][:PREVIEW_CHARS].replace("\n", " ")  # one line per source
+            print(f"    {preview}...")
 
     # One question = one warm-or-cold sample, not a p50/p95 (D-031): the first stage
     # here includes loading the embedding model, so embed_query is a COLD number.

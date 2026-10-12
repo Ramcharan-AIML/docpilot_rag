@@ -205,8 +205,18 @@ python scripts/03_ask.py "How do I connect FastAPI to a PostgreSQL database?"
 run. It is a cold start (new process, model loaded inside the first stage): one sample, not
 a p50/p95. The real baseline L0 comes in step 1d (D-031).
 
-**Real results:** n/a (learner run pending). Fill in: chunks per page, total chunks,
-ingest time, top source and score for each question, answer or NOT_FOUND, stage timings.
+**Real results (2026-10-12, run by the mentor at the learner's request, laptop CPU):**
+| Page | Characters | Chunks |
+|---|---|---|
+| `body.md` | 6611 | 10 |
+| `first-steps.md` | 14102 (14155 bytes: emoji take several bytes) | 21 |
+| `path-params.md` | 9041 | 13 |
+| `query-params.md` | 4596 | 7 |
+| **Total** | | **51**, ingest 7.5 s |
+
+Both questions are rows 1 and 2 of `docs/failure_log_phase1.md`: the optional-parameter
+answer was right but showed code that is not in the docs; PostgreSQL gave `NOT_FOUND`
+although search returned 4 chunks (top 0.705).
 
 **Interview line:** "I split indexing from querying, pinned the corpus to a commit and
 wrote files byte-for-byte, so the same input gives the same chunks on every machine.
@@ -242,3 +252,51 @@ Primer: `docs/teaching/primer_latency.md`. Interview: `phase_1_interview.md` Q15
 **Files changed:** PROJECT_DOCUMENTATION v1.2, decisions D-030/D-031, CLAUDE.md, Phase 1
 part 2, Phase 2, 3 and 8 plans, architecture part 1, teaching index, primer_latency (new),
 `rag.py` + `test_rag.py` + `03_ask.py` (timings).
+
+---
+
+## 23. Step 1b: watch naive RAG fail (2026-10-12, not yet committed)
+
+**Goal:** before any number exists, look at real failures with your own eyes. Like a
+doctor who examines the patient before ordering lab tests: the tests (step 1d) only make
+sense once you know what to look for.
+
+**File:** `docs/failure_log_phase1.md`: 10 questions, one row each, filled in your own
+words. Each row: prediction (before running), answer correct?, right chunk in the top 4
+(with rank)?, what went wrong.
+
+**Why 10 hand-picked questions and not a script yet?** A script tells you *how often*
+retrieval fails; only reading chunks tells you *why*. The "why" decides which Phase 2/3
+feature to build. Why not 50? Ten covers every question type once; more comes in 1c as a
+golden dataset you can score automatically.
+
+**Two traps on purpose:**
+- **Ungrounded but "correct" answers.** An LLM knows FastAPI from its training data. If it
+  states a fact that is in none of the 4 retrieved chunks, the answer did not come from
+  our docs. In RAG that is a failure (faithfulness), even when the fact is true.
+- **"Right page" is not "right chunk".** A chunk from the right page can still miss the
+  passage. Use `--full` and read the chunk.
+
+**Run (after the 1a.8 run):**
+```powershell
+python scripts/03_ask.py --full "Show me the code for a minimal FastAPI app."
+```
+One question per run; fill the row before running the next one.
+
+**Real results (2026-10-12, 10 questions, see the log for every row):**
+- Right chunk in the top 4 (at least partly): 8 of 8 answerable questions.
+- Answers: 6 right, 2 partly (Q1 invented code "from the docs"; Q10 multi-hop, no "how"),
+  1 wrong (Q7: only `{* ... *}` markers were indexed, so "show me the code" got
+  `NOT_FOUND`). Both questions with no answer in the pages got `NOT_FOUND`.
+- Scores do not separate good from bad: irrelevant top chunk 0.705 (Q2) vs correct 0.700
+  (Q5). So "drop chunks below a score" is not a fix.
+- Lesson: on 4 pages the **search** is fine; the **content of the chunks** (markers, HTML,
+  mid-sentence cuts) and the **LLM's honesty** (Q1) are the problems. Phase 2 targets the
+  first, Phase 3.9 measures the second.
+- Cold single-run timings: embed_query about 2.0 to 2.2 s (includes loading the model),
+  search under 2 ms, llm 0.9 to 1.6 s. Warm p50/p95 comes in 1d.
+
+**Interview line:** "Before writing any eval, I ran 10 questions by hand and logged each
+failure with the retrieved chunks. The most common cause was ___, which is why my first
+Phase 2 fix was ___, and the eval showed ___." (Fill in the blanks with real results only.)
+
