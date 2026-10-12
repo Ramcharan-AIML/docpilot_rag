@@ -50,7 +50,21 @@ def test_empty_index_returns_not_found_without_llm_call(monkeypatch: pytest.Monk
 
     result = rag.ask("anything", None, None)
 
-    assert result == {"answer": config.NOT_FOUND_PHRASE, "sources": []}
+    assert result["answer"] == config.NOT_FOUND_PHRASE
+    assert result["sources"] == []
+    assert "llm" not in result["timings_ms"]  # no LLM stage was timed, because none ran
+
+
+def test_ask_times_every_stage(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(rag, "embed_query", lambda question: [0.0] * config.EMBEDDING_DIM)
+    monkeypatch.setattr(rag, "search", lambda client, name, vector, top_k: HITS)
+    monkeypatch.setattr(rag, "chat", lambda client, system, user: "answer [1]")
+
+    timings = rag.ask("question", None, None)["timings_ms"]
+
+    assert list(timings) == ["embed_query", "search", "llm", "total"]
+    assert all(ms >= 0 for ms in timings.values())
+    assert timings["total"] >= timings["llm"]
 
 
 def test_system_prompt_contains_the_exact_not_found_phrase() -> None:
