@@ -170,6 +170,14 @@ def fixed_size_chunks(text: str, source: str, chunk_size: int = 800,
 4. `overlap >= chunk_size` raises `ValueError`
 5. chunk numbers are 0, 1, 2 ... with no gaps
 
+**Changed while building (2026-10-10), see `src/docpilot/chunker.py`:**
+- Defaults now come from `config.CHUNK_SIZE` / `config.CHUNK_OVERLAP` instead of a second
+  copy of `800` / `100` (two copies drift apart; D-005 says one place for settings).
+- Extra test: gluing chunk 0 + every later chunk minus its first `overlap` characters gives
+  the original text back (proves nothing is lost or duplicated). Bad-settings test also
+  covers `chunk_size=0` and negative overlap. Neighbour test uses `itertools.pairwise`
+  (ruff B905 rejects `zip(chunks, chunks[1:])` without `strict`).
+
 **Run:** `pytest tests/test_chunker.py -q`
 
 ---

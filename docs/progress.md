@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.2 `loader.py`: done (2026-10-10) |
-| Next step | 1a.3 `chunker.py`; Phase 0 gate (notes, tag `phase-0`) done later by the learner |
+| Current step | 1a.3 `chunker.py`: built, waiting for learner's prediction + run |
+| Next step | 1a.4 `embedder.py`; Phase 0 gate (notes, tag `phase-0`) done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -34,7 +34,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 |---|---|---|
 | 1a.1 | `config.py` (+ python-dotenv 1.2.4, D-026) | done (run 2026-10-09; not yet committed) |
 | 1a.2 | `loader.py` + `tests/test_loader.py` | done (run 2026-10-10; 4 tests pass) |
-| 1a.3 | `chunker.py` + `tests/test_chunker.py` | not started |
+| 1a.3 | `chunker.py` + `tests/test_chunker.py` | built, lint + tests pass; learner run pending |
 | 1a.4 | `embedder.py` | not started |
 | 1a.5 | `vector_store.py` | not started |
 | 1a.6 | `llm.py` | not started |
@@ -154,6 +154,18 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-10, session 7c: Phase 1 step 1a.3 (chunker.py)
+
+- `src/docpilot/chunker.py` + `tests/test_chunker.py` (5 tests + 1 test run with 4 bad
+  settings). ruff passes; full suite (loader + chunker) passes on made-up data.
+- Changed from the plan: defaults read from `config` (no second copy of 800/100); added a
+  "no text is lost" rebuild test; `pairwise` instead of `zip(chunks, chunks[1:])` (B905).
+- Learner predictions (2026-10-12, written before the run; 36-character text at 10/3):
+  (1) "5 chunks"; (2) last chunk "23456789", 8 characters, "due to the overlapping";
+  (3) last chunk at 800/100 is not always 800: it is whatever is left; if a dev needs 800,
+  "add dummy ones like zeros and ones" to pad it.
+  Real output: n/a (pending).
 
 ### 2026-10-09, session 7b: Phase 1 step 1a.2 (loader.py)
 
