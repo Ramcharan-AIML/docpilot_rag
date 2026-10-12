@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.3 `chunker.py`: done (2026-10-12) |
-| Next step | 1a.4 `embedder.py`; Phase 0 gate (notes, tag `phase-0`) done later by the learner |
+| Current step | 1a.4 `embedder.py`: built, waiting for learner's prediction + run |
+| Next step | 1a.5 `vector_store.py` (needs qdrant-client: PyPI check + decision first); Phase 0 gate (notes, tag `phase-0`) done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -35,7 +35,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.1 | `config.py` (+ python-dotenv 1.2.4, D-026) | done (run 2026-10-09; not yet committed) |
 | 1a.2 | `loader.py` + `tests/test_loader.py` | done (run 2026-10-10; 4 tests pass) |
 | 1a.3 | `chunker.py` + `tests/test_chunker.py` | done (run 2026-10-12; 9 tests pass) |
-| 1a.4 | `embedder.py` | not started |
+| 1a.4 | `embedder.py` + `tests/test_embedder.py` | built, lint + tests pass; learner run pending |
 | 1a.5 | `vector_store.py` | not started |
 | 1a.6 | `llm.py` | not started |
 | 1a.7 | `rag.py` | not started |
@@ -154,6 +154,23 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-12, session 7d: Phase 1 step 1a.4 (embedder.py)
+
+- 1a.3 committed by the learner (`1a80095`, `2aaca9b`). The committed `chunker.py` had a
+  trailing blank line (editor), so `ruff format --check` failed; fixed with `ruff format`
+  (whitespace only).
+- `src/docpilot/embedder.py` + `tests/test_embedder.py` (4 tests, real model). Full suite:
+  17 passed in 16.49 s (model load dominates).
+- Plan bug fixed openly: no `revision=` on the model load. Checked the installed API
+  (sentence-transformers 6.1.0): `encode_query()` exists but the model's stored query
+  prompt is empty, so it would silently drop the BGE prefix; prefix kept explicit.
+- Learner predictions (2026-10-12, before the run): (1) "second call is slower" because
+  the first embeds all chunks into the vector DB and the second only embeds the question
+  (the answer says both "slower" and "faster"; "not completely sure"). (2) "I don't know".
+  Gap: (1) answers a different question: `get_model()` only loads the model; no chunks and
+  no vector DB are involved in this step yet.
+- Real output: n/a (pending).
 
 ### 2026-10-10, session 7c: Phase 1 step 1a.3 (chunker.py)
 

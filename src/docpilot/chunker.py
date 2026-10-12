@@ -46,4 +46,3 @@ def fixed_size_chunks(
             break  # this piece already reached the end; another would only repeat text
         start += step
     return chunks
-

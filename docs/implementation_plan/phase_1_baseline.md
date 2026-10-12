@@ -221,6 +221,20 @@ def embed_query(question: str) -> list[float]:
 Why `lru_cache` instead of a global variable: same effect (load once), but no mutable global
 and easy to reset in tests with `get_model.cache_clear()`.
 
+**Changed while building (2026-10-12), see `src/docpilot/embedder.py`:**
+- **Bug fixed:** the plan loaded the model without `revision=`, so Phase 1 would use
+  whatever files Hugging Face serves today, not the pinned ones the labs use. Now
+  `revision=config.EMBEDDING_REVISION`.
+- `embed_documents([])` returns `[]` at once (no model load for nothing).
+- **Checked, not used:** sentence-transformers 6.1.0 has `encode_query()`, but this
+  model's stored prompts are `{'query': '', 'document': ''}` (empty), so it would silently
+  skip the BGE prefix. The prefix stays explicit in our code.
+- Installed API: `encode(inputs, prompt_name, prompt, batch_size, ..., normalize_embeddings,
+  ...)`; `max_seq_length` 512; device cpu.
+- Added `tests/test_embedder.py` (shapes, length 1, empty list, model cached). It loads
+  the real model, so the full suite now takes about 16 s. **For step 1f CI:** the runner
+  must download about 130 MB or cache it; decide there (e.g. cache `~/.cache/huggingface`).
+
 ---
 
 ## Step 1a.5: `src/docpilot/vector_store.py`
