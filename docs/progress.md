@@ -9,7 +9,7 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.3 `chunker.py`: built, waiting for learner's prediction + run |
+| Current step | 1a.3 `chunker.py`: done (2026-10-12) |
 | Next step | 1a.4 `embedder.py`; Phase 0 gate (notes, tag `phase-0`) done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
@@ -34,7 +34,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 |---|---|---|
 | 1a.1 | `config.py` (+ python-dotenv 1.2.4, D-026) | done (run 2026-10-09; not yet committed) |
 | 1a.2 | `loader.py` + `tests/test_loader.py` | done (run 2026-10-10; 4 tests pass) |
-| 1a.3 | `chunker.py` + `tests/test_chunker.py` | built, lint + tests pass; learner run pending |
+| 1a.3 | `chunker.py` + `tests/test_chunker.py` | done (run 2026-10-12; 9 tests pass) |
 | 1a.4 | `embedder.py` | not started |
 | 1a.5 | `vector_store.py` | not started |
 | 1a.6 | `llm.py` | not started |
@@ -165,7 +165,14 @@ None yet. Every number will come from a real run and be copied here from
   (1) "5 chunks"; (2) last chunk "23456789", 8 characters, "due to the overlapping";
   (3) last chunk at 800/100 is not always 800: it is whatever is left; if a dev needs 800,
   "add dummy ones like zeros and ones" to pad it.
-  Real output: n/a (pending).
+- Real output: 5 chunks; lengths 10/10/10/10/8; last `'23456789'`. pytest: 9 passed.
+  (1) correct. (2) correct; the "why" is half right: overlap sets where the last chunk
+  starts (28), the text running out sets its length (36 - 28 = 8). (3) first half right
+  (not always 800); padding idea **wrong**: dummy text changes the embedding and costs LLM
+  tokens; the tokenizer pads internally with an attention mask. The real issue is tiny
+  tail chunks (101 to 800 chars at 800/100) - a Phase 2 idea.
+- Homework: predict, then run, the last chunk at `chunk_size=10, overlap=0`.
+- `USER_GUIDE.md` reached 489 lines: continued in `docs/2_USER_GUIDE.md` (Rule 12).
 
 ### 2026-10-09, session 7b: Phase 1 step 1a.2 (loader.py)
 

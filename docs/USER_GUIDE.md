@@ -329,6 +329,28 @@ builds a path. (3) No prediction was written before the run: write one next time
 
 ---
 
+## 10c. Step 1a.2: `loader.py`, files into Documents (2026-10-10, not yet committed)
+
+**Goal:** read every `.md`/`.txt` under `data/docs/` into `Document(text, source)`, in the
+same order on every machine. **Files:** `src/docpilot/loader.py`, `tests/test_loader.py`.
+
+**Plan bugs fixed:** missing folder returned `[]` silently (now `FileNotFoundError`); a
+folder named `x.md` crashed `read_text` (now `is_file()`); `sorted(Path)` differs between
+Windows and Linux (now sort by the `source` string).
+
+**Real results:**
+| Run | You predicted | Real |
+|---|---|---|
+| real `data/docs` (only `.gitkeep`) | error | `[]` (no error) |
+| `no_such_folder` | `FileNotFoundError`, line 19 | `FileNotFoundError`, line 19 |
+| `pytest tests/test_loader.py -v` | n/a | 4 passed |
+
+**Lessons:** "folder is missing" (a mistake: stop) and "folder is empty" (a fact: let the
+caller decide) are different cases. A traceback is read bottom-up: the last line is the
+error, the line above it is where it was raised.
+
+---
+
 ## 11. Where we are right now (2026-10-08)
 
 | Item | Status |
@@ -464,4 +486,5 @@ git log --oneline --graph -10               # see history
 
 At the end of each step, add a section like 7 to 10 above: goal, files, commands, checks,
 **your real numbers**, lessons. Update section 11 (where we are). When a part passes 500
-lines, continue in `2_USER_GUIDE.md`.
+lines, continue in `2_USER_GUIDE.md`. **Part 2 started 2026-10-12 (step 1a.3 onward):**
+[2_USER_GUIDE.md](2_USER_GUIDE.md).
