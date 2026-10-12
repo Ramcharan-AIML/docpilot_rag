@@ -14,7 +14,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 |---|---|---|---|---|---|
 | D-001 | Domain: technical documentation | accepted | 2026-10-03 | n/a | n/a |
 | D-002 | Embeddings: `bge-small-en-v1.5` | accepted (revisit Phase 3) | 2026-10-03 | 2026-10-07 (model card) | n/a |
-| D-003 | Vector DB: Qdrant, local mode then Docker | accepted | 2026-10-03 | not yet | n/a |
+| D-003 | Vector DB: Qdrant, local mode then Docker | accepted | 2026-10-03 | 2026-10-12 (local-mode lock checked) | n/a |
 | D-004 | OpenAI-compatible LLM client; Groq default, Ollama fallback | accepted | 2026-10-03 | not yet | n/a |
 | D-005 | Settings in `config.py`, secrets in `.env` | accepted | 2026-10-03 | n/a | n/a |
 | D-006 | Fixed-size chunking as weak baseline | accepted | 2026-10-03 | n/a | n/a |
@@ -38,6 +38,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | D-024 | Git workflow: feature branches, PRs, protection, CI eval gate from Phase 2, tag per phase | accepted | 2026-10-08 | not yet (GitHub terms) | n/a |
 | D-025 | RAG monitoring on live traffic (Prometheus/Grafana) + CloudWatch for the machine | accepted | 2026-10-08 | n/a | n/a |
 | D-026 | `python-dotenv` reads `.env`; `config.py` pins the embedding model revision | accepted | 2026-10-09 | 2026-10-09 (PyPI) | n/a |
+| D-027 | `qdrant-client` 1.19.1, local mode, `query_points` API | accepted | 2026-10-12 | 2026-10-12 (PyPI + installed API) | n/a |
 
 ---
 
@@ -246,6 +247,33 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 - **Trade-off:** settings are plain module constants, read once at import time. Changing
   `.env` needs a restart of the process. Fine for scripts and a small API.
 
+### D-027 qdrant-client 1.19.1 (local mode) and the Query API
+- **What:** `qdrant-client==1.19.1` (Apache-2.0, requires Python >=3.10, released
+  2026-09-16; PyPI checked 2026-10-12). Phase 1 uses local mode (`QdrantClient(path=...)`):
+  Qdrant runs inside our Python process and saves to `qdrant_local/` (gitignored).
+- **Checked on the installed version (2026-10-12, fake 4-number vectors):**
+  `collection_exists`, `create_collection`, `upsert`, `query_points` (returns a
+  `QueryResponse` with `.points`) all work; the old `client.search()` **no longer exists**;
+  opening a second client on the same folder raises `RuntimeError` ("already accessed by
+  another instance"), which is the D-003 limit.
+- **Bug found by our test (2026-10-12, local mode on disk, Windows):** after
+  `delete_collection` + `create_collection` with the same name, the OLD points come back
+  (`storage.sqlite` stays on disk and is reloaded; `:memory:` mode does not do this).
+  Likely Windows file locking; not confirmed. Workaround in `create_fresh_collection`:
+  delete all points with an empty filter, then raise if `count` is not 0. Recheck when
+  moving to Qdrant in Docker (Phase 3).
+- **Pulls in:** grpcio, httpx[http2], protobuf, portalocker, pydantic 2.14.1, urllib3, and
+  `pywin32` (Windows only, via portalocker: another reason the lock file is Windows-specific,
+  see D-016).
+- **Why:** the plan's vector DB (D-003). Local mode needs no Docker yet (Docker is taught in
+  Phase 3) and uses the same client API as the server, so Phase 3 changes only `get_client`.
+- **Alternatives:** Chroma (easy, but weaker hybrid/sparse support, which Phase 3 needs);
+  FAISS (a library, not a database: no payloads, filters or server); pgvector (good, but
+  needs Postgres running now); a plain numpy matrix (fine for 50 chunks, teaches nothing
+  about the real tool).
+- **Trade-off:** local mode is single-process and not meant for large data. Fine for
+  Phase 1 and 2; replaced by Qdrant in Docker in Phase 3.
+
 ---
 
 ## Version pins (filled when verified)
@@ -258,7 +286,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | torch (indirect) | 2.14.1+cpu | 2026-10-03 | Windows PyPI wheel is CPU-only; cuda available = False |
 | transformers (indirect) | 5.18.0 | 2026-10-03 | via sentence-transformers |
 | setuptools (build) | >=68 (84.0.0 installed) | 2026-10-03 | build backend only |
-| qdrant-client | n/a | n/a | |
+| qdrant-client | 1.19.1 | 2026-10-12 | D-027; Apache-2.0; pulls pydantic 2.14.1, grpcio, pywin32 (Windows) |
 | openai | n/a | n/a | |
 | python-dotenv | 1.2.4 | 2026-10-09 | D-026; BSD-3-Clause, requires Python >=3.10 |
 | fastapi | n/a | n/a | |

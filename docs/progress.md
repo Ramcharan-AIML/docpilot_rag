@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.4 `embedder.py`: built, waiting for learner's prediction + run |
-| Next step | 1a.5 `vector_store.py` (needs qdrant-client: PyPI check + decision first); Phase 0 gate (notes, tag `phase-0`) done later by the learner |
+| Current step | 1a.5 `vector_store.py`: done (2026-10-12) |
+| Next step | 1a.6 `llm.py` (needs openai: PyPI check + decision; free provider key + model check); Phase 0 gate done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -35,8 +35,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.1 | `config.py` (+ python-dotenv 1.2.4, D-026) | done (run 2026-10-09; not yet committed) |
 | 1a.2 | `loader.py` + `tests/test_loader.py` | done (run 2026-10-10; 4 tests pass) |
 | 1a.3 | `chunker.py` + `tests/test_chunker.py` | done (run 2026-10-12; 9 tests pass) |
-| 1a.4 | `embedder.py` + `tests/test_embedder.py` | built, lint + tests pass; learner run pending |
-| 1a.5 | `vector_store.py` | not started |
+| 1a.4 | `embedder.py` + `tests/test_embedder.py` | done (commit 8eff576; learner run skipped) |
+| 1a.5 | `vector_store.py` + `tests/test_vector_store.py` (qdrant-client 1.19.1, D-027) | done (run 2026-10-12; 5 tests pass) |
 | 1a.6 | `llm.py` | not started |
 | 1a.7 | `rag.py` | not started |
 | 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` | not started |
@@ -155,6 +155,26 @@ None yet. Every number will come from a real run and be copied here from
 
 ## Session log
 
+### 2026-10-12, session 7e: Phase 1 step 1a.5 (vector_store.py)
+
+- qdrant-client 1.19.1 checked on PyPI, installed, pinned, lock regenerated (60 packages;
+  new: pydantic 2.14.1, grpcio, protobuf, portalocker, pywin32 ...), decision D-027.
+- API verified on the installed version with fake vectors: `query_points` works,
+  `search()` removed, second client on the same folder raises `RuntimeError` (D-003).
+- **Bug found by `test_fresh_collection_is_empty`** (failed: `assert 3 == 0`): local mode
+  on disk brings old points back after delete + create. Workaround: delete all points with
+  an empty filter + check. Without the test, Phase 2 re-ingests would mix old and new chunks.
+- `src/docpilot/vector_store.py` (76 lines) + `tests/test_vector_store.py` (5 tests).
+  Full suite: 22 passed in 18.10 s.
+- Learner predictions (2026-10-12, before the run): (1) chunk 1 first, chunk 2 second,
+  "cuz the 0.99 is near to one"; (2) count stays 3 "cuz we delete the collection if it
+  exists and re-create it".
+- Real output: `count 3`; `text 1 0.994`, `text 2 0.11`, `text 0 0.0`. pytest: 5 passed
+  in 1.58 s. (1) order **correct**; score above 0.9 correct (0.994), because cosine
+  ignores length: 0.9 / sqrt(0.9^2 + 0.1^2) = 0.994. (2) count **correct**, reason
+  **wrong**: `create_fresh_collection` ran once, before both adds; the count stays 3
+  because `upsert` with the same uuid5 ids overwrites (random uuid4 ids would give 6).
+
 ### 2026-10-12, session 7d: Phase 1 step 1a.4 (embedder.py)
 
 - 1a.3 committed by the learner (`1a80095`, `2aaca9b`). The committed `chunker.py` had a
@@ -170,7 +190,8 @@ None yet. Every number will come from a real run and be copied here from
   (the answer says both "slower" and "faster"; "not completely sure"). (2) "I don't know".
   Gap: (1) answers a different question: `get_model()` only loads the model; no chunks and
   no vector DB are involved in this step yet.
-- Real output: n/a (pending).
+- Real output: **skipped by the learner** (2026-10-12: "let's skip it"). Open questions
+  (lru_cache speed; query vs document vector for the same word) stay unanswered.
 
 ### 2026-10-10, session 7c: Phase 1 step 1a.3 (chunker.py)
 

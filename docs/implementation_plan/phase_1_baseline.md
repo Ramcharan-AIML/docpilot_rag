@@ -297,6 +297,17 @@ def search(client: QdrantClient, name: str, query_vector: list[float],
     return hits
 ```
 
+**Changed while building (2026-10-12), see `src/docpilot/vector_store.py`:**
+- **Bug found by a test:** in local mode (1.19.1, Windows), delete + create with the same
+  name brings the old points back, so a "fresh" collection was not fresh. Re-ingesting with
+  new chunk settings in Phase 2 would have mixed old and new chunks and corrupted the
+  numbers. Fix: delete all points with an empty filter, then fail if any remain (D-027).
+- `add_chunks([])` returns at once; `search` copes with an empty payload.
+- API checked on the installed version: `client.search()` is gone; `query_points` returns
+  `QueryResponse.points`, already sorted best first. Second client on the same folder:
+  `RuntimeError` (D-003).
+- Added `tests/test_vector_store.py`: 5 tests with 4-number vectors, no model, about 1.5 s.
+
 ---
 
 ## Step 1a.6: `src/docpilot/llm.py`

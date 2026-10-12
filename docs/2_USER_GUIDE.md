@@ -53,3 +53,44 @@ neighbour pairs (ruff B905).
    function, run once per settings pair.
 
 **New concepts:** chunk, overlap, step, tail chunk, parametrized tests, attention mask.
+
+---
+
+## 17. Step 1a.4: `embedder.py` (2026-10-12, commit `8eff576`)
+
+Loads BGE once (`lru_cache`), pinned with `revision=` (plan bug fixed). Chunks: no prefix,
+batches of 32, normalised. Questions: BGE prefix added by hand, because the model's stored
+`encode_query` prompt is empty (checked on sentence-transformers 6.1.0). 4 tests (shape 384,
+length 1, empty list, model cached). **Learner run skipped**; the two prediction questions
+(lru_cache speed; query vs document vector for the same word) are still open.
+
+---
+
+## 18. Step 1a.5: `vector_store.py`, Qdrant local mode (2026-10-12, not yet committed)
+
+**Goal:** the only file that talks to Qdrant: fresh collection (384 dims, cosine), add
+chunks as points (`uuid5` id + vector + payload), search top-k as plain dicts.
+**New dependency:** `qdrant-client==1.19.1` (D-027). `client.search()` no longer exists;
+`query_points` is the current API.
+
+**Bug found by a test:** in local mode on disk, delete + create brought the old points
+back (`assert 3 == 0`). Fix: delete all points with an empty filter, then fail if any
+remain. Without it, Phase 2 re-ingests would mix old and new chunks.
+
+**Real results** (3 fake chunks: `[1,0,0,0]`, `[0,1,0,0]`, `[0,0,1,0]`, query
+`[0, 0.9, 0.1, 0]`, the same 3 chunks added twice):
+| Prediction | Yours | Real |
+|---|---|---|
+| Order | chunk 1, then chunk 2 | `text 1 0.994`, `text 2 0.11`, `text 0 0.0` (correct) |
+| Count after adding twice | 3, "because the collection is deleted and recreated" | 3 (correct number, wrong reason) |
+
+`pytest tests/test_vector_store.py -v`: 5 passed in 1.58 s.
+
+**Lessons:**
+1. Cosine ignores length, only direction counts: 0.9 / sqrt(0.81 + 0.01) = 0.994. That is
+   why the score is above 0.9 even though the query's value is 0.9.
+2. Count stays 3 because of **upsert + deterministic ids**: the second add writes to the
+   same 3 ids and overwrites them. `create_fresh_collection` ran only once, before both adds.
+   With random `uuid4` ids the count would be 6, and every re-ingest would duplicate.
+3. A score of 0.0 means "nothing in common" (no shared direction), not "wrong answer".
+   Real BGE scores are rarely 0; Lab 1 saw 0.379 for an unrelated cat sentence.
