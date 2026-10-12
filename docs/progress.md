@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.7 `rag.py`: done (2026-10-12) |
-| Next step | 1a.8 scripts (download, ingest, ask); Phase 0 gate done later by the learner |
+| Current step | 1a.8 scripts: built, waiting for learner's prediction + run |
+| Next step | 1b: ask 10 questions, write `docs/failure_log_phase1.md`; Phase 0 gate done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -39,10 +39,10 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.5 | `vector_store.py` + `tests/test_vector_store.py` (qdrant-client 1.19.1, D-027) | done (run 2026-10-12; 5 tests pass) |
 | 1a.6 | `llm.py` + `tests/test_llm.py` (openai 3.29.0, gpt-oss-120b, D-028) | done (run 2026-10-12; first real Groq call) |
 | 1a.7 | `rag.py` + `tests/test_rag.py` | done (demo run 2026-10-12) |
-| 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` | not started |
+| 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` (D-029) | built, lint passes; learner run pending |
 | 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | not started |
 | 1c | Golden dataset v0 (about 30 questions, dev/test) | not started |
-| 1d | Retrieval eval harness, record C0 | not started |
+| 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | not started |
 | 1e | Mini FastAPI `POST /ask` | not started |
 | 1f | Git workflow: public repo, PR template, CI `test`, branch protection | not started |
 | Gate | tag `phase-1` | not started |
@@ -58,7 +58,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.5 | Metadata (source, heading path, doc type, version, technology) | not started |
 | 2.6 | Six chunking strategies | not started |
 | 2.7 | Docling for PDF/HTML | not started |
-| 2.8 | Add more corpora (Docker, Pydantic, ...) + grow golden set | not started |
+| 2.8 | Corpus register; groups A docs, B learning, C interview prep (D-030) + golden set per domain | not started |
 | 2.9 | Index per strategy, run evals, per-type breakdown | not started |
 | 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | not started |
 | Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | not started |
@@ -154,6 +154,36 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-12, session 7i: scope v1.2 (wider corpus) + latency
+
+- Learner answers: corpus groups A docs + B learning material + C interview prep accepted;
+  own notes yes, other sources welcome (non-open = `local_only`); no general "any document"
+  chatbot, uploads only as stretch after guardrails; Phase 1 unchanged, widening in 2.8.
+- Learner asked to make latency explicit (before and after deployment). It existed in
+  Phases 3/4/6/7 but had no primer, no Phase 1 baseline, no measuring rules, no TTFT.
+- Done: PROJECT_DOCUMENTATION v1.2 (changelog, scope table, users, question types,
+  non-goals, performance row, decision rows); decisions D-030 (corpus), D-031 (latency);
+  CLAUDE.md; Phase 1 part 2 (`evals/run_latency.py`, L0 in the gate); Phase 2 (domain
+  metadata, Q&A-pair chunker, corpus register, per-domain table); Phase 3.8 (domain
+  filter); Phase 8.6 (uploads); architecture part 1; `teaching/primer_latency.md` (new);
+  phase 1 interview Q15; `2_USER_GUIDE.md` section 22.
+- Code: `ask()` returns `timings_ms` (embed_query, search, llm, total); `03_ask.py` prints
+  them (1 cold run); new test `test_ask_times_every_stage`. Full suite: 32 passed.
+
+### 2026-10-12, session 7h: Phase 1 step 1a.8 (scripts)
+
+- 1a.7 committed by the learner (`db73bd8`). Learner later added a blank line inside
+  `SYSTEM_PROMPT` in `rag.py` (uncommitted); harmless, but it is now part of the C0 prompt.
+- Corpus chosen and checked (D-029): 4 FastAPI tutorial pages at commit `d62354434b2e`,
+  URLs 200, licence MIT.
+- `scripts/01_download_docs.py`, `02_ingest.py`, `03_ask.py`; ruff passes; `03_ask.py
+  --help` works; full suite 31 passed. Downloads and ingest NOT run (learner's run).
+- Learner asked (2026-10-12): document step 1a.8 (done: `2_USER_GUIDE.md` section 21) and
+  start `docs/interview/challenges_and_failures.md` with **big failures only** (done: 4
+  entries). Scope widening (interview prep, ML/LangChain/LangGraph learning material) is
+  being discussed first; no scope docs changed yet.
+- Learner predictions: n/a (pending). Real output: n/a (pending).
 
 ### 2026-10-12, session 7g: Phase 1 step 1a.7 (rag.py)
 

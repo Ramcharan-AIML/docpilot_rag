@@ -2,6 +2,9 @@
 
 Plan files: `docs/implementation_plan/phase_1_baseline.md`, `2_phase_1_baseline.md`
 
+**Read first if evals are new to you:** `primer_evals.md` (from zero, child-level).
+**Git workflow for this phase (feature branches, PRs, CI, branch protection):** `primer_git_workflow.md`.
+
 ---
 
 ## 1. What RAG is

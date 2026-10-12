@@ -421,4 +421,13 @@ def ask(question: str, qdrant_client, llm_client) -> dict:
 match the citations. The doc reports about 51 chunks at 800/100 from four pages; record the
 count you actually get.
 
+**Built (2026-10-12):**
+- `01_download_docs.py`: pages `first-steps`, `path-params`, `query-params`, `body`, pinned
+  to commit `d62354434b2e` (D-029); `write_bytes` keeps line endings identical on all OSes.
+- `02_ingest.py`: exits with a clear message if no docs (the loader returns `[]`, the
+  script decides that is fatal); prints per-document chunk counts, total, stored points
+  and time; closes the Qdrant client in `finally` (releases the D-003 folder lock).
+- `03_ask.py`: exits if the collection does not exist; prints source, chunk number, score
+  and a 200-character one-line preview per citation number.
+
 Continued in [2_phase_1_baseline.md](2_phase_1_baseline.md)

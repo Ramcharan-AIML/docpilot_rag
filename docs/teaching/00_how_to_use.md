@@ -32,7 +32,22 @@ The implementation plan tells you **what** to build. These notes tell you **why 
 | `phase_5_multiagent_hitl.md` | Tools and function calling, safe tools, supervisor pattern, checkpoints, human-in-the-loop, MCP |
 | `phase_6_guardrails.md` | Guardrails primer, threat model, prompt injection (direct and indirect), PII, output checks, red-teaming, measuring safety |
 | `phase_7_production.md` (+ `2_`) | Async APIs, streaming, auth, rate limits, caching, gateways, observability, Docker images, Compose, CI/CD, cloud deploy, HTTPS, load tests |
-| `phase_8_stretch.md` | GraphRAG, DSPy, ColBERT, ColPali, trajectory evals, Kubernetes |
+| `phase_8_stretch.md` | GraphRAG, DSPy, ColBERT, ColPali, trajectory evals |
+
+## From-zero primers (read before the phase that uses them)
+
+| Primer | Read before | Covers |
+|---|---|---|
+| `primer_evals.md` | Phase 1 step 1c | evals from zero: answer key, Recall/MRR/nDCG by hand, judges, ablation, CI gate |
+| `primer_git_workflow.md` | Phase 1 | branches, pull requests, CI, branch protection, tags |
+| `primer_mlflow.md` | Phase 2 | experiment tracking; MLflow vs tracing |
+| `primer_object_storage.md` | Phase 3 | S3 ideas, SeaweedFS (MinIO replacement), boto3 |
+| `primer_guardrails.md` | Phase 6 | guardrails from zero: threats, layers, canary, red team, two numbers |
+| `primer_latency.md` | Phase 1 step 1a.8 | latency before and after deployment: p50/p95, per stage, cold vs warm, TTFT, load, how to measure honestly |
+| `primer_rag_monitoring.md` | Phase 7 | monitoring AI on live traffic: scores, groundedness, refusals, drift |
+| `primer_aws.md` + `2_primer_aws.md` | Phase 7 | cloud basics, free plan, IAM, VPC, EC2, S3, ECR, CloudWatch, cost traps, Oracle move |
+| `primer_terraform.md` | Phase 7 | infrastructure as code, state, portable layout |
+| `primer_kubernetes.md` | Phase 7 | Kubernetes words, Compose-to-K8s, k3s, EKS exercise |
 
 ## One idea that connects everything
 

@@ -24,8 +24,20 @@ with comments, and direct honest feedback without sugarcoating.
 ## Hard rules
 
 - **Free only.** No paid APIs or hosting. LLMs: Groq, Gemini, OpenRouter free models,
-  Ollama. Embeddings and reranker: local Hugging Face models. Hosting: Oracle Cloud Always
-  Free ARM VM (fallback: Cloudflare Tunnel).
+  Ollama. Embeddings and reranker: local Hugging Face models. Hosting: **AWS free plan** in
+  Phase 7 (credits as a strict budget; account created only at the start of Phase 7), then
+  **Oracle Cloud Always Free** long-term (move before month 6). Follow Rule 17 (cloud cost
+  safety): Terraform only, read every plan, budgets, one region, tags, no NAT/LB, EKS
+  plan-only or destroyed in the same session, no long-lived AWS keys.
+- **Stack additions (v1.1):** MLflow from Phase 2, SeaweedFS + boto3 (MinIO is archived),
+  Terraform, k3s (planned), EKS (exercise), RAG monitoring, PR-based Git workflow with branch
+  protection and a CI eval gate from Phase 2. The learner knows none of these yet: teach each
+  from zero using `docs/teaching/primer_*.md` before building.
+- **Scope v1.2 (D-030, D-031):** corpus = A official tech docs, B open-licence AI/ML learning
+  material, C interview prep (incl. the learner's own notes); not a "chat with any document"
+  tool. Phase 1 stays on 4 FastAPI pages; widening starts in Phase 2.8. Non-open sources are
+  `local_only`. Latency is measured per stage (p50/p95, warm, n and hardware named) from
+  Phase 1; see `docs/teaching/primer_latency.md`.
 - **Never invent numbers.** Every metric comes from a real run. Unknown = `n/a`. Never
   print or reveal lab results before the learner predicts them.
 - **Verify before use.** Check current official docs or PyPI for any free-tier limit, model
@@ -67,5 +79,7 @@ with comments, and direct honest feedback without sugarcoating.
 
 ## Where things are
 
-`docs/README.md` maps every document: rule book, progress, decisions, architecture,
-implementation plan, teaching notes, interview Q&A, interview notes, user guide, chat context.
+`docs/README.md` maps every document: rule book, progress, decisions, architecture
+(3 parts), implementation plan, teaching notes and primers, interview Q&A, interview notes,
+user guide, chat context. Infrastructure code will live in `infra/`, Kubernetes manifests in
+`deploy/k8s/`.

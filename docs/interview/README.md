@@ -25,6 +25,7 @@ For "why did you choose X?" questions, use **C-A-E-T**:
 
 | File | Phase |
 |---|---|
+| `challenges_and_failures.md` | Real big failures and fixes, for "where did you get stuck?" |
 | `phase_0_interview.md` | Embeddings, setup |
 | `phase_1_interview.md` | RAG baseline, evals, FastAPI |
 | `phase_2_interview.md` | Data quality, chunking |
@@ -33,6 +34,7 @@ For "why did you choose X?" questions, use **C-A-E-T**:
 | `phase_5_interview.md` | Tools, multi-agent, HITL, MCP |
 | `phase_6_interview.md` | Guardrails, security |
 | `phase_7_interview.md` | Production, deployment, CI/CD, observability |
+| `2_phase_7_interview.md` | AWS, Terraform, Kubernetes (k3s, EKS), RAG monitoring, MLflow vs tracing, Git workflow, SeaweedFS |
 | `phase_8_interview.md` | Stretch topics |
 | `ALL_INTERVIEW_QUESTIONS.md` | Created after the Phase 7 gate: every question merged, real numbers filled in (split into `2_`, `3_` parts per the 500-line rule) |
 

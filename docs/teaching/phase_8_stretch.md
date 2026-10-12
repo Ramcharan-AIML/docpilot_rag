@@ -46,17 +46,11 @@ Final-answer metrics miss **how** the agent got there. Trajectory evals compare 
 path (from traces) to an expected path: unnecessary rewrites, wrong tools, extra loops.
 An agent that is right by luck after wasted steps costs money and will fail elsewhere.
 
-## 6. Kubernetes (k3s)
+## 6. Kubernetes (moved)
 
-**Like I'm five:** Compose is a to-do list for one kitchen. Kubernetes is a manager for a
-chain of kitchens: it decides which kitchen cooks what, replaces sick cooks automatically,
-and scales up at lunch rush.
-
-Concepts: **Pod** (one or more containers), **Deployment** (keep N pods running, rolling
-updates), **Service** (stable name/IP for pods), **Ingress** (HTTP routing from outside),
-**ConfigMap / Secret** (settings and secrets), **StatefulSet** (pods with stable storage,
-for databases). k3s is a lightweight distribution that fits a small VM. For one small
-deployment, Compose is the right tool; k3s here is for learning.
+Kubernetes is no longer a stretch topic: k3s is **planned** in Phase 7 (production runs on
+it) and EKS is a Phase 7 exercise. Read `primer_kubernetes.md`. Stretch ideas that remain:
+autoscaling with more than one node, Helm charts, GitOps (e.g. Argo CD), all optional.
 
 ## 7. Self-check
 
@@ -64,4 +58,4 @@ deployment, Compose is the right tool; k3s here is for learning.
 2. What does DSPy optimise, and what is the overfitting risk?
 3. Where does ColBERT sit between bi-encoders and cross-encoders?
 4. Why evaluate trajectories and not only answers?
-5. When is Kubernetes overkill?
+5. (Kubernetes questions moved to `primer_kubernetes.md`.)

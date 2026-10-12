@@ -217,4 +217,5 @@ router. Record each attempt as its own row.
 - [ ] reviewer endpoints tested
 - [ ] MCP server called from a real MCP client
 - [ ] versions pinned (duckdb, checkpoint package, mcp SDK, search library), verified dates
-- [ ] interview notes; `git tag phase-5`
+- [ ] agent-eval runs logged in MLflow (`docpilot-agents`)
+- [ ] interview notes; merged via PR (CI green); tag `phase-5` pushed

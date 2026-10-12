@@ -34,8 +34,12 @@ pinned version, same reason as `requirements.txt`.
 **Commands to know:** `docker ps`, `docker logs <name>`, `docker compose up -d`,
 `docker compose down`, `docker compose ps`, `docker exec -it <name> sh`.
 
-**ARM note:** the free Oracle VM uses ARM CPUs. An image built only for x86 will not run
-there. Check now, not on deploy day.
+**Two CPU architectures:** the AWS server we plan to use (`m7i-flex.large`) is x86 (amd64);
+the Oracle VM we move to later is ARM (arm64). An image built only for one will not run on
+the other. Check every image now, not on deploy day.
+
+**Also in Compose this phase:** SeaweedFS (S3-compatible storage, used with boto3) and the
+MLflow server. Read `primer_object_storage.md` and `primer_mlflow.md`.
 
 ---
 
@@ -202,7 +206,7 @@ no longer describe what users get.
 
 ## 10. Self-check
 
-1. Image vs container vs volume? Why pin tags? Why does ARM matter?
+1. Image vs container vs volume? Why pin tags? Why do amd64 and arm64 both matter?
 2. Explain BM25 in plain words: what do IDF, tf, and length normalisation do?
 3. Why can't you add cosine and BM25 scores? Compute RRF for a small example.
 4. Bi-encoder vs cross-encoder: speed, accuracy, where each is used?

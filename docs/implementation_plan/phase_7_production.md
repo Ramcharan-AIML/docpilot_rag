@@ -1,13 +1,21 @@
 # Phase 7: Production (Implementation Plan, Part 1 of 2)
 
 **Goal of the phase:** turn the working system into a service that strangers can use
-safely: hardened API, auth, rate limits, caching, provider fallbacks, tracing, metrics,
-containers, CI/CD with an eval gate, and a public HTTPS URL on a free VM.
+safely: hardened API, auth, rate limits, caching, provider fallbacks, tracing, metrics and
+RAG monitoring, multi-arch containers, CI/CD into AWS, infrastructure as code (Terraform),
+Kubernetes (k3s), and a public HTTPS URL on AWS (free plan), with Oracle Always Free as the
+long-term home (decisions D-017 to D-025).
 
-**Teaching companion:** `docs/teaching/phase_7_production.md` and `2_phase_7_production.md`
-**Part 2:** `2_phase_7_production.md` (Docker image, Compose, CI/CD, deploy, load test, README)
+**Teaching companion:** `docs/teaching/phase_7_production.md` and `2_phase_7_production.md`,
+plus the primers `primer_aws.md`, `primer_terraform.md`, `primer_kubernetes.md`,
+`primer_rag_monitoring.md`, `primer_git_workflow.md`.
 
-Part 1 covers the **application** side: 7.1 to 7.6.
+| Part | Steps | Topic |
+|---|---|---|
+| 1 (this file) | 7.1 - 7.7 | the **application**: API, auth, Redis, gateway, tracing, metrics, RAG monitoring |
+| 2 `2_phase_7_production.md` | 7.8 - 7.10 | **packaging + CI/CD**: Dockerfile, Compose, GitHub Actions to ECR |
+| 3 `3_phase_7_production.md` | 7.11 - 7.15 | **cloud**: AWS account, Terraform, deploy on EC2, k3s, EKS exercise |
+| 4 `4_phase_7_production.md` | 7.16 - 7.19 | **finish**: load test, incremental ingestion, Oracle move, README |
 
 ---
 
@@ -192,8 +200,9 @@ metrics show it matters.
 
 ## Step 7.5: Tracing (decide D-009)
 
-1. VERIFY current state of Langfuse (cloud free tier limits; self-host requirements) and
-   Arize Phoenix (self-host footprint). Check RAM on the target VM.
+1. VERIFY current state of Langfuse (cloud free tier limits; self-host requirements),
+   Arize Phoenix (self-host footprint), and **MLflow 3 tracing** (we already run MLflow for
+   experiments; one tool for both would mean less to run). Check RAM on the EC2 instance.
 2. Write a two-option comparison in `decisions.md`, choose, close D-009.
 3. **File:** `observability/tracing.py`: a thin wrapper `start_trace(request_id)`,
    `span(name)`, so the tracing tool can be swapped.
@@ -228,5 +237,32 @@ dashboard auto-loaded at start).
 
 Dashboard panels: requests per minute, error rate, p50/p95 latency, latency per node,
 cache hit rate, fallback count, guard blocks by reason, review queue size.
+
+---
+
+## Step 7.7: Model and RAG monitoring
+
+**Goal:** see quality, safety, cost, and drift on **real traffic**, not only in offline evals.
+Teaching: `teaching/primer_rag_monitoring.md` (every signal explained).
+
+**Files**
+
+| File | Contents |
+|---|---|
+| `observability/rag_metrics.py` | Prometheus histograms/counters recorded inside the graph: retrieval top score, relevant-chunk count, answers by status (answered / not_found / blocked / pending_review), guard blocks by reason |
+| `observability/groundedness_sampler.py` | background job: picks ~5% of finished answers at random (setting), runs the faithfulness judge, records `docpilot_groundedness_sampled`. Respects the LLM call budget; skips when the free tier is near its limit |
+| `observability/drift_job.py` | scheduled job (e.g. hourly): centroid distance between recent question embeddings and the corpus centroid, plus out-of-scope share; stores numbers only, never question text |
+| `deploy/grafana/dashboards/docpilot_rag.json` | rows: traffic, quality, safety, cost, drift (layout in the primer) |
+| `deploy/prometheus/alerts.yml` or Grafana alert rules | error rate, p95, refusal spike, groundedness drop, fallback storm, review backlog (VERIFY which alerting path we use) |
+
+**Rules**
+- Thresholds for alerts are set **after one week of real traffic**, from the data, and
+  recorded in `decisions.md`. Never invented in advance.
+- Sampled groundedness uses the same judge prompt and model as the offline eval (3.9), so
+  online and offline numbers are comparable. The judge model is a label on the metric.
+- Every new metric gets a line in the dashboard and a sentence in the primer table.
+
+**Done when:** the dashboard shows real traffic in all five rows; one alert has been fired on
+purpose (e.g. lower a threshold temporarily) and the email arrived.
 
 Continued in [2_phase_7_production.md](2_phase_7_production.md)

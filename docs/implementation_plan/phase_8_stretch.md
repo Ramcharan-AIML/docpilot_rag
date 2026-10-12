@@ -12,7 +12,7 @@ experiment with its own ablation row. Pick one or two, not all.
 | 8.3 | ColBERT late interaction | `retrieval/colbert.py` | Recall/MRR vs hybrid+rerank; index size; latency | Bigger index; CPU speed |
 | 8.4 | ColPali multimodal PDF | `retrieval/colpali.py` | Questions about diagrams in PDFs | Heavy model; probably too slow on CPU, so verify first |
 | 8.5 | Agent trajectory evals | `evals/run_trajectory_eval.py` | Did the agent take a sensible path (not just the right final answer)? | Needs labelled expected paths |
-| 8.6 | k3s | `deploy/k3s/*.yaml` | Same stack on lightweight Kubernetes | Learning only; RAM on the free VM |
+| 8.6 | Upload your own documents (D-030) | `api/upload.py`, `ingestion/user_docs.py` | Uploaded file goes through the Phase 6 input guards and a prompt-injection scan; per-user collection; abstention and attack success on uploaded files | Main prompt-injection and copyright risk: only after the Phase 6 gate; never mixed into the public index |
 
 ---
 
@@ -41,10 +41,10 @@ already exist in docs and cost nothing.
 - Compare with the trace. Report: path match rate, unnecessary rewrites, unnecessary tool
   calls. This catches agents that get the right answer by luck after wasted steps.
 
-## 8.6 k3s
+## Note: Kubernetes moved
 
-Deployment, Service, Ingress, ConfigMap, Secret for `api`; StatefulSet for Qdrant and
-Postgres. Compare memory use with Compose on the same VM. Only if time allows.
+k3s is now **planned** in Phase 7 (step 7.14) and EKS is a Phase 7 exercise (step 7.15),
+so they are no longer stretch items (decisions D-021, D-023).
 
 ---
 

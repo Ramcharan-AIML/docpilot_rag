@@ -146,3 +146,30 @@ tags polluted the vectors. These became Phase 2 tasks, each measured."
 recall but adds tokens and noise to the prompt. In Phase 3, I retrieve more candidates
 (20-50), rerank, and keep the best few, which separates 'find widely' from 'show the LLM
 only the best'. The final value came from the eval: [your number: n/a]."
+
+---
+
+### Q14. "How do you work with Git on this project?"
+
+**Model answer:** "From Phase 1 every change goes through a pull request: a small feature
+branch per step, squash-merged into the phase branch, and the phase branch merged into `main`
+at the gate. `main` is protected: CI must be green (ruff, pytest, a 500-line file check) and
+direct pushes are rejected. I proved it with a PR containing a failing test. Each gate gets an
+annotated tag, so anyone can check out exactly the system that produced a given number."
+
+**Losing answer:** "I just commit to main."
+
+---
+
+### Q15. "How fast is your baseline, and where does the time go?"
+
+**Model answer:** "I time every stage inside `ask()`: query embedding, vector search and
+the LLM call. On my laptop CPU with Groq gpt-oss-120b, over [n/a] dev questions after a
+warm-up call, p50 total was [n/a] s and p95 [n/a] s; the LLM stage was [n/a]% of it, and
+retrieval was [n/a] ms. So speeding up search would not help users; the LLM call is the
+lever. That baseline, L0, is what later techniques like reranking are charged against."
+
+**Follow-up:** "Why not just report the average?" "Averages hide the slow tail. Rate-limit
+retries and cold starts show up in p95, and that is what an unlucky user feels."
+
+**Losing answer:** "It's pretty fast." (No number, no stage, no hardware.)

@@ -152,3 +152,93 @@ required, uvicorn; real BGE + real Groq `gpt-oss-120b`):
    proof; step 1d measures abstention on many questions.
 3. "Cite every fact" was only half followed: one `[1]` at the end, not per fact. Citation
    quality is something the evals will measure, not assume.
+
+---
+
+## 21. Step 1a.8: the three scripts, DocPilot on real docs (2026-10-12, not yet committed)
+
+**Goal:** turn the library code into something you can run end to end on real
+documentation. This closes step 1a: after it, DocPilot answers from real FastAPI docs.
+
+**Two pipelines (the shape of every real RAG system):**
+```text
+OFFLINE, once per change of docs or settings (slow: embeds every chunk)
+  01_download_docs.py  ->  data/docs/fastapi/*.md
+  02_ingest.py         ->  load -> chunk 800/100 -> embed -> fresh Qdrant collection
+
+ONLINE, every question (fast: one embedding, one search, one LLM call)
+  03_ask.py "question" ->  ask() -> answer + numbered sources with score and preview
+```
+
+**Files:** `scripts/01_download_docs.py`, `scripts/02_ingest.py`, `scripts/03_ask.py`;
+decision D-029 (corpus).
+
+**Corpus (D-029):** FastAPI tutorial pages `first-steps`, `path-params`, `query-params`,
+`body`, **pinned to commit `d62354434b2e`** (licence MIT, all URLs checked 2026-10-12).
+
+**Design choices, each with its reason:**
+| Choice | Why |
+|---|---|
+| Pinned commit, not `master` | Docs edited upstream must not move our C0 number |
+| `write_bytes`, not `write_text` | `write_text` on Windows turns `
+` into `
+
+`; chunks would differ from Linux CI |
+| `urllib` (standard library) | No new dependency for four downloads |
+| Ingest exits on an empty docs folder | The loader reports `[]`; the script decides it is fatal and says what to run |
+| `client.close()` in `finally` | Releases the local Qdrant folder lock (D-003) even after a crash |
+| `03_ask.py` prints source, chunk number, score, preview | You must **see** what was retrieved, not trust the answer |
+
+**Noise kept on purpose:** `{* ../../docs_src/... *}` include markers (the code lives in
+other files we did not download) and some HTML. Phase 2 (2.2, 2.3) removes it and
+measures the gain.
+
+**Run:**
+```powershell
+python scripts/01_download_docs.py
+python scripts/02_ingest.py
+python scripts/03_ask.py "How do I make a query parameter optional?"
+python scripts/03_ask.py "How do I connect FastAPI to a PostgreSQL database?"
+```
+
+`03_ask.py` also prints **per-stage timings** (embed_query, search, llm, total) for that one
+run. It is a cold start (new process, model loaded inside the first stage): one sample, not
+a p50/p95. The real baseline L0 comes in step 1d (D-031).
+
+**Real results:** n/a (learner run pending). Fill in: chunks per page, total chunks,
+ingest time, top source and score for each question, answer or NOT_FOUND, stage timings.
+
+**Interview line:** "I split indexing from querying, pinned the corpus to a commit and
+wrote files byte-for-byte, so the same input gives the same chunks on every machine.
+That is what makes my baseline number trustworthy."
+
+---
+
+## 22. Scope change v1.2 (2026-10-12): wider corpus + latency
+
+**Corpus (D-030), agreed with the learner:**
+| Group | What | Status |
+|---|---|---|
+| A. Technical docs | FastAPI now; Pydantic, Docker, Qdrant, LangChain, LangGraph, Redis in 2.8 | Phase 1 + 2.8 |
+| B. Learning material | open-licence AI/ML/GenAI concepts (licence checked per source) | 2.8 |
+| C. Interview prep | your own `docs/interview/*.md` and notes, open-licence Q&A | 2.8 |
+
+- **Not** a "chat with any document" tool: no golden set is possible for "anything", and
+  uploads are the main prompt-injection and copyright risk. Uploads = stretch 8.6, only
+  after the Phase 6 guardrails gate.
+- Material you add from other sources is welcome: open licence or your own = usable
+  anywhere; anything else = `local_only` (laptop index only, never committed, never in the
+  public demo).
+- Phase 1 is unchanged, so C0 never moves. Phase 2 adds a `domain` tag (2.5), a Q&A-pair
+  chunker for interview files (2.6), a corpus register with licences (2.8), at least 10
+  golden questions per domain, and a per-domain score table (2.9). Phase 3.8 can filter by
+  domain.
+
+**Latency (D-031):** measured like accuracy, from Phase 1. `ask()` now returns
+`timings_ms` per stage; step 1d adds `evals/run_latency.py` for the baseline **L0**
+(p50/p95, warm, n, hardware named). Later phases charge every technique against L0.
+Primer: `docs/teaching/primer_latency.md`. Interview: `phase_1_interview.md` Q15.
+
+**Files changed:** PROJECT_DOCUMENTATION v1.2, decisions D-030/D-031, CLAUDE.md, Phase 1
+part 2, Phase 2, 3 and 8 plans, architecture part 1, teaching index, primer_latency (new),
+`rag.py` + `test_rag.py` + `03_ask.py` (timings).

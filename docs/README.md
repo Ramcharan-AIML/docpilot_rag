@@ -13,8 +13,9 @@ Start here. Every session begins with `progress.md`.
 | See the whole system design | [architecture/architecture.md](architecture/architecture.md) -> [part 2](architecture/2_architecture.md) -> [part 3: cloud, infra, MLOps](architecture/3_architecture.md) |
 | Know exactly what to build next, file by file | [implementation_plan/00_overview.md](implementation_plan/00_overview.md) |
 | Understand the concepts behind a phase | [teaching/00_how_to_use.md](teaching/00_how_to_use.md) |
-| Learn a technology from zero (evals, guardrails, Git, MLflow, S3/SeaweedFS, AWS, Terraform, Kubernetes, monitoring) | `teaching/primer_*.md` (list in [teaching/00_how_to_use.md](teaching/00_how_to_use.md)) |
+| Learn a technology from zero (evals, guardrails, latency, Git, MLflow, S3/SeaweedFS, AWS, Terraform, Kubernetes, monitoring) | `teaching/primer_*.md` (list in [teaching/00_how_to_use.md](teaching/00_how_to_use.md)) |
 | Practise interview questions per phase | [interview/README.md](interview/README.md) |
+| Tell "where did you get stuck?" stories (big failures only) | [interview/challenges_and_failures.md](interview/challenges_and_failures.md) |
 | Write my own interview answers | [interview_notes.md](interview_notes.md) |
 | See why every choice was made | [decisions.md](decisions.md) |
 

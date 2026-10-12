@@ -50,8 +50,39 @@ services:
 5. Re-index the winning strategy into Docker Qdrant and re-run its eval.
 
 **Done when:** numbers match the local-mode run (same data, same model: they should).
-Also check: does the Qdrant image publish an `arm64` build? (Needed for the free ARM VM.)
-Record the answer in `decisions.md`.
+Also check: does every image we use publish **both** `amd64` and `arm64` builds? AWS
+`m7i-flex.large` is x86 (amd64); the Oracle fallback VM is ARM (arm64). Record the answer
+in `decisions.md`.
+
+---
+
+## Step 3.1b: Object storage (SeaweedFS + boto3) and the MLflow server
+
+**Goal:** learn S3-style storage locally, with code that later talks to real Amazon S3 by
+changing one setting. Teaching: `teaching/primer_object_storage.md`, `teaching/primer_mlflow.md`.
+Decision D-019 (SeaweedFS instead of MinIO, which was archived in 2026).
+
+1. **Compose:** add `seaweedfs` (S3 gateway on a local port, data in `./seaweed_data/`,
+   gitignored) and `mlflow` (tracking server; backend SQLite file in a volume; artifacts in
+   the SeaweedFS bucket `docpilot-mlflow` via the S3 API). VERIFY image names, tags, flags,
+   and the MLflow environment variables for an S3-compatible endpoint.
+2. **Dependency:** `boto3` (VERIFY version; decision entry; pin).
+3. **`config.py`:** `S3_ENDPOINT_URL` (local SeaweedFS URL; **empty on AWS**), `AWS_REGION`,
+   bucket names. Local SeaweedFS keys live in `.env` only.
+4. **File `src/docpilot/storage/object_store.py`:** `get_s3_client`, `upload_file`,
+   `download_file`, `list_keys` (with a paginator). Sketch in the primer.
+5. **`scripts/04_sync_docs.py`:** upload `data/docs/` to `docpilot-raw-docs`; `--download`
+   restores it on a fresh machine. `02_ingest.py` gains `--from-s3`.
+6. **Qdrant snapshot helpers** `store/snapshots.py`: create a snapshot, upload it to
+   `docpilot-snapshots`, restore it (VERIFY Qdrant snapshot API). Used in Phase 7 to move the
+   index between clouds without re-embedding.
+7. **Tests:** `tests/test_object_store.py` uses `moto` (fakes AWS in memory; decision entry,
+   dev-only) or a SeaweedFS container in CI; choose and record why.
+8. Point MLflow at the server: `MLFLOW_TRACKING_URI=http://localhost:5000`.
+
+**Done when:** a fresh clone can `04_sync_docs.py --download` and ingest without the
+internet docs sites; MLflow UI shows runs with artifacts stored in SeaweedFS; the same
+upload code passes against `moto` (an S3 imitation), proving the endpoint switch works.
 
 ---
 
@@ -214,10 +245,13 @@ D-002 with the numbers either way.
 
 **File:** `src/docpilot/retrieval/filters.py`
 
-1. Payload indexes on `technology`, `version`, `doc_type` (VERIFY `create_payload_index`).
+1. Payload indexes on `domain`, `technology`, `version`, `doc_type` (VERIFY
+   `create_payload_index`).
 2. `extract_filters(question) -> dict`: v1 is plain keyword matching on technology names
-   ("docker", "pydantic"). The Phase 4 router can later extract filters with an LLM.
-3. Golden items gain an optional `technology` field; eval runs with filters on vs off.
+   ("docker", "pydantic") and domain words ("interview question", "explain the concept").
+   The Phase 4 router can later extract filters with an LLM.
+3. Golden items gain optional `technology` and `domain` fields; eval runs with filters on
+   vs off, reported per domain (D-030).
 
 ---
 
@@ -256,9 +290,11 @@ Evals, agents, the API, and the MCP server all call this one function.
 
 ## Phase 3 gate
 
-- [ ] Qdrant in Docker; arm64 support checked and recorded
+- [ ] Qdrant, SeaweedFS, MLflow in Compose; amd64 + arm64 support checked and recorded
+- [ ] raw docs and a Qdrant snapshot round-trip through object storage with boto3
+- [ ] every run of this phase logged in MLflow (experiments `docpilot-retrieval`, `docpilot-generation`)
 - [ ] rows: C-sparse, C6 (manual + server), C7 (with latency), C8 variants, embedding models
 - [ ] generation metrics for C0 and best config, judge named, spot-check file exists
 - [ ] defaults chosen in `RetrievalSettings` with evidence in `decisions.md`
 - [ ] versions pinned: Docker image tag, fastembed, reranker model revision
-- [ ] interview notes; `git tag phase-3`
+- [ ] interview notes; merged via PR (eval gate green); tag `phase-3` pushed

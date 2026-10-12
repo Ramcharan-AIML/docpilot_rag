@@ -12,7 +12,7 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 
 | ID | Decision | Status | Date | Verified on | Evidence |
 |---|---|---|---|---|---|
-| D-001 | Domain: technical documentation | accepted | 2026-10-03 | n/a | n/a |
+| D-001 | Domain: technical documentation | widened by D-030 | 2026-10-03 | n/a | n/a |
 | D-002 | Embeddings: `bge-small-en-v1.5` | accepted (revisit Phase 3) | 2026-10-03 | 2026-10-07 (model card) | n/a |
 | D-003 | Vector DB: Qdrant, local mode then Docker | accepted | 2026-10-03 | 2026-10-12 (local-mode lock checked) | n/a |
 | D-004 | OpenAI-compatible LLM client; Groq default, Ollama fallback | accepted | 2026-10-03 | 2026-10-12 (Groq base URL) | n/a |
@@ -40,6 +40,9 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | D-026 | `python-dotenv` reads `.env`; `config.py` pins the embedding model revision | accepted | 2026-10-09 | 2026-10-09 (PyPI) | n/a |
 | D-027 | `qdrant-client` 1.19.1, local mode, `query_points` API | accepted | 2026-10-12 | 2026-10-12 (PyPI + installed API) | n/a |
 | D-028 | `openai` 3.29.0 client library; Groq `openai/gpt-oss-120b` as Phase 1 model | accepted | 2026-10-12 | 2026-10-12 (PyPI, Groq docs, Groq /models with learner key) | n/a |
+| D-029 | Phase 1 corpus: 4 FastAPI tutorial pages pinned to one commit | accepted | 2026-10-12 | 2026-10-12 (GitHub: URLs 200, licence MIT) | n/a |
+| D-030 | Corpus widened: A tech docs, B learning material, C interview prep; not "any document" | accepted | 2026-10-12 | n/a (licences checked per source in 2.8) | n/a |
+| D-031 | Latency measurement policy (p50/p95 per stage, warm, hardware named) from Phase 1 | accepted | 2026-10-12 | n/a | n/a |
 
 ---
 
@@ -301,6 +304,58 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 - **Trade-off:** reasoning tokens make answers slower and may count toward limits
   (not stated in the docs: n/a). `temperature=0` for repeatable evals, against Groq's
   general 0.5 to 0.7 advice.
+
+### D-029 Phase 1 corpus: four FastAPI pages, pinned commit
+- **What:** `first-steps`, `path-params`, `query-params`, `body` from
+  `docs/en/docs/tutorial/` of fastapi/fastapi at commit `d62354434b2e` (latest commit
+  touching the tutorial folder on 2026-10-12; committed 2026-07-29). Raw Markdown from
+  raw.githubusercontent.com with `urllib` (no new dependency). All four URLs returned 200;
+  repo licence MIT (GitHub API, 2026-10-12). Saved with `write_bytes` (keeps `
+` line
+  endings, so chunk counts match on Windows and Linux).
+- **Why:** the plan said "four tutorial pages" but did not name them; these four are the
+  core request-handling pages and match the golden-set example (`fastapi/query-params.md`).
+  A pinned commit means the corpus, chunks and eval numbers cannot change under us.
+- **Alternatives:** `master` (moves; numbers drift); the rendered HTML site (more noise,
+  needs an HTML cleaner: Phase 2.7); the whole docs folder (too big for a first baseline).
+- **Known noise kept on purpose (naive baseline):** `{* ../../docs_src/... *}` include
+  markers and some HTML (`<dfn>`). Phase 2 (cleaner 2.2, include resolver 2.3) measures it.
+
+### D-030 Corpus widened to three groups (learner request, 2026-10-12)
+- **What:** the corpus grows from technical documentation only to three `domain` groups:
+  **A** official technical docs (FastAPI, Pydantic, Docker, Qdrant, LangChain, LangGraph,
+  Redis); **B** open-licence AI/ML/GenAI learning material (concepts); **C** interview-prep
+  material, including the learner's own `docs/interview/*.md` and notes. Each chunk gets a
+  `domain` tag (step 2.5).
+- **Why:** the learner will use DocPilot daily while studying for interviews (best demo
+  story); mixed document shapes (API pages, concept text, Q&A pairs) make the Phase 2
+  chunking comparison more informative; the corpus stays known, so it stays evaluable.
+- **Not chosen:** a general "chat with any document" tool (learner agreed): no golden set
+  is possible for "anything", abstention loses its meaning, and uploaded files are the
+  main prompt-injection and copyright risk. User uploads stay a stretch idea after Phase 6.
+- **Licence rule:** every source goes into a corpus register (URL, licence, version or
+  commit, date, `public` or `local_only`). Open-licence and own material: usable anywhere.
+  Other material the learner adds: `local_only`, never committed, never in the public
+  index or demo.
+- **Timing:** Phase 1 (C0) unchanged. Groups B and C enter at step 2.8, with golden
+  questions per domain and a per-domain breakdown in 2.9; Q&A-pair chunking joins the
+  strategy comparison (2.6); domain filters in 3.8.
+- **Supersedes:** the scope of D-001 (domain: technical documentation).
+
+### D-031 Latency measurement policy (learner request, 2026-10-12)
+- **What:** latency is measured like accuracy, from Phase 1: per stage (embed query,
+  search, LLM, later rerank, guards, graph nodes) and total; report **p50 and p95** with
+  **n** (number of questions); separate **cold** (first call: model load, connection) from
+  **warm** runs; always name the hardware (this laptop CPU now; the instance type in
+  Phase 7); LLM latency is reported per provider and model. Once streaming exists
+  (Phase 7), also **time to first token (TTFT)**. Primer: `teaching/primer_latency.md`.
+- **Why:** an answer that is right but takes 30 s fails users; every later technique
+  (reranker, agents, guards) adds latency, and the ablation table needs its cost next to
+  its gain. Interviewers ask for numbers with context, not "it is fast".
+- **Rules:** never invent a latency target; set the budget after the Phase 1 baseline
+  (L0); p95 over averages (averages hide the slow tail); tiny samples are labelled as such.
+- **Alternatives:** measure only in Phase 7 (too late to know which technique cost what);
+  averages only (hide spikes from rate limits and cold starts).
 
 ---
 

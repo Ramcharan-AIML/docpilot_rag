@@ -11,8 +11,9 @@ semantic cache [if kept]. Then the LangGraph agent: input guard, router, hybrid 
 reranking, grading, maybe a rewrite, generation through the LLM gateway with fallbacks,
 groundedness check, maybe human review with a Postgres checkpoint, output guard. The result
 is cached if eligible, metrics and the trace are recorded, and the response returns with
-citations and a status. Qdrant, Redis, Postgres, Prometheus, and Grafana run in Compose on an
-ARM VM; only Caddy is public."
+citations and a status. Qdrant, Redis, Postgres, Prometheus, and Grafana run on k3s on one
+AWS EC2 instance built by Terraform; only the ingress is public. (Part 2 of this file covers
+the AWS side in depth.)"
 
 ---
 
@@ -43,9 +44,10 @@ model, and settings versions so old answers expire after changes."
 pip-audit, and a retrieval eval gate. The gate indexes a small committed corpus, runs the
 deterministic retrieval eval, and fails if Recall@5 or MRR drops below baseline minus a
 tolerance. It uses no LLM tokens. I proved it by opening a PR that removed the BGE query
-prefix: the gate failed [screenshot]. On merge to main, a workflow builds an arm64 image,
-pushes to GHCR tagged with the commit SHA, deploys over SSH with compose pull and up, and
-smoke-tests `/ready`. Generation evals run nightly or manually."
+prefix: the gate failed [screenshot]. On merge to main, a workflow assumes an AWS
+role through GitHub OIDC (no stored keys), builds amd64 and arm64 images, pushes them to ECR
+and GHCR tagged with the commit SHA, deploys through SSM (no SSH) with a rolling update on k3s,
+and smoke-tests `/ready`. Generation evals run nightly or manually."
 
 ---
 
@@ -64,7 +66,9 @@ don't block merges."
 latency histograms per endpoint and per graph node, LLM calls by provider, fallbacks, cache
 hits, guard blocks by reason, review queue size) shown in Grafana; and per-request traces in
 [Langfuse/Phoenix] showing every node, retrieved chunks, and LLM call with tokens and latency.
-When a request is slow, I open its trace and see which node caused it."
+When a request is slow, I open its trace and see which node caused it. On top, RAG
+monitoring: retrieval score distribution, sampled groundedness, refusal rate, topic drift.
+CloudWatch watches the machine itself."
 
 **Follow-up:** "Why p95 not average?" "Averages hide the slow tail that unlucky users feel."
 
@@ -82,10 +86,11 @@ CPU-only torch to shrink the image: [n/a] MB before and after. A health check, a
 
 ### Q8. "How did you deploy for free, and what went wrong?"
 
-**Model answer:** "Oracle Cloud Always Free ARM VM [or fallback], Docker Compose, Caddy for
-automatic Let's Encrypt certificates, a DuckDNS subdomain. [Real story, e.g. ports had to be
-opened in both the cloud security list and the VM firewall; an image lacked arm64.] Rollback
-is redeploying the previous SHA tag."
+**Model answer:** "AWS free plan for the first months: Terraform-built VPC and EC2, k3s, an
+ingress with Let's Encrypt, a DuckDNS name, budget alerts. Before the free plan ended I moved
+to Oracle Always Free with the same boot script, images, and manifests. [Real story, e.g. a
+wheel missing for arm64, RAM too tight for k3s at first, the Oracle firewall trap.] Rollback
+is `kubectl rollout undo` or redeploying the previous SHA tag."
 
 ---
 
@@ -113,7 +118,8 @@ budget allows. My load test showed [n/a] on [VM size], so the first bottleneck w
 **Model answer:** "No secrets in git or images; keys in env files and GitHub Secrets;
 non-root containers; only Caddy exposed; HTTPS; API keys stored as hashes; per-key rate
 limits; CORS limited to the UI origin; input size limits; dependency scanning; least-privilege
-tools; PII masked in logs; Grafana behind a password; SSH by key only."
+tools; PII masked in logs; Grafana behind a password; no SSH port at all (SSM sessions); no
+long-lived AWS keys (OIDC and instance roles); S3 public access blocked."
 
 ---
 
@@ -138,3 +144,5 @@ golden set]. And grow the golden and red-team sets from real usage via the revie
 **Model answer:** "[From your decision log, e.g. 'HyDE did not beat the reranked hybrid
 baseline: n/a vs n/a, and it added an LLM call, so I dropped it.'] Negative results told me
 where not to spend complexity, and recording them kept me honest."
+
+Continued in [2_phase_7_interview.md](2_phase_7_interview.md)

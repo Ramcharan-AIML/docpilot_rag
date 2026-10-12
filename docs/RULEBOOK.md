@@ -67,6 +67,9 @@ In Phase 7 this check becomes a step in CI.
    then charges".
 2. If something is only available paid, find the free alternative or skip it, and record
    that in `docs/decisions.md`.
+3. **AWS free plan exception (D-017):** AWS is used on its free plan, which runs on credits
+   (USD 100 + up to 100) for up to 6 months and cannot bill beyond them. Credits are a budget:
+   Rule 17 applies to every AWS action. Long-term hosting stays free on Oracle (D-018).
 
 ---
 
@@ -196,9 +199,15 @@ One step at a time. No walls of code.
 ## Rule 12: Git habits
 
 1. Small commits with clear messages: `phase1: add fixed-size chunker with overlap`.
-2. One branch per phase (`phase-1-baseline`), merged into `main` at the gate.
-3. Tag each gate: `git tag phase-1`.
-4. Never `git push --force` on `main`.
+2. One branch per phase (`phase-1-baseline`); one small branch per step (`feat/`, `fix/`,
+   `exp/`, `docs/`) merged into the phase branch by **pull request** (squash).
+3. The phase branch reaches `main` only through a PR at the gate (merge commit).
+4. `main` is protected: PR required, CI checks required (`test` from Phase 1, `eval-gate`
+   from Phase 2, `audit` and `terraform-check` from Phase 7), no force-push, no deletion.
+5. Annotated tag per gate, pushed: `git tag -a phase-1 -m "..."` then `git push origin phase-1`.
+6. Every PR uses the template: what, why (plan step / decision), how tested, eval impact.
+7. Never `git push --force` on `main` or a shared branch; undo with `git revert`.
+   Details: `docs/teaching/primer_git_workflow.md` (D-024).
 
 ---
 
@@ -225,7 +234,12 @@ One step at a time. No walls of code.
 | Every decision with why and why-not | `docs/decisions.md` |
 | System design | `docs/architecture/` |
 | What to build, step by step, with file names | `docs/implementation_plan/` |
-| Concepts explained simply, per phase | `docs/teaching/` |
+| Concepts explained simply, per phase | `docs/teaching/phase_*.md` |
+| From-zero primers (evals, guardrails, Git, MLflow, storage, AWS, Terraform, Kubernetes, monitoring) | `docs/teaching/primer_*.md` |
+| The story of what was done, step by step | `docs/USER_GUIDE.md` |
+| Context for a new chat | `docs/CHAT_CONTEXT.md` |
+| Infrastructure code (Terraform) | `infra/` |
+| Experiment history | MLflow (local) + `evals/results/*.json` (git) |
 | Interview questions and model answers, per phase | `docs/interview/` |
 | Learner's own interview answers | `docs/interview_notes.md` |
 | Real eval numbers | `evals/ABLATION.md` and `evals/results/*.json` |
@@ -247,3 +261,24 @@ why. If an answer would not pass an interview, it says so and shows a better one
 
 Every loop has a maximum. Every LLM call has a timeout. Every request has a budget of LLM
 calls. Free tiers have rate limits, and runaway loops waste them.
+
+---
+
+## Rule 17: Cloud cost safety (AWS and Oracle)
+
+1. Create the AWS account only at the **start of Phase 7** (D-017); record the date; set a
+   calendar reminder for the Oracle move at **month 5** (D-018).
+2. Before creating anything: root MFA, daily admin identity with MFA, AWS Budget with email
+   alerts (25/50/75/90% of credits).
+3. **Everything through Terraform.** Nothing clicked by hand except account setup. Read every
+   `terraform plan` line before `apply`; any `-` (destroy) line gets a second look.
+4. One region. Every resource tagged `project=docpilot`.
+5. Never used: NAT gateway, load balancer, managed databases (cost). EKS only as a short
+   exercise: `plan` by default; if applied, destroyed in the same sitting (D-023).
+6. No long-lived AWS keys anywhere: OIDC for CI, instance role for the server, short-lived
+   login for you. `aws sts get-caller-identity` before any destructive command.
+7. Weekly 5-minute check: credits left, Cost Explorer top service, EC2 Global View (other
+   regions empty), `terraform plan` shows no drift.
+8. Check each AWS service is available on the free plan before planning around it (a subset
+   is blocked).
+9. Never write a price or limit from memory: verify and record the date (Rule 4).

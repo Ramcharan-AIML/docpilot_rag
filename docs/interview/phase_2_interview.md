@@ -106,3 +106,25 @@ vector search over flattened tables is weak at counting and exact matching."
 I understood the algorithm, then ran LangChain's on the same docs and compared chunk
 counts and scores: [n/a]. In production I would use whichever is simpler to maintain if
 scores tie. Knowing what it does inside lets me debug it when it misbehaves."
+
+---
+
+### Q12. "How did you keep track of dozens of experiments?"
+
+**Model answer:** "MLflow, from the start of Phase 2. Every eval run logs its params
+(strategy, chunk size, embedding model and revision, golden version, split), its metrics
+(Recall@5, MRR, nDCG@5, latency), tags (config id, git commit), and the full results JSON. I
+re-logged the C0 baseline so every comparison starts from it. My ablation table is generated
+from MLflow runs, so no number was ever typed by hand."
+
+**Follow-up:** "Why not just JSON files?" "I still keep them in git as the durable record, but
+comparing 50 runs by eye is error-prone; MLflow gives search, sorting, and charts."
+
+---
+
+### Q13. "When did your CI start checking AI quality?"
+
+**Model answer:** "Phase 2, earlier than I first planned. A required `eval-gate` job ingests a
+small corpus I wrote myself (so licensing is not an issue), runs the retrieval eval, and fails
+if Recall@5 or MRR drops below baseline minus a recorded tolerance. Changing the baseline
+needs a PR that explains why."
