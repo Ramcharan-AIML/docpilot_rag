@@ -400,6 +400,13 @@ def ask(question: str, qdrant_client, llm_client) -> dict:
     return {"answer": answer, "sources": hits}
 ```
 
+**Changed while building (2026-10-12), see `src/docpilot/rag.py`:**
+- No hits (empty index) -> return `NOT_FOUND_PHRASE` without calling the LLM (no wasted
+  request, no answer from an empty context).
+- Type hints for `qdrant_client: QdrantClient` and `llm_client: OpenAI`.
+- `tests/test_rag.py`: 4 tests with monkeypatched `embed_query`/`search`/`chat`: context
+  numbering, prompt layout, empty-index shortcut, NOT_FOUND phrase present in the prompt.
+
 ---
 
 ## Step 1a.8: scripts

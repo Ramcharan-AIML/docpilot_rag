@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1a.6 `llm.py`: done (2026-10-12) |
-| Next step | 1a.7 `rag.py`; Phase 0 gate done later by the learner |
+| Current step | 1a.7 `rag.py`: done (2026-10-12) |
+| Next step | 1a.8 scripts (download, ingest, ask); Phase 0 gate done later by the learner |
 | Blockers | Section 18 of `PROJECT_DOCUMENTATION.md` says Phase 0 and Phase 1a code exist, but this repo only contains `README.md` and `docs/`. Waiting for learner: is that code somewhere else, or do we rebuild it here? |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -38,7 +38,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.4 | `embedder.py` + `tests/test_embedder.py` | done (commit 8eff576; learner run skipped) |
 | 1a.5 | `vector_store.py` + `tests/test_vector_store.py` (qdrant-client 1.19.1, D-027) | done (run 2026-10-12; 5 tests pass) |
 | 1a.6 | `llm.py` + `tests/test_llm.py` (openai 3.29.0, gpt-oss-120b, D-028) | done (run 2026-10-12; first real Groq call) |
-| 1a.7 | `rag.py` | not started |
+| 1a.7 | `rag.py` + `tests/test_rag.py` | done (demo run 2026-10-12) |
 | 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` | not started |
 | 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | not started |
 | 1c | Golden dataset v0 (about 30 questions, dev/test) | not started |
@@ -154,6 +154,26 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-12, session 7g: Phase 1 step 1a.7 (rag.py)
+
+- 1a.6 committed by the learner (`a935dac`).
+- `src/docpilot/rag.py` + `tests/test_rag.py` (4 tests, fakes for search and LLM).
+  Full suite: 31 passed in 19.51 s.
+- Changed from the plan: empty index -> NOT_FOUND without an LLM call; type hints.
+- Learner predictions (before the run): (1) Q1: doc0 is the source and the answer; (2) Q2:
+  will NOT say the NOT_FOUND phrase, the LLM will add technical information itself;
+  (3) Q2 sources: "source 3 is related to Q2, not sure".
+- Real output (3 handmade chunks, gpt-oss-120b): Q1 answer `q: str | None = None` with one
+  `[1]` at the end; sources doc0 0.882, doc1 0.590, doc2 0.446. Q2 answer exactly
+  `I could not find this in the documents.`; sources doc2 0.604, doc1 0.442, doc0 0.421.
+  (The learner's paste shows Q2's answer and first source twice; the code prints each once,
+  so most likely a terminal/copy artefact.) pytest: 4 passed in 11.41 s.
+- Verdict: (1) correct. (2) **wrong**: the model abstained as told (1 example only).
+  (3) **wrong**: 3 sources, all chunks (top-k always returns k, or all if fewer). Q2's top
+  score 0.604 for an unrelated chunk is higher than Q1's #2 (0.590): a raw score is not a
+  "relevant" signal. The LLM, not retrieval, did the abstaining here.
+- HF Hub "unauthenticated requests" warning: harmless; the model is cached (D-002 pin).
 
 ### 2026-10-12, session 7f: Phase 1 step 1a.6 (llm.py)
 

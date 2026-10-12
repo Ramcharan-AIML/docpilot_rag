@@ -94,3 +94,61 @@ remain. Without it, Phase 2 re-ingests would mix old and new chunks.
    With random `uuid4` ids the count would be 6, and every re-ingest would duplicate.
 3. A score of 0.0 means "nothing in common" (no shared direction), not "wrong answer".
    Real BGE scores are rarely 0; Lab 1 saw 0.379 for an unrelated cat sentence.
+
+---
+
+## 19. Step 1a.6: `llm.py`, one client for free providers (2026-10-12, not yet committed)
+
+**Goal:** send a system + user message to a free LLM and get the answer text. The provider
+is a setting in `.env` (`LLM_PROVIDER`, `LLM_MODEL`); only the URL and key change.
+
+**Free, no OpenAI account:** `openai` is a free open-source *client library*; requests go to
+`https://api.groq.com/openai/v1` with the Groq key. `openai/gpt-oss-120b` is an open-weight
+model that Groq hosts on its free plan (D-028). Your account's model list has no Llama 3.x.
+
+**Plan bugs fixed:** empty answer silently returned `""` (reasoning models can use the
+whole budget thinking) -> now raises; defaults frozen at import -> read at call time;
+unknown provider -> clear `ValueError`.
+
+**Real results:**
+| Prediction | Yours | Real |
+|---|---|---|
+| Same question twice at temperature 0 | "not guaranteed identical" | identical this time (1 pair, 2.1 s for 2 calls) |
+| Model not on the account | error, maybe 404; no silent switch | `NotFoundError: 404 ... model_not_found` |
+
+`pytest tests/test_llm.py -v`: 5 passed in 0.93 s (fake client, no network).
+
+**Lessons:**
+1. Temperature 0 = always pick the most likely next token. Usually repeatable, but not a
+   promise: server batching and GPU maths can still change a word now and then. One
+   identical pair does not prove it; your first instinct was reasonable.
+2. Reading the traceback bottom-up: `NotFoundError` (what), `404` (HTTP code: "no such
+   thing"), `model_not_found` (Groq's reason). The library does not retry a 404; it only
+   retries 429 (rate limit) and 5xx (server errors), because waiting will not fix a typo.
+3. LLM text can hold invisible differences: "high‑performance" uses a non-breaking hyphen
+   (U+2011), not "-". Evals that compare strings must normalise them first.
+
+---
+
+## 20. Step 1a.7: `rag.py`, the whole pipeline (2026-10-12, not yet committed)
+
+**Goal:** question -> `embed_query` -> `search` top 4 -> numbered context -> `chat` ->
+`{"answer", "sources"}`. Citation `[n]` always means `sources[n-1]`. Changed from the plan:
+empty index returns NOT_FOUND without an LLM call. 4 tests with monkeypatched fakes.
+
+**Demo** (3 handmade chunks in a temporary Qdrant: optional query param, path params
+required, uvicorn; real BGE + real Groq `gpt-oss-120b`):
+| | Q1 "make a query parameter optional?" | Q2 "deploy FastAPI to Kubernetes?" |
+|---|---|---|
+| Answer | `q: str \| None = None` ... `[1]` | `I could not find this in the documents.` |
+| Sources | doc0 0.882, doc1 0.590, doc2 0.446 | doc2 0.604, doc1 0.442, doc0 0.421 |
+| Your prediction | doc0, cites it (correct) | LLM adds its own facts (wrong); "source 3 related" (wrong) |
+
+**Lessons:**
+1. Vector search never says "nothing matched": it always returns the top k (here all 3).
+   Q2's best score (0.604, the uvicorn chunk) beats Q1's second (0.590). A raw score alone
+   cannot tell relevant from irrelevant. Ideas for later: score threshold, reranker (3.5).
+2. Here the **LLM** did the abstaining, because the prompt told it to. One example is not
+   proof; step 1d measures abstention on many questions.
+3. "Cite every fact" was only half followed: one `[1]` at the end, not per fact. Citation
+   quality is something the evals will measure, not assume.
