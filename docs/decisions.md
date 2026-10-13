@@ -43,6 +43,8 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | D-029 | Phase 1 corpus: 4 FastAPI tutorial pages pinned to one commit | accepted | 2026-10-12 | 2026-10-12 (GitHub: URLs 200, licence MIT) | n/a |
 | D-030 | Corpus widened: A tech docs, B learning material, C interview prep; not "any document" | accepted | 2026-10-12 | n/a (licences checked per source in 2.8) | n/a |
 | D-031 | Latency measurement policy (p50/p95 per stage, warm, hardware named) from Phase 1 | accepted | 2026-10-12 | n/a | n/a |
+| D-032 | Golden set v0: 32 items, 8 types, 22 dev / 10 test, exact-snippet validator | accepted | 2026-10-12 | n/a | n/a |
+| D-033 | Eval harness: `evals` package run with `python -m`, nearest-rank percentiles, own 429 retry count | accepted | 2026-10-13 | 2026-10-13 (openai 3.29.0 `with_options`) | n/a |
 
 ---
 
@@ -356,6 +358,37 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
   (L0); p95 over averages (averages hide the slow tail); tiny samples are labelled as such.
 - **Alternatives:** measure only in Phase 7 (too late to know which technique cost what);
   averages only (hide spikes from rate limits and cold starts).
+
+### D-032 Golden dataset v0 design (step 1c, 2026-10-12)
+- **What:** 32 hand-checked items in `evals/golden/` (22 dev, 10 test, 5 unanswerable =
+  16%), 8 question types, labels = document + one-line verbatim snippet (D-010).
+  `evals/validate_golden.py` requires an **exact** substring match of every snippet in
+  its raw document; tests in `tests/test_validate_golden.py`. `pyproject.toml` pytest
+  `pythonpath = ["."]` so tests can import `evals/`.
+- **Why:** the eval is only as good as its answer key; an exact check catches typos that
+  would silently turn hits into misses. The 1b questions go to dev (already seen).
+- **Deferred types:** version-specific (needs metadata), concept/interview (corpus B/C in
+  2.8), adversarial/risky (Phase 6 red-team set). The plan said "every type in section 2";
+  section 2 grew in v1.2 after the plan was written.
+- **Alternatives:** generate questions with an LLM (fast, but questions copy the page
+  wording, so paraphrase and near-miss items go missing; and nobody checked them); chunk
+  ids as labels (break with every chunking change); fuzzy snippet check in the validator
+  (hides typos; fuzziness belongs in matching, step 1d, where it is a recorded setting).
+- **Trade-off:** 32 items is small: one item = about 3 points of Recall on dev. Grows in
+  2.8 (at least 10 per domain).
+
+### D-033 Eval harness design (step 1d, 2026-10-13)
+- **What:** `evals/` is a package (`__init__.py`); runners start with
+  `python -m evals.run_retrieval_eval` (plan said `python evals/...py`, which cannot import
+  `evals.matching`). Shared code in `evals/common.py`. Metrics hand-written in
+  `evals/metrics.py`; percentiles use **nearest rank** (always a real measured value, no
+  interpolation). Latency and abstention runs switch off the openai library's silent
+  retries (`with_options(max_retries=0)`) and retry 429s themselves, so retries are
+  counted and their waiting time is in `wall_ms`. Result files carry `git_commit`, with
+  `+dirty` when uncommitted code produced them.
+- **Retrieval eval fetches 10** chunks to report @1/@3/@5; `ask()` still gives the LLM 4.
+- **Alternatives:** `numpy.percentile` (interpolates: can report a latency no request had);
+  `sys.path` hacks in each script (fragile); library retries (hide the slow tail).
 
 ---
 

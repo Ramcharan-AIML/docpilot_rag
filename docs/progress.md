@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1b done (run by the mentor at the learner's request); learner rewrites the three summary lines in own words |
-| Next step | 1c: golden dataset v0 (the 10 from 1b + about 20 new); Phase 0 gate done later by the learner |
+| Current step | 1d built and tested (58 tests pass); waiting for learner's predictions, then the C0 / L0 / abstention runs |
+| Next step | fill C0 in `evals/ABLATION.md` from real runs; then 1e mini FastAPI |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -41,8 +41,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.7 | `rag.py` + `tests/test_rag.py` | done (demo run 2026-10-12) |
 | 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` (D-029) | done (run 2026-10-12 by the mentor: 51 chunks, ingest 7.5 s) |
 | 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | done (run 2026-10-12; 10 rows + mentor's draft summary) |
-| 1c | Golden dataset v0 (about 30 questions, dev/test) | not started |
-| 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | not started |
+| 1c | Golden dataset v0 (about 30 questions, dev/test) | done (2026-10-12: 32 items, validator OK; learner review pending) |
+| 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | built + unit-tested (2026-10-13); C0/L0 runs pending learner predictions |
 | 1e | Mini FastAPI `POST /ask` | not started |
 | 1f | Git workflow: public repo, PR template, CI `test`, branch protection | not started |
 | Gate | tag `phase-1` | not started |
@@ -154,6 +154,35 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+### 2026-10-13, session 9: Phase 1 step 1d (eval harness), built
+
+- Learner had asked "teach me evals" (session 8c, chat only; primer_evals.md already covers
+  it). 1c not yet committed when 1d started.
+- Files: `evals/__init__.py`, `matching.py`, `metrics.py` (+ `mean`, nearest-rank
+  `percentile`), `common.py` (load split after validation, git commit with `+dirty`, save
+  result, 429-counting `ask_with_retries`), `run_retrieval_eval.py`, `run_latency.py`,
+  `run_abstention_check.py`, `ABLATION.md` (all n/a); tests `test_metrics.py` (11,
+  hand-computed) and `test_matching.py` (8). Decision D-033.
+- Plan fixes: run as `python -m evals.<script>` (import path); `numpy`-free percentile.
+- Smoke runs (exit code and JSON structure only, scores NOT read, files deleted):
+  retrieval exit 0 (19 answerable dev items, 7 types); latency and abstention with
+  `--limit 1`, exit 0 (4 LLM calls). Full suite 58 passed; ruff clean.
+- Learner predictions: n/a (pending). Real C0 / L0 / abstention: n/a (pending).
+
+### 2026-10-12, session 8b: Phase 1 step 1c (golden dataset v0)
+
+- Learner asked to implement 1c. Mentor drafted all items (learner short on time), each
+  snippet copied from the 4 downloaded pages.
+- Files: `evals/golden/dev.jsonl` (22), `test.jsonl` (10), `README.md`;
+  `evals/validate_golden.py`; `tests/test_validate_golden.py` (7 tests: typo, duplicate id,
+  missing field, unanswerable with evidence, wrong split file, broken JSON);
+  `pyproject.toml` pytest `pythonpath = ["."]`; decision D-032.
+- Real output: `validate_golden.py` -> 32 items; dev 22 (3 unanswerable), test 10 (2
+  unanswerable); OK. Full suite: 39 passed. Ruff clean on src, scripts, tests, evals, labs.
+- Plan fix: "cover every type in section 2" is not possible on 4 pages since v1.2 added
+  concept/interview/adversarial/risky; deferred types listed in the README and D-032.
+- Test split has not been run against DocPilot (and must not be until a gate).
 
 ### 2026-10-12, session 8: Phase 1 step 1b (failure log), set up
 

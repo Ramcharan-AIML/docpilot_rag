@@ -300,3 +300,87 @@ One question per run; fill the row before running the next one.
 failure with the retrieved chunks. The most common cause was ___, which is why my first
 Phase 2 fix was ___, and the eval showed ___." (Fill in the blanks with real results only.)
 
+---
+
+## 24. Step 1c: the golden dataset, an answer key (2026-10-12, not yet committed)
+
+**Goal:** turn "it seems better" into a number. Like a teacher's answer sheet: without it,
+marking an exam is an opinion.
+
+**Files:** `evals/golden/dev.jsonl` (22 items), `evals/golden/test.jsonl` (10 items),
+`evals/golden/README.md`, `evals/validate_golden.py`, `tests/test_validate_golden.py`;
+decision D-032.
+
+**Each item says:** the question, its type, should DocPilot answer it at all, a reference
+answer, and the **evidence**: which page plus a short sentence copied exactly from it.
+
+**Key ideas:**
+| Idea | Why |
+|---|---|
+| Evidence = page + exact sentence, not chunk id (D-010) | chunk ids change when chunking changes; the page text does not, so one answer key serves every Phase 2 strategy |
+| dev (22) and test (10) | dev is for trying things; test is the final exam, opened only at gates. Tuning on test is like reading the exam questions in advance |
+| The 1b questions are all in dev | we already saw their answers; they cannot be a fair final exam |
+| 5 unanswerable (16%), mostly near-misses | checks that DocPilot says "not found" even when the chunks look related |
+| A validator with an **exact** match | one typo in a snippet turns a correct hit into a miss and lowers the score silently |
+
+**Why not let an LLM write the questions?** It copies the page's own words, so paraphrase
+and near-miss questions disappear and the scores look better than real users would get.
+LLM-generated sets are a Phase 4 topic (RAGAS), and they still need a human check.
+
+**Run:**
+```powershell
+python evals/validate_golden.py
+```
+**Real result (2026-10-12):** 32 items, dev 22 (3 unanswerable), test 10 (2 unanswerable),
+OK. Full test suite: 39 passed.
+
+**Interview line:** "My answer key labels evidence by document and a verbatim snippet, not
+by chunk id, so the same 32 questions score every chunking strategy. A validator checks
+every snippet character for character, and the test split is only run at gates."
+
+---
+
+## 25. Step 1d: the eval harness, scoring automatically (2026-10-13, not yet committed)
+
+**Goal:** one command turns the answer key into numbers: the first real score **C0**,
+the speed baseline **L0**, and abstention accuracy.
+
+**Files (all in `evals/`):**
+| File | Job | Analogy |
+|---|---|---|
+| `matching.py` | is this chunk a hit? (snippet inside, or at least 70% of it) | the marker reading one answer |
+| `metrics.py` | Recall@k, strict recall, reciprocal rank, nDCG, percentile | the marking rules |
+| `common.py` | load the golden split (only if valid), label results with date + commit, retry 429s | the exam office |
+| `run_retrieval_eval.py` | search each question, score, save, print a table | marking the whole exam |
+| `run_latency.py` | full `ask()` on every dev question after one warm-up: p50/p95 per stage | a stopwatch on every answer |
+| `run_abstention_check.py` | did it say "not found" exactly when it should? | checking the trick questions |
+| `ABLATION.md` | the scoreboard: one row per change | the league table |
+
+Tests: `tests/test_metrics.py` (every expected number worked out on paper),
+`tests/test_matching.py`. Decision D-033.
+
+**Why these details matter:**
+- **Fetch 10, give the LLM 4.** The eval asks for 10 chunks so one search reports @1, @3
+  and @5; `ask()` is unchanged.
+- **Warm-up first.** The first call loads the model (about 2 s in 1b). Users of a running
+  service never pay that, so it is not mixed into L0.
+- **Nearest-rank percentile.** p95 is always a time some request really took.
+- **429 retries counted, not hidden.** The openai library retries silently; we switch that
+  off and count, because waiting after a rate limit is real slow-tail time.
+- **`+dirty` in the commit label.** Commit first, then run, so every number points to code
+  that exists in git.
+- **Unanswerable items are skipped by the retrieval eval** (no evidence to find) and
+  scored by the abstention check instead.
+
+**Run (commit first):**
+```powershell
+python -m evals.run_retrieval_eval --split dev --config-id C0
+python -m evals.run_latency --split dev --config-id C0
+python -m evals.run_abstention_check --split dev --config-id C0
+```
+The last two make one LLM call per question (23 and 22 calls); they are run by hand, never
+in CI.
+
+**Real results:** n/a (learner predictions first). Fill in: C0 Recall@5, MRR, nDCG@5,
+per-type table, L0 p50/p95 per stage, abstention accuracy and both error counts.
+
