@@ -28,3 +28,6 @@ select = ["E", "F", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Put the project root on the import path so tests can import evals/*.py
+# (evals/ is a tool folder, not part of the installed docpilot package).
+pythonpath = ["."]
