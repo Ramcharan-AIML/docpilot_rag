@@ -396,5 +396,18 @@ values" vs "predefined values", not in top 10). Lesson: half the time the right 
 found but not first; when the question uses different words than the page, dense search
 alone misses. Per-type rows have n = 1 to 5, too few to compare types.
 
-L0 latency and abstention: n/a (next runs).
+**Real results, latency L0 (2026-10-14, learner run, commit `8295859`, warm, n=22,
+laptop CPU, Groq `openai/gpt-oss-120b`):**
+| Stage | p50 | p95 | max |
+|---|---|---|---|
+| embed_query | 15.8 ms | 85.4 ms | 102.9 ms |
+| search | 1.0 ms | 1.9 ms | 2.4 ms |
+| llm | 1060.4 ms | 1748.8 ms | 1858.6 ms |
+| **total** | **1107.2 ms** | **1763.7 ms** | 1945.5 ms |
+| wall incl. 429 waits | 5933.9 ms | 8208.5 ms | 8238.2 ms |
+
+15 rate-limit retries (free tier). The LLM is about 96% of the time, so speeding up search
+or embedding cannot help much; streaming (TTFT), a faster model, or caching can.
+
+Abstention: n/a (next run).
 
