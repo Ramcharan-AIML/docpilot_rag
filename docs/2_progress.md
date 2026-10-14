@@ -7,6 +7,38 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-14, session 11: steps 1e (mini API) and 1f (CI files); evals guide
+
+- Learner asked: build 1e and 1f, and write one complete evals guide with interview Qs.
+- 1e: PyPI checked (fastapi 0.143.1, uvicorn 0.54.0, httpx 0.28.1), installed, `pip
+  check` clean; D-034. `src/docpilot/api.py`, `tests/test_api.py` (4 tests: valid 200,
+  empty 422, 3000 chars 422, wrong field 422). Uvicorn booted for a check: `GET /docs`
+  200, `/openapi.json` lists `/ask`. A live `/ask` call was not made (learner's run).
+- 1f: `.github/workflows/ci.yml`, `.github/pull_request_template.md`,
+  `scripts/check_file_lengths.py`; lock file regenerated (+fastapi, starlette,
+  uvicorn, opentelemetry-api). Fixes: ruff `extend-exclude = ["docs"]`; compact result
+  JSON (744 -> 117 lines, data identical); Pyrefly `search-path`. D-035.
+- CI simulated locally with `GROQ_API_KEY`, `LLM_MODEL` blank: 62 passed; ruff check and
+  format clean on the whole repo; length check OK.
+- GitHub: repo is PRIVATE; branch protection API answers 403 "Upgrade to GitHub Pro or
+  make this repository public". History scan: 21 commits, no secrets or data files;
+  author email would be public. **Learner's decision:** repo stays private until the
+  whole project is finished (email visibility is fine). Branch protection and the
+  "direct push rejected" gate item are deferred to project end (D-035, memory saved).
+  CI still runs on PRs; first real CI run pending the learner's push and PR.
+- Evals guide: `docs/teaching/evals_guide.md` + `2_evals_guide.md` (concepts with this
+  project's real numbers; direct and scenario interview questions with answers).
+
+### 2026-10-14, session 10c: abstention check (learner run)
+
+- Learner predictions: not given. Run: `python -m evals.run_abstention_check --split dev
+  --config-id C0`, commit `b061d62` clean, Groq `openai/gpt-oss-120b`, n=22.
+- Real output: **accuracy 0.909** (20/22); answered although it should refuse **0/3**;
+  refused although it should answer **2/19**: q-007 (minimal app code: only `{* ... *}`
+  markers indexed) and q-017 (GET "payload": right chunk at rank 6, outside the 4 given to
+  the LLM). Both false refusals trace back to ingestion and retrieval, not to the LLM.
+- 429 waits again on most questions (free tier). Step 1d complete on dev.
+
 ### 2026-10-14, session 10b: latency baseline L0 (learner run)
 
 - Learner's paper check of q-001 `[0, 1, 0, ...]`: Recall@1 0, @3 1.0, @5 1.0, RR 0.5:

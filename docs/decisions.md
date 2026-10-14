@@ -45,6 +45,8 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | D-031 | Latency measurement policy (p50/p95 per stage, warm, hardware named) from Phase 1 | accepted | 2026-10-12 | n/a | n/a |
 | D-032 | Golden set v0: 32 items, 8 types, 22 dev / 10 test, exact-snippet validator | accepted | 2026-10-12 | n/a | n/a |
 | D-033 | Eval harness: `evals` package run with `python -m`, nearest-rank percentiles, own 429 retry count | accepted | 2026-10-13 | 2026-10-13 (openai 3.29.0 `with_options`) | n/a |
+| D-034 | Mini API: FastAPI 0.143.1 + Uvicorn 0.54.0, httpx 0.28.1 for tests | accepted | 2026-10-14 | 2026-10-14 (PyPI) | n/a |
+| D-035 | CI on GitHub Actions: CPU-only torch, ruff excludes docs/, compact result JSON, repo private until project end (no branch protection yet) | accepted | 2026-10-14 | 2026-10-14 (action releases; GitHub API 403 on private) | n/a |
 
 ---
 
@@ -390,6 +392,39 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 - **Alternatives:** `numpy.percentile` (interpolates: can report a latency no request had);
   `sys.path` hacks in each script (fragile); library retries (hide the slow tail).
 
+### D-034 Mini API with FastAPI (step 1e, 2026-10-14)
+- **What:** `src/docpilot/api.py`: `POST /ask` (Pydantic request: 1 to 2000 characters;
+  response: answer + sources without chunk text), clients opened once in `lifespan`, plain
+  `def` endpoint (thread pool). `fastapi==0.143.1`, `uvicorn==0.54.0` (runtime),
+  `httpx==0.28.1` (dev, for `TestClient`; already installed as an openai dependency).
+  All MIT/BSD. FastAPI 0.143 also pulls `starlette 1.8.0` and `opentelemetry-api 1.45.1`
+  (a small tracing interface, inactive unless configured).
+- **Why:** FastAPI gives validation (422 before our code runs) and `/docs` for free; it is
+  the Phase 7 framework anyway (PROJECT_DOCUMENTATION 15.1).
+- **Alternatives:** Flask (no built-in validation or OpenAPI docs); Django (too large for
+  one endpoint); `uvicorn[standard]` (extra speed-ups not needed on one laptop).
+- **Tests:** `tests/test_api.py` replaces `ask` with a fake: no model, no key, no Qdrant.
+
+### D-035 CI and repository settings (step 1f, 2026-10-14)
+- **What:** `.github/workflows/ci.yml` job `test`: checkout v7.0.1, setup-python v7.0.0
+  (pip cache), CPU-only `torch==2.14.1` from download.pytorch.org (the default Linux wheel
+  pulls GPU libraries of several GB), then ruff, pytest, `scripts/check_file_lengths.py`.
+  `.github/pull_request_template.md` with an "Eval impact" section.
+- **Fixes found while preparing CI:** ruff 0.16 formats Python inside Markdown, and the
+  plan sketches in `docs/` failed `ruff format --check .` -> `extend-exclude = ["docs"]`;
+  a result JSON reached 744 lines -> `evals/common.to_json` writes one line per question
+  (data unchanged, checked by re-loading); Pyrefly (VS Code) could not resolve `evals` ->
+  `[tool.pyrefly] search-path = [".", "src"]` (pyrefly.org, 2026-10-14).
+- **Public repo:** `GET /branches/main/protection` on the private repo returned 403
+  "Upgrade to GitHub Pro or make this repository public" (2026-10-14). Pro is paid, so
+  the plan's choice stands: public. History scan before that: 21 commits, no key-like
+  strings, no `.env`, no downloaded docs or database files ever committed.
+- **Learner's decision (2026-10-14):** the repo stays **private until the whole project is
+  finished**, then goes public (the author email being visible is fine: proof of work).
+  Consequence: no branch protection until then; CI still runs on every PR, and the PR
+  workflow is followed by discipline. The Phase 1 gate item "direct push to `main`
+  rejected" is deferred to the end of the project (plan deviation, recorded here).
+
 ---
 
 ## Version pins (filled when verified)
@@ -405,8 +440,9 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | qdrant-client | 1.19.1 | 2026-10-12 | D-027; Apache-2.0; pulls pydantic 2.14.1, grpcio, pywin32 (Windows) |
 | openai | 3.29.0 | 2026-10-12 | D-028; Apache-2.0; client library only |
 | python-dotenv | 1.2.4 | 2026-10-09 | D-026; BSD-3-Clause, requires Python >=3.10 |
-| fastapi | n/a | n/a | |
-| uvicorn | n/a | n/a | |
+| fastapi | 0.143.1 | 2026-10-14 | D-034; MIT; pulls starlette 1.8.0, opentelemetry-api 1.45.1 |
+| uvicorn | 0.54.0 | 2026-10-14 | D-034; BSD-3-Clause |
+| httpx | 0.28.1 | 2026-10-14 | D-034; dev only (TestClient) |
 | pytest | 9.1.1 | 2026-10-03 | dev only |
 | ruff | 0.16.10 | 2026-10-03 | dev only |
 
@@ -424,4 +460,4 @@ D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
 | MinIO community | still distributed? | archived Apr 2026; images and binaries removed Sep 2026 | 2026-10-08 |
 | k3s | server node RAM | 2 GB minimum (docs) | 2026-10-08 |
 | Terraform / OpenTofu | licence | Terraform BSL 1.1; OpenTofu MPL 2.0 | 2026-10-08 |
-| GitHub | branch protection on free plan; Actions minutes | n/a (verify in Phase 1 step 1f) | n/a |
+| GitHub | branch protection on free plan | private repo: 403 'Upgrade to GitHub Pro or make this repository public' (API); public: available. Actions minutes: n/a | 2026-10-14 |

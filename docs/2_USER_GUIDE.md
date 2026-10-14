@@ -409,5 +409,64 @@ laptop CPU, Groq `openai/gpt-oss-120b`):**
 15 rate-limit retries (free tier). The LLM is about 96% of the time, so speeding up search
 or embedding cannot help much; streaming (TTFT), a faster model, or caching can.
 
-Abstention: n/a (next run).
+**Real results, abstention (2026-10-14, learner run, commit `b061d62`, dev n=22):**
+accuracy **0.909**; answered although it should refuse **0/3**; refused although it
+should answer **2/19** (q-007: the code is only an include marker; q-017: the right chunk
+was rank 6, but the LLM sees only the top 4). Safe failures (refusing) rather than made-up
+answers, and both are caused upstream: ingestion (2.3) and retrieval (3.x).
+
+---
+
+## 26. Step 1e: the mini API (2026-10-14, not yet committed)
+
+**Goal:** the same `ask()` behind a web address, so any program (or a browser) can use it.
+Like putting a counter in front of the kitchen: same cook, but now customers can order.
+
+**Files:** `src/docpilot/api.py`, `tests/test_api.py`; decision D-034 (fastapi 0.143.1,
+uvicorn 0.54.0, httpx 0.28.1).
+
+| Piece | What it does | Why |
+|---|---|---|
+| `AskRequest` (Pydantic) | question must be 1 to 2000 characters | bad input gets a 422 before our code runs |
+| `lifespan` | opens Qdrant and the LLM client **once** at startup | every request is then "warm" (L0: 16 ms embed vs about 2000 ms cold) |
+| plain `def ask_endpoint` | FastAPI runs it in a thread pool | slow LLM calls do not freeze the server |
+| `Source` model | returns source, chunk number, score; **not** the chunk text | small responses; text stays on the server |
+| fake `ask` in tests | tests need no model, no key, no Qdrant | fast, free, runnable in CI |
+
+**Run:**
+```powershell
+uvicorn docpilot.api:app --reload
+```
+Open `http://127.0.0.1:8000/docs`, click `POST /ask`, "Try it out", type a question,
+"Execute". Stop with Ctrl + C **before** running `02_ingest.py` (one process per Qdrant
+folder, D-003).
+
+**Real results:** server boot check 2026-10-14: `/docs` 200, `/ask` listed. Live answer
+through the API: n/a (learner's run).
+
+---
+
+## 27. Step 1f: CI, PR template, branch protection (2026-10-14, files built)
+
+**Goal:** nothing reaches `main` without a pull request and green checks. Like a building
+inspector: no inspection, no moving in.
+
+**Files:** `.github/workflows/ci.yml`, `.github/pull_request_template.md`,
+`scripts/check_file_lengths.py`; decision D-035.
+
+**What CI runs on every PR:** install (CPU-only torch, to avoid GBs of GPU libraries) ->
+`ruff check .` + `ruff format --check .` -> `pytest -q` (no key, no LLM) -> 500-line check.
+
+**Problems found while preparing it (and fixed):** ruff tried to reformat code sketches in
+`docs/`; one eval result file was 744 lines; VS Code's Pyrefly could not find `evals`.
+
+**Public or private?** GitHub answered our private repo with "Upgrade to GitHub Pro or make
+this repository public" (2026-10-14): free private repos cannot protect `main`. History
+was scanned first: no secrets in 21 commits. **Your decision:** stay private until the
+whole project is finished, then go public. Until then CI still runs on every pull request;
+you follow the PR workflow by habit instead of by a locked door (D-035).
+
+**Real results:** local CI simulation: 62 tests passed, ruff clean, length check OK.
+First GitHub CI run: n/a (after your push and PR). Branch protection: deferred to project
+end.
 

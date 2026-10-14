@@ -63,12 +63,27 @@ def base_record(config_id: str, split: str, kind: str) -> dict:
     }
 
 
+def to_json(record: dict) -> str:
+    """Pretty JSON, but each per_question row on ONE line.
+
+    Fully indented, one result file reached 744 lines (every list item on its own line),
+    breaking the 500-line rule; one row per line is also easier to scan and diff.
+    """
+    head = {key: value for key, value in record.items() if key != "per_question"}
+    text = json.dumps(head, indent=2, ensure_ascii=False)
+    rows = record.get("per_question", [])
+    if not rows:
+        return text + "\n"
+    lines = ",\n".join("    " + json.dumps(row, ensure_ascii=False) for row in rows)
+    return text[:-2] + ',\n  "per_question": [\n' + lines + "\n  ]\n}\n"  # text ends "\n}"
+
+
 def save_result(record: dict) -> Path:
     """Write evals/results/<date>_<config>_<split>_<kind>.json and return the path."""
     RESULTS_DIR.mkdir(exist_ok=True)
     name = f"{record['date']}_{record['config_id']}_{record['split']}_{record['kind']}.json"
     path = RESULTS_DIR / name
-    path.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    path.write_text(to_json(record), encoding="utf-8")
     return path
 
 

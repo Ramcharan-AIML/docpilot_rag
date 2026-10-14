@@ -51,203 +51,27 @@
   },
   "retries_429_total": 15,
   "per_question": [
-    {
-      "id": "q-001",
-      "embed_query": 11.7,
-      "search": 0.9,
-      "llm": 1201.7,
-      "total": 1214.3,
-      "retries_429": 0,
-      "wall_ms": 1214.3
-    },
-    {
-      "id": "q-002",
-      "embed_query": 16.4,
-      "search": 1.0,
-      "llm": 670.9,
-      "total": 688.3,
-      "retries_429": 0,
-      "wall_ms": 688.3
-    },
-    {
-      "id": "q-003",
-      "embed_query": 15.8,
-      "search": 1.1,
-      "llm": 1179.0,
-      "total": 1196.0,
-      "retries_429": 0,
-      "wall_ms": 1196.0
-    },
-    {
-      "id": "q-004",
-      "embed_query": 14.5,
-      "search": 0.8,
-      "llm": 1045.9,
-      "total": 1061.1,
-      "retries_429": 0,
-      "wall_ms": 1061.2
-    },
-    {
-      "id": "q-005",
-      "embed_query": 19.3,
-      "search": 1.8,
-      "llm": 1085.9,
-      "total": 1107.2,
-      "retries_429": 0,
-      "wall_ms": 1107.2
-    },
-    {
-      "id": "q-006",
-      "embed_query": 15.8,
-      "search": 1.0,
-      "llm": 1009.4,
-      "total": 1026.2,
-      "retries_429": 0,
-      "wall_ms": 1026.2
-    },
-    {
-      "id": "q-007",
-      "embed_query": 13.7,
-      "search": 0.9,
-      "llm": 1359.6,
-      "total": 1374.2,
-      "retries_429": 0,
-      "wall_ms": 1374.3
-    },
-    {
-      "id": "q-008",
-      "embed_query": 18.1,
-      "search": 0.7,
-      "llm": 890.2,
-      "total": 908.9,
-      "retries_429": 0,
-      "wall_ms": 908.9
-    },
-    {
-      "id": "q-009",
-      "embed_query": 31.2,
-      "search": 1.2,
-      "llm": 767.1,
-      "total": 799.5,
-      "retries_429": 1,
-      "wall_ms": 5904.4
-    },
-    {
-      "id": "q-010",
-      "embed_query": 56.8,
-      "search": 1.4,
-      "llm": 1060.4,
-      "total": 1118.7,
-      "retries_429": 1,
-      "wall_ms": 6290.6
-    },
-    {
-      "id": "q-011",
-      "embed_query": 15.0,
-      "search": 1.2,
-      "llm": 1393.2,
-      "total": 1409.4,
-      "retries_429": 1,
-      "wall_ms": 6613.7
-    },
-    {
-      "id": "q-012",
-      "embed_query": 19.0,
-      "search": 2.4,
-      "llm": 1546.5,
-      "total": 1567.9,
-      "retries_429": 2,
-      "wall_ms": 8208.5
-    },
-    {
-      "id": "q-013",
-      "embed_query": 20.0,
-      "search": 0.7,
-      "llm": 942.4,
-      "total": 963.1,
-      "retries_429": 1,
-      "wall_ms": 5147.0
-    },
-    {
-      "id": "q-015",
-      "embed_query": 13.2,
-      "search": 1.0,
-      "llm": 992.6,
-      "total": 1006.8,
-      "retries_429": 1,
-      "wall_ms": 8166.4
-    },
-    {
-      "id": "q-016",
-      "embed_query": 13.2,
-      "search": 0.8,
-      "llm": 1171.2,
-      "total": 1185.3,
-      "retries_429": 1,
-      "wall_ms": 7294.5
-    },
-    {
-      "id": "q-017",
-      "embed_query": 12.5,
-      "search": 0.8,
-      "llm": 1015.2,
-      "total": 1028.6,
-      "retries_429": 1,
-      "wall_ms": 6148.6
-    },
-    {
-      "id": "q-018",
-      "embed_query": 13.8,
-      "search": 1.0,
-      "llm": 1748.8,
-      "total": 1763.7,
-      "retries_429": 1,
-      "wall_ms": 6920.6
-    },
-    {
-      "id": "q-019",
-      "embed_query": 12.3,
-      "search": 0.9,
-      "llm": 815.5,
-      "total": 828.7,
-      "retries_429": 1,
-      "wall_ms": 5933.9
-    },
-    {
-      "id": "q-020",
-      "embed_query": 56.2,
-      "search": 1.9,
-      "llm": 1020.6,
-      "total": 1078.8,
-      "retries_429": 1,
-      "wall_ms": 8238.2
-    },
-    {
-      "id": "q-023",
-      "embed_query": 85.4,
-      "search": 1.4,
-      "llm": 1858.6,
-      "total": 1945.5,
-      "retries_429": 1,
-      "wall_ms": 7134.7
-    },
-    {
-      "id": "q-026",
-      "embed_query": 102.9,
-      "search": 1.5,
-      "llm": 1112.1,
-      "total": 1216.5,
-      "retries_429": 1,
-      "wall_ms": 6468.5
-    },
-    {
-      "id": "q-030",
-      "embed_query": 60.9,
-      "search": 1.4,
-      "llm": 1274.0,
-      "total": 1336.3,
-      "retries_429": 1,
-      "wall_ms": 7475.8
-    }
+    {"id": "q-001", "embed_query": 11.7, "search": 0.9, "llm": 1201.7, "total": 1214.3, "retries_429": 0, "wall_ms": 1214.3},
+    {"id": "q-002", "embed_query": 16.4, "search": 1.0, "llm": 670.9, "total": 688.3, "retries_429": 0, "wall_ms": 688.3},
+    {"id": "q-003", "embed_query": 15.8, "search": 1.1, "llm": 1179.0, "total": 1196.0, "retries_429": 0, "wall_ms": 1196.0},
+    {"id": "q-004", "embed_query": 14.5, "search": 0.8, "llm": 1045.9, "total": 1061.1, "retries_429": 0, "wall_ms": 1061.2},
+    {"id": "q-005", "embed_query": 19.3, "search": 1.8, "llm": 1085.9, "total": 1107.2, "retries_429": 0, "wall_ms": 1107.2},
+    {"id": "q-006", "embed_query": 15.8, "search": 1.0, "llm": 1009.4, "total": 1026.2, "retries_429": 0, "wall_ms": 1026.2},
+    {"id": "q-007", "embed_query": 13.7, "search": 0.9, "llm": 1359.6, "total": 1374.2, "retries_429": 0, "wall_ms": 1374.3},
+    {"id": "q-008", "embed_query": 18.1, "search": 0.7, "llm": 890.2, "total": 908.9, "retries_429": 0, "wall_ms": 908.9},
+    {"id": "q-009", "embed_query": 31.2, "search": 1.2, "llm": 767.1, "total": 799.5, "retries_429": 1, "wall_ms": 5904.4},
+    {"id": "q-010", "embed_query": 56.8, "search": 1.4, "llm": 1060.4, "total": 1118.7, "retries_429": 1, "wall_ms": 6290.6},
+    {"id": "q-011", "embed_query": 15.0, "search": 1.2, "llm": 1393.2, "total": 1409.4, "retries_429": 1, "wall_ms": 6613.7},
+    {"id": "q-012", "embed_query": 19.0, "search": 2.4, "llm": 1546.5, "total": 1567.9, "retries_429": 2, "wall_ms": 8208.5},
+    {"id": "q-013", "embed_query": 20.0, "search": 0.7, "llm": 942.4, "total": 963.1, "retries_429": 1, "wall_ms": 5147.0},
+    {"id": "q-015", "embed_query": 13.2, "search": 1.0, "llm": 992.6, "total": 1006.8, "retries_429": 1, "wall_ms": 8166.4},
+    {"id": "q-016", "embed_query": 13.2, "search": 0.8, "llm": 1171.2, "total": 1185.3, "retries_429": 1, "wall_ms": 7294.5},
+    {"id": "q-017", "embed_query": 12.5, "search": 0.8, "llm": 1015.2, "total": 1028.6, "retries_429": 1, "wall_ms": 6148.6},
+    {"id": "q-018", "embed_query": 13.8, "search": 1.0, "llm": 1748.8, "total": 1763.7, "retries_429": 1, "wall_ms": 6920.6},
+    {"id": "q-019", "embed_query": 12.3, "search": 0.9, "llm": 815.5, "total": 828.7, "retries_429": 1, "wall_ms": 5933.9},
+    {"id": "q-020", "embed_query": 56.2, "search": 1.9, "llm": 1020.6, "total": 1078.8, "retries_429": 1, "wall_ms": 8238.2},
+    {"id": "q-023", "embed_query": 85.4, "search": 1.4, "llm": 1858.6, "total": 1945.5, "retries_429": 1, "wall_ms": 7134.7},
+    {"id": "q-026", "embed_query": 102.9, "search": 1.5, "llm": 1112.1, "total": 1216.5, "retries_429": 1, "wall_ms": 6468.5},
+    {"id": "q-030", "embed_query": 60.9, "search": 1.4, "llm": 1274.0, "total": 1336.3, "retries_429": 1, "wall_ms": 7475.8}
   ]
 }

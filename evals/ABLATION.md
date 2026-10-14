@@ -13,7 +13,7 @@ question moves Recall by about 5 points; differences that small are ties.
 
 | Config | What changed | Recall@5 | MRR | nDCG@5 | Faithfulness | Answer relevancy | Abstention acc. | p50 total | p95 total | LLM calls / question |
 |---|---|---|---|---|---|---|---|---|---|---|
-| C0 | Naive: fixed-size 800/100, dense only, top 4 | 0.842 | 0.667 | 0.670 | n/a | n/a | n/a | 1107 ms | 1764 ms | 1 |
+| C0 | Naive: fixed-size 800/100, dense only, top 4 | 0.842 | 0.667 | 0.670 | n/a | n/a | 0.909 | 1107 ms | 1764 ms | 1 |
 | C1 | Recursive chunking | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C2 | Semantic chunking | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C3 | Parent-child | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
@@ -33,5 +33,5 @@ Faithfulness and answer relevancy need an LLM judge: Phase 3.9. Until then `n/a`
 | Column | Result file | Date | Commit |
 |---|---|---|---|
 | Recall@5, MRR, nDCG@5 | `results/2026-10-14_C0_dev_retrieval.json` (dev, n=19) | 2026-10-14 | `06891f1` (clean) |
-| Abstention acc. | n/a (not run yet) | n/a | n/a |
+| Abstention acc. (dev, n=22: 0/3 false answers, 2/19 false refusals) | `results/2026-10-14_C0_dev_abstention.json` | 2026-10-14 | `b061d62` (clean) |
 | p50 / p95 total (warm, n=22, excl. 429 waits; 15 retries) | `results/2026-10-14_C0_dev_latency.json` | 2026-10-14 | `8295859` (clean) |

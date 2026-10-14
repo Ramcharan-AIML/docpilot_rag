@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1d: C0 retrieval done on dev (Recall@5 0.842, MRR 0.667, nDCG@5 0.670); L0 latency done (p50 total 1107 ms, p95 1764 ms); abstention pending |
-| Next step | fill C0 in `evals/ABLATION.md` from real runs; then 1e mini FastAPI |
+| Current step | 1e + 1f built; repo stays private until project end (no branch protection, D-035); next: learner commits, pushes, opens PR to see CI run |
+| Next step | Phase 1 gate: test split once, interview notes, 3 summary lines, merge PR, tag `phase-1` |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
 
@@ -42,9 +42,9 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` (D-029) | done (run 2026-10-12 by the mentor: 51 chunks, ingest 7.5 s) |
 | 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | done (run 2026-10-12; 10 rows + mentor's draft summary) |
 | 1c | Golden dataset v0 (about 30 questions, dev/test) | done (2026-10-12: 32 items, validator OK; learner review pending) |
-| 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | C0 retrieval + L0 done 2026-10-14 (learner runs); abstention pending |
-| 1e | Mini FastAPI `POST /ask` | not started |
-| 1f | Git workflow: public repo, PR template, CI `test`, branch protection | not started |
+| 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | done 2026-10-14 (learner runs): C0 retrieval, L0, abstention; test split at the gate |
+| 1e | Mini FastAPI `POST /ask` | built + tested 2026-10-14 (4 API tests; server boots, /docs 200); learner's live /ask pending |
+| 1f | Git workflow: public repo, PR template, CI `test`, branch protection | files built 2026-10-14 (ci.yml, PR template, length check); repo private until project end (learner, D-035): protection deferred; first CI run on a PR pending |
 | Gate | tag `phase-1` | not started |
 
 ### Phase 2: Ingestion quality and chunking

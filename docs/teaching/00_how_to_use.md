@@ -39,6 +39,7 @@ The implementation plan tells you **what** to build. These notes tell you **why 
 | Primer | Read before | Covers |
 |---|---|---|
 | `primer_evals.md` | Phase 1 step 1c | evals from zero: answer key, Recall/MRR/nDCG by hand, judges, ablation, CI gate |
+| `evals_guide.md` + `2_evals_guide.md` | after Phase 1 step 1d | complete evals study guide with DocPilot's real C0/L0 numbers, plus direct and scenario interview questions with answers |
 | `primer_git_workflow.md` | Phase 1 | branches, pull requests, CI, branch protection, tags |
 | `primer_mlflow.md` | Phase 2 | experiment tracking; MLflow vs tracing |
 | `primer_object_storage.md` | Phase 3 | S3 ideas, SeaweedFS (MinIO replacement), boto3 |
