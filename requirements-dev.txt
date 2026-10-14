@@ -5,3 +5,4 @@
 
 pytest==9.1.1                  # test runner
 ruff==0.16.10                  # linter + formatter
+httpx==0.28.1                  # needed by FastAPI's TestClient (D-034, checked 2026-10-14)
