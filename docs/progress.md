@@ -9,7 +9,7 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1d built and tested (58 tests pass); waiting for learner's predictions, then the C0 / L0 / abstention runs |
+| Current step | 1d: C0 retrieval done on dev (Recall@5 0.842, MRR 0.667, nDCG@5 0.670); latency L0 and abstention pending |
 | Next step | fill C0 in `evals/ABLATION.md` from real runs; then 1e mini FastAPI |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
@@ -42,7 +42,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1a.8 | scripts `01_download_docs.py`, `02_ingest.py`, `03_ask.py` (D-029) | done (run 2026-10-12 by the mentor: 51 chunks, ingest 7.5 s) |
 | 1b | Ask 10 questions, write `docs/failure_log_phase1.md` | done (run 2026-10-12; 10 rows + mentor's draft summary) |
 | 1c | Golden dataset v0 (about 30 questions, dev/test) | done (2026-10-12: 32 items, validator OK; learner review pending) |
-| 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | built + unit-tested (2026-10-13); C0/L0 runs pending learner predictions |
+| 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | C0 retrieval done 2026-10-14 (learner run); L0 + abstention pending |
 | 1e | Mini FastAPI `POST /ask` | not started |
 | 1f | Git workflow: public repo, PR template, CI `test`, branch protection | not started |
 | Gate | tag `phase-1` | not started |
@@ -154,6 +154,8 @@ None yet. Every number will come from a real run and be copied here from
 ---
 
 ## Session log
+
+Sessions from 2026-10-14 on continue in [2_progress.md](2_progress.md) (500-line rule).
 
 ### 2026-10-13, session 9: Phase 1 step 1d (eval harness), built
 

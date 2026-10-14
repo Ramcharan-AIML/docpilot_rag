@@ -381,6 +381,20 @@ python -m evals.run_abstention_check --split dev --config-id C0
 The last two make one LLM call per question (23 and 22 calls); they are run by hand, never
 in CI.
 
-**Real results:** n/a (learner predictions first). Fill in: C0 Recall@5, MRR, nDCG@5,
-per-type table, L0 p50/p95 per stage, abstention accuracy and both error counts.
+**Real results, retrieval (2026-10-14, learner run, commit `06891f1`, dev n=19):**
+| Metric | C0 |
+|---|---|
+| Recall@1 | 0.526 (10 of 19 at rank 1) |
+| Recall@3 / Recall@5 | 0.842 / 0.842 (16 of 19) |
+| strict Recall@5 | 0.781 |
+| MRR | 0.667 |
+| nDCG@5 | 0.670 |
+| search latency, warm | p50 1.3 ms, p95 2.2 ms |
+
+Misses: q-017 (paraphrase, rank 6), q-018 (bullet list, rank 6), q-023 (Enum "allowed
+values" vs "predefined values", not in top 10). Lesson: half the time the right chunk is
+found but not first; when the question uses different words than the page, dense search
+alone misses. Per-type rows have n = 1 to 5, too few to compare types.
+
+L0 latency and abstention: n/a (next runs).
 
