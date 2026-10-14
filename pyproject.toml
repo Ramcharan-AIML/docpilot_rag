@@ -20,6 +20,9 @@ where = ["src"]           # code lives in src/docpilot (decision D-013)
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# docs/ holds teaching sketches inside Markdown (plans for later phases, aligned comments);
+# they are not code we run, so the formatter must not rewrite them (D-035).
+extend-exclude = ["docs"]
 
 [tool.ruff.lint]
 # E/F: real errors and unused names. I: sorted imports.
@@ -31,3 +34,8 @@ testpaths = ["tests"]
 # Put the project root on the import path so tests can import evals/*.py
 # (evals/ is a tool folder, not part of the installed docpilot package).
 pythonpath = ["."]
+
+[tool.pyrefly]
+# The VS Code type checker: look in src/ (docpilot) AND the project root (evals/),
+# the same import roots Python and pytest use. Checked on pyrefly.org 2026-10-14.
+search-path = [".", "src"]
