@@ -4,16 +4,8 @@ Deliberately naive (D-006): it cuts through words, code blocks and tables. Phase
 how much that hurts and replaces it.
 """
 
-from dataclasses import dataclass
-
 from docpilot import config
-
-
-@dataclass
-class Chunk:
-    text: str
-    source: str
-    chunk_number: int  # 0, 1, 2 ... inside one source; used in citations and point ids
+from docpilot.ingestion.chunkers.base import Chunk
 
 
 def fixed_size_chunks(

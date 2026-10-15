@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.0 MLflow built + tested (branch `phase-2-chunking`); learner's hands-on: re-log C0, open `mlflow ui` |
-| Next step | 2.1 refactor into packages (no behaviour change) |
+| Current step | 2.1 refactor done, 66 tests pass; learner's regression check pending (re-ingest + eval must equal C0) |
+| Next step | 2.2 cleaner (remove HTML noise outside code blocks) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 
@@ -50,8 +50,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 ### Phase 2: Ingestion quality and chunking
 | Step | What | Status |
 |---|---|---|
-| 2.0 | MLflow tracking; re-log C0 | built 2026-10-15 (D-036; 4 tests; smoke re-log equal to JSON); learner's UI check pending |
-| 2.1 | Refactor into `ingestion/` package | not started |
+| 2.0 | MLflow tracking; re-log C0 | built 2026-10-15 (D-036; 4 tests; smoke re-log equal to JSON); learner saw C0 runs in the UI and compared dev vs test (2026-10-15) |
+| 2.1 | Refactor into `ingestion/` package | done 2026-10-15 (git mv, 66 tests pass); C0 equality check pending |
 | 2.2 | Cleaner (HTML noise) | not started |
 | 2.3 | Include resolver (`{* ... *}` markers) | not started |
 | 2.4 | Block parser (code, tables, headings kept whole) | not started |

@@ -62,7 +62,40 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 Then open `http://127.0.0.1:5000`. From now on every eval run is logged by itself.
 
 **Real results:** smoke test (throwaway database): 4 C0 files logged, numbers equal to the
-JSON, re-run skips duplicates. Your own UI check: n/a (pending).
+JSON, re-run skips duplicates. Your UI check (2026-10-15): both C0 retrieval runs visible
+under Model training; Compare showed identical params except `split`, and the JSON values.
 
 **PDF and Word (D-037):** step 2.7 now covers PDF, Word (DOCX) and HTML with Docling.
+
+---
+
+## 30. Step 2.1: reorganise the code into packages (2026-10-15, not yet committed)
+
+**Goal:** make room for six chunkers and more loaders **without changing any behaviour**.
+Like moving house: the furniture goes into labelled rooms, but nothing is thrown away or
+rebuilt.
+
+| Before (Phase 1) | After | Room for |
+|---|---|---|
+| `loader.py` | `ingestion/loader.py` | cleaner, includes, blocks, PDF/Word loader |
+| `chunker.py` | `ingestion/chunkers/fixed.py` + `chunkers/base.py` (`Chunk`) | recursive, semantic, parent-child, ... |
+| `embedder.py` | `embedding/dense.py` | sparse vectors (Phase 3) |
+| `vector_store.py` | `store/qdrant_store.py` | Qdrant server mode (Phase 3) |
+| `llm.py` | `llm/client.py` | provider fallback (Phase 7) |
+
+**How:** `git mv` (git keeps each file's history), then every import updated; no
+"compatibility" copies of old names, so nothing points to two places.
+
+**How we know nothing changed:**
+1. 66 tests pass (same tests, new import paths).
+2. **Regression check by hand (your hands-on):** rebuild the index with the moved code and
+   run the eval; the scores must equal C0 exactly. A refactor that changes a number is a bug.
+
+**Run:**
+```powershell
+python scripts/02_ingest.py
+python -m evals.run_retrieval_eval --split dev --config-id C0-2.1
+```
+
+**Real results:** tests 66 passed (2026-10-15). Regression check: n/a (pending).
 

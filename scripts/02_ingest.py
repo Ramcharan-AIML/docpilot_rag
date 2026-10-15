@@ -10,10 +10,10 @@ import sys
 import time
 
 from docpilot import config
-from docpilot.chunker import fixed_size_chunks
-from docpilot.embedder import embed_documents
-from docpilot.loader import load_documents
-from docpilot.vector_store import add_chunks, create_fresh_collection, get_client
+from docpilot.embedding.dense import embed_documents
+from docpilot.ingestion.chunkers.fixed import fixed_size_chunks
+from docpilot.ingestion.loader import load_documents
+from docpilot.store.qdrant_store import add_chunks, create_fresh_collection, get_client
 
 
 def main() -> None:

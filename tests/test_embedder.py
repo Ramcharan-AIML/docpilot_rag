@@ -4,7 +4,7 @@ download), so they check shapes and lengths only, never similarity scores."""
 import math
 
 from docpilot import config
-from docpilot.embedder import embed_documents, embed_query, get_model
+from docpilot.embedding.dense import embed_documents, embed_query, get_model
 
 
 def length(vector: list[float]) -> float:

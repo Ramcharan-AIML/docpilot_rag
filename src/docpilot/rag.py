@@ -6,9 +6,9 @@ from openai import OpenAI
 from qdrant_client import QdrantClient
 
 from docpilot import config
-from docpilot.embedder import embed_query
-from docpilot.llm import chat
-from docpilot.vector_store import search
+from docpilot.embedding.dense import embed_query
+from docpilot.llm.client import chat
+from docpilot.store.qdrant_store import search
 
 # D-008: this prompt is our first (weak) guardrail. A chunk that says "ignore the rules"
 # can still fool it; real guards come in Phase 6.

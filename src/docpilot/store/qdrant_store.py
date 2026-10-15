@@ -9,7 +9,7 @@ from pathlib import Path
 
 from qdrant_client import QdrantClient, models  # API checked on 1.19.1 (D-027)
 
-from docpilot.chunker import Chunk
+from docpilot.ingestion.chunkers.base import Chunk
 
 
 def get_client(path: Path) -> QdrantClient:

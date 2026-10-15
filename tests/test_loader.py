@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from docpilot.loader import load_documents
+from docpilot.ingestion.loader import load_documents
 
 
 def test_loads_md_and_txt_with_relative_sources(tmp_path: Path) -> None:

@@ -9,8 +9,8 @@ from pathlib import Path
 import pytest
 from qdrant_client import QdrantClient
 
-from docpilot.chunker import Chunk
-from docpilot.vector_store import (
+from docpilot.ingestion.chunkers.base import Chunk
+from docpilot.store.qdrant_store import (
     add_chunks,
     create_fresh_collection,
     get_client,

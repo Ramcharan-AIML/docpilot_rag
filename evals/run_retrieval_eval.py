@@ -9,9 +9,9 @@ import time
 from collections import defaultdict
 
 from docpilot import config
-from docpilot.embedder import embed_query
+from docpilot.embedding.dense import embed_query
 from docpilot.rag import elapsed_ms
-from docpilot.vector_store import get_client, search
+from docpilot.store.qdrant_store import get_client, search
 from evals.common import base_record, load_split, save_result
 from evals.matching import MIN_OVERLAP, relevance_list
 from evals.metrics import (

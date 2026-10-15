@@ -10,9 +10,9 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
 from docpilot import config
-from docpilot.llm import get_llm_client
+from docpilot.llm.client import get_llm_client
 from docpilot.rag import ask
-from docpilot.vector_store import get_client
+from docpilot.store.qdrant_store import get_client
 
 MAX_QUESTION_CHARS = 2000  # a real question is far shorter; huge inputs waste LLM tokens
 

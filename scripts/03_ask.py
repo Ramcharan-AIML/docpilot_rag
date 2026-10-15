@@ -8,9 +8,9 @@ import argparse
 import sys
 
 from docpilot import config
-from docpilot.llm import get_llm_client
+from docpilot.llm.client import get_llm_client
 from docpilot.rag import ask
-from docpilot.vector_store import get_client
+from docpilot.store.qdrant_store import get_client
 
 PREVIEW_CHARS = 200
 

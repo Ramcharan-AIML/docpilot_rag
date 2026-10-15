@@ -7,6 +7,22 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-15, session 15: step 2.1 refactor into packages
+
+- Learner opened MLflow (Model training -> docpilot-retrieval), compared C0 dev vs test:
+  params identical except `split`; metrics equal the JSON (dev recall_at_5 0.842, mrr
+  0.667; test 1, 0.635). Learner asked whether MLflow is "tracing": explained experiment
+  tracking (lab notebook, per eval run) vs tracing (dashcam, per request, Phase 7).
+- 2.1 moves with `git mv` (history kept): `loader.py` -> `ingestion/loader.py`,
+  `chunker.py` -> `ingestion/chunkers/fixed.py` + `chunkers/base.py` (`Chunk`),
+  `embedder.py` -> `embedding/dense.py`, `vector_store.py` -> `store/qdrant_store.py`,
+  `llm.py` -> `llm/client.py`; `__init__.py` with a one-line docstring each (no
+  re-exports: imports name the real module). 22 import lines in 13 files updated.
+- Checks: no old imports left; new packages import from outside the repo (editable
+  install); ruff clean; **66 passed**; scripts `--help`, `02_ingest` import, API route OK.
+- Not yet done (learner's hands-on): re-ingest + `run_retrieval_eval --config-id C0-2.1`
+  must give exactly the C0 dev numbers (plan: "a refactor that changes the numbers is a bug").
+
 ### 2026-10-15, session 14: Phase 2 starts; step 2.0 MLflow; PDF/Word; resume entry
 
 - Learner: "yes, yes" (follow the ablation table: C1-C5 in Phase 2; build 2.0). Asked for
