@@ -5,7 +5,7 @@ Start here. Every session begins with `progress.md`.
 | I want to... | Open |
 |---|---|
 | Know where we are and what is next | [progress.md](progress.md) |
-| Read the step-by-step story of what was done | [USER_GUIDE.md](USER_GUIDE.md), then [2_USER_GUIDE.md](2_USER_GUIDE.md) (from step 1a.3) |
+| Read the step-by-step story of what was done | [USER_GUIDE.md](USER_GUIDE.md), then [2_USER_GUIDE.md](2_USER_GUIDE.md) (from step 1a.3), then [3_USER_GUIDE.md](3_USER_GUIDE.md) (gates, Phase 2) |
 | Continue in a new chat without losing context | [CHAT_CONTEXT.md](CHAT_CONTEXT.md) |
 | See the rules Claude Code loads every session | [../CLAUDE.md](../CLAUDE.md) |
 | Know the rules (500 lines, numbers, secrets, gates) | [RULEBOOK.md](RULEBOOK.md) |

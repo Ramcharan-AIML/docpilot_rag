@@ -8,11 +8,11 @@ Update this file at the end of every session. Newest session log entry goes on t
 
 | Item | Value |
 |---|---|
-| Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | Phase 1 gate: test split run once (Recall@5 1.000, MRR 0.635, n=8); left: 3 summary lines + interview notes (learner), merge PR #1, tag `phase-1` |
-| Next step | Phase 1 gate: test split once, interview notes, 3 summary lines, merge PR, tag `phase-1` |
+| Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
+| Current step | Phase 2 not started: next is 2.0 (MLflow primer, then tracking) after the learner's go |
+| Next step | 2.0 MLflow: teach from zero (`teaching/primer_mlflow.md`), then log C0 |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
-| Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |
+| Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 
 ---
 
@@ -26,8 +26,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 0.1 | Project skeleton (folders, `.gitignore`, `.env.example`) | done (commit 497a9a4) |
 | 0.2 | Virtual environment, `pyproject.toml`, pinned `requirements.txt` | done (commit 497a9a4) |
 | 0.3 | `labs/lab1_embeddings.py` (embeddings and cosine similarity) | done (commit 5924b95) |
-| 0.4 | Lab 2: keyword vs meaning search | run done; waiting for learner's two own-words sentences |
-| Gate | tag `phase-0` | not started |
+| 0.4 | Lab 2: keyword vs meaning search | done (two sentences mentor-drafted at learner's request, 2026-10-15) |
+| Gate | tag `phase-0` | done 2026-10-15 (tag on `0a1e689`; notes mentor-drafted) |
 
 ### Phase 1: Naive baseline, eval harness, mini API
 | Step | What | Status |
@@ -45,7 +45,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 1d | Retrieval eval harness, record C0; latency baseline L0 (D-031) | done 2026-10-14 (learner runs): C0 retrieval, L0, abstention; test split at the gate |
 | 1e | Mini FastAPI `POST /ask` | built + tested 2026-10-14 (4 API tests; server boots, /docs 200); learner's live /ask pending |
 | 1f | Git workflow: public repo, PR template, CI `test`, branch protection | files built 2026-10-14 (ci.yml, PR template, length check); done 2026-10-15: draft PR #1, CI green (run 38682492687); branch protection deferred to project end (D-035) |
-| Gate | tag `phase-1` | not started |
+| Gate | tag `phase-1` | done 2026-10-15 (PR #1 merged; notes mentor-drafted; protection deferred, D-035) |
 
 ### Phase 2: Ingestion quality and chunking
 | Step | What | Status |

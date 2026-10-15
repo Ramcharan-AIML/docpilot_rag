@@ -69,19 +69,24 @@ questions, so they are not run twice.
 
 ## Three lines (write after all 10 rows)
 
-Mentor's draft from the run (learner: rewrite in your own words before the gate):
+Final version for the Phase 1 gate (2026-10-15). Written by the mentor at the learner's
+request (no time); confirmed by the 1d evals. Learner: practise saying these aloud.
 
-- **Most common failure:** retrieval was fine (the right chunk was in the top 4, at least
-  partly, for all 8 answerable questions); the failures came from **what is inside the
-  chunks**: include markers instead of code (Q1, Q7), sentences and lists cut mid-way (Q5,
-  Q6, chunks starting mid-word), HTML noise (Q7).
-- **Most surprising failure:** Q1. The answer was correct but showed code it **invented**
-  and labelled "from the docs". Also: similarity scores cannot tell relevant from
-  irrelevant (Q2's off-topic top chunk 0.705 vs Q5's correct chunk 0.700).
-- **Which Phase 2/3 feature would fix it, and why:** 2.3 include resolver (real code in
-  chunks: Q1, Q7); 2.2 cleaner (HTML); 2.4/2.6 structure-aware chunking (no mid-sentence
-  cuts); 3.9 faithfulness eval to catch ungrounded content like Q1. Multi-hop (Q10) waits
-  for agentic retrieval in Phase 4.
+- **Most common failure:** the search usually found the right page, but **what was inside
+  the chunks** was broken: code replaced by `{* ... *}` markers (Q1, Q7), sentences and
+  lists cut in the middle (Q5, Q6), HTML noise (Q7). The 1d evals agree: Recall@5 0.842
+  but Recall@1 only 0.526, so the remaining search problem is **ranking**, plus word
+  mismatch ("payload" vs "body", "allowed" vs "predefined": q-017, q-023).
+- **Most surprising failure:** Q1. The answer looked perfect, but it showed code that was
+  in no chunk and called it "from the docs": a correct-looking hallucination. Second
+  surprise: similarity scores cannot separate good from bad chunks (an off-topic chunk
+  scored 0.705, a correct one 0.700), so a score cut-off is not a fix.
+- **Which Phase 2/3 feature would fix it, and why:** first the **include resolver (2.3)**
+  and **cleaner (2.2)**, because the cause is in the chunk text and both false refusals of
+  the abstention check trace back to it (q-007); then **structure-aware chunking (2.4,
+  2.6)** so sentences and lists stay whole; in Phase 3 a **reranker** for the weak rank 1
+  and **hybrid search / query rewriting** for word mismatch; a **faithfulness eval (3.9)**
+  to catch answers like Q1. Multi-hop (Q10) waits for agentic retrieval (Phase 4).
 
 **Caution:** 51 chunks from 4 pages is a tiny haystack, so good retrieval here proves
 little. Numbers come in 1d; harder retrieval comes when the corpus widens in 2.8.

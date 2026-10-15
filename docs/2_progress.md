@@ -7,6 +7,21 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-15, session 13: Phase 0 and Phase 1 gates closed
+
+- Learner (no time) asked the mentor to write the remaining gate texts and complete
+  Phase 1, then move to Phase 2 "with my word". Mentor flagged that the gate asks for the
+  learner's own words; texts are written and **clearly marked as mentor drafts**.
+- Written: failure-log three lines (final, linked to the 1d numbers); `interview_notes.md`
+  Lab 2 two sentences + Phase 0 Q1-Q4 + Phase 1 Q1-Q3 (honest-status note at the top).
+- Phase 0 gate: Lab 2 sentences and notes done (mentor drafts); tag `phase-0` on
+  `0a1e689` (last Phase 0 commit, already on `main`).
+- Phase 1 gate checklist: pytest green (62, local + GitHub); failure log 10 rows + 3
+  lines; golden v0 passes validator; C0 dev + test run once; abstention 0.909; L0
+  recorded; versions pinned (D-026 to D-035); notes (mentor drafts); CI green; branch
+  protection deferred (private repo, D-035); PR #1 merged; tag `phase-1`.
+- Phase 2 not started yet: first step 2.0 is teaching MLflow from zero.
+
 ### 2026-10-15, session 12b: Phase 1 gate, test split run once (learner)
 
 - Prediction: not given (third run in a row without one).
