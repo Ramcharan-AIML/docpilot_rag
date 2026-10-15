@@ -1,4 +1,4 @@
-# Chat Context Handoff (as of 2026-10-08)
+# Chat Context Handoff (as of 2026-10-08, after scope change v1.1)
 
 Paste this file (or point a new chat at it) to continue without losing context.
 This is a **detailed summary** of the conversation, not a word-for-word transcript.
@@ -65,10 +65,12 @@ b08c713 docs: add rule book, architecture, phase plans, teaching notes, intervie
 b1fdee0 Merge branch 'docs/project-plan'  (into main, --no-ff)
 497a9a4 phase0: project skeleton, pinned dependencies, editable install   (phase-0-foundations)
 5924b95 phase0: lab 1 embeddings and cosine similarity                    (phase-0-foundations)
+0a1e689 phase0: lab 2 keyword vs meaning, user guide, CLAUDE.md, chat context
 ```
-Current branch: `phase-0-foundations`. Uncommitted: `labs/lab2_keyword_vs_meaning.py`,
-`docs/progress.md`, `docs/interview_notes.md` (learner added Phase 0 questions 3 and 4),
-`docs/USER_GUIDE.md`, `docs/CHAT_CONTEXT.md`, `CLAUDE.md`.
+As of 2026-10-08: `main`, `phase-0-foundations`, and `phase-1-baseline` all point at
+`0a1e689` (fast-forward). **No `phase-0` tag yet.** Current branch: `phase-1-baseline`.
+Uncommitted: the whole scope-change v1.1 doc set (section 4b: primers, Phase 7 rewrite,
+decisions D-017 to D-025, Rule 17, CLAUDE.md, this file). No Phase 1 code written yet.
 Branch plan: `phase-1-baseline`, `phase-2-chunking`, `phase-3-hybrid-retrieval`,
 `phase-4-langgraph-agents`, `phase-5-tools-hitl-mcp`, `phase-6-guardrails`,
 `phase-7-production`; sub-branches `feat/`, `fix/`, `exp/`, `docs/`.
@@ -112,6 +114,33 @@ questions are not enough to judge it. The lab did not show meaning search failin
 
 ---
 
+## 4b. Scope change v1.1 (2026-10-08)
+
+Learner added: AWS (EC2, S3, ECR, IAM, CloudWatch, VPC) on the free plan as the main target,
+Oracle as fallback; Terraform (portable AWS/Oracle); MinIO + boto3; k3s planned in Phase 7;
+EKS short exercise; MLflow from Phase 2 (re-log C0, feeds ABLATION.md; explain vs tracing);
+RAG monitoring in Phase 7; stronger Git workflow; and child-level teaching of everything,
+especially evals and guardrails (learner knows none of these technologies).
+
+Web checks (2026-10-08): AWS free plan USD 100 + up to 100 credits, max 6 months, usage from
+credits, cannot bill beyond, suspension then deletion after 90 days, card usually not needed,
+free-plan types t3/t4g micro+small, c7i-flex.large, m7i-flex.large; EKS USD 0.10/h no free
+tier; public IPv4 USD 0.005/h; MinIO community archived Apr 2026, images/binaries removed
+Sep 2026; MLflow 3 has GenAI tracing; Terraform BSL, OpenTofu MPL; k3s 2 GB RAM minimum.
+
+Learner decisions (asked via questions): **SeaweedFS** replaces MinIO; **AWS account at start
+of Phase 7**; **Oracle long-term**, move before month 6.
+
+Docs produced: 10 primers in `docs/teaching/primer_*.md` (evals, guardrails, git workflow,
+mlflow, object storage, aws + 2_, terraform, kubernetes, rag monitoring);
+`architecture/3_architecture.md`; plan steps 1f, 2.0, 2.10, 3.1b; Phase 7 rewritten as
+7.1-7.19 across `phase_7_production.md` + `2_`/`3_`/`4_`; `interview/2_phase_7_interview.md`
+and new questions in phase 1-3 interview files; decisions D-017 to D-025; Rule 17 (cloud cost
+safety) and updated Rules 2, 12, 14; `PROJECT_DOCUMENTATION.md` v1.1 with changelog;
+progress checklist updated. Total estimate now 10-12 weeks.
+
+---
+
 ## 5. Open items and pending answers
 
 1. **Learner homework:** two own-words sentences for Lab 2; Phase 0 interview notes
@@ -125,6 +154,9 @@ questions are not enough to judge it. The lab did not show meaning search failin
    `git tag phase-0`.
 4. **Before Phase 1:** learner needs a free Groq key (or other free provider); verify the
    current free models and limits on build day.
+5. **Phase 1 step 1f:** verify GitHub branch-protection terms for free accounts (public repo);
+   do a secrets check of git history before making the repo public.
+6. **Do NOT create the AWS account before Phase 7** (6-month clock).
 
 ---
 

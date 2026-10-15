@@ -248,4 +248,5 @@ type down the plain path.
 - [ ] RAGAS/DeepEval vs own judge comparison recorded
 - [ ] written decision: where the agentic path is used and where it is not
 - [ ] versions pinned (langgraph, ragas/deepeval), verified dates
-- [ ] interview notes; `git tag phase-4`
+- [ ] comparison runs logged in MLflow experiment `docpilot-agents` (judge model as a param)
+- [ ] interview notes; merged via PR (CI green); tag `phase-4` pushed

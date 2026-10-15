@@ -2,6 +2,9 @@
 
 Plan file: `docs/implementation_plan/phase_2_chunking.md`
 
+**New in this phase:** MLflow experiment tracking (step 2.0, read `primer_mlflow.md`) and the
+CI eval gate (step 2.10, `primer_evals.md` section 8 and `primer_git_workflow.md` section 8).
+
 ---
 
 ## 1. "Garbage in, garbage out" for RAG

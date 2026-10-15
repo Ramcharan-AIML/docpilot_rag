@@ -1,6 +1,7 @@
 # Phase 2: Ingestion Quality and Chunking Experiments (Implementation Plan)
 
-**Goal of the phase:** fix the data problems found in Phase 1, then compare six chunking
+**Goal of the phase:** fix the data problems found in Phase 1, widen the corpus to three
+domains (docs, learning material, interview prep; D-030), then compare the chunking
 strategies on the same eval and pick a default **with evidence**.
 
 **Teaching companion:** `docs/teaching/phase_2_chunking.md`
@@ -18,6 +19,31 @@ loader ─▶ cleaner ─▶ includes ─▶ blocks ─▶ metadata ─▶ chunk
                                                          │
                                          one Qdrant collection per strategy and size
 ```
+
+---
+
+## Step 2.0: MLflow experiment tracking (decision D-022)
+
+**Goal:** every eval run from now on is recorded automatically in a searchable "lab
+notebook", and `evals/ABLATION.md` is generated from it. Teaching: `teaching/primer_mlflow.md`.
+
+1. Dependency: `mlflow` (VERIFY version on PyPI; consider `mlflow-skinny` if the full package
+   is heavy; decision log entry; pin in `requirements-dev.txt`, since production does not
+   need it).
+2. `.gitignore`: add `mlflow.db`, `mlartifacts/`, `mlruns/`.
+3. **File `evals/tracking.py`:** `log_eval_run(config_id, params, metrics, results_path, tags)`
+   (sketch in the primer). Tracking URI from `config.MLFLOW_TRACKING_URI`
+   (default `sqlite:///mlflow.db`).
+4. `run_retrieval_eval.py` calls it at the end of every run. Params always include:
+   `collection`, `strategy`, `chunk_size`, `overlap`, `embedding_model`, `model_revision`,
+   `top_k`, `min_overlap`, `golden_version`, `split`. Tags: `config_id`, `git_commit`,
+   `ablation` (`true` for runs that belong in the table).
+5. **Re-log C0:** `scripts/relog_results_to_mlflow.py` reads `evals/results/*C0*.json` and
+   logs it, so the baseline sits in the same notebook. Values are copied, never retyped.
+6. Run `mlflow ui` and open `http://localhost:5000`. Sort runs by `recall_at_5`.
+
+**Done when:** C0 appears in the MLflow UI with params, metrics, and the results JSON
+attached, and its numbers equal the JSON exactly.
 
 ---
 
@@ -189,6 +215,7 @@ table stays one block; heading path is `["A", "B"]` under `## B` inside `# A`.
 
 | Field | How we get it |
 |---|---|
+| `domain` | `docs`, `learning` or `interview` (D-030), from the corpus register entry |
 | `technology` | first folder under `data/docs/` (`fastapi`, `docker`, ...) |
 | `doc_type` | path rules: `tutorial/` -> tutorial, `reference/` -> reference, else guide |
 | `version` | from a per-technology setting in the download script (docs version downloaded) |
@@ -200,7 +227,7 @@ The `Chunk` dataclass in `chunkers/base.py` grows these fields (see architecture
 
 ---
 
-## Step 2.6: The six chunking strategies
+## Step 2.6: The chunking strategies (six general + Q&A pairs for interview files)
 
 All live in `src/docpilot/ingestion/chunkers/`. Each exposes the same function shape:
 
@@ -226,6 +253,7 @@ embedded. Test sizes 200, 400, and (only if within the limit) larger.
 | `semantic.py` | 3 Semantic | Split into sentences (blocks for code/tables); embed each; cosine between neighbours; start a new chunk where similarity is below the Nth percentile; cap max size | percentile, max size |
 | `parent_child.py` | 4 Parent-child | Parent = one section (heading + its blocks). Child = small pieces of the parent. Index **children**; store parents in `data/processed/parents_<collection>.json`; search children, return parent text | child size, parent max size |
 | `hierarchical.py` | 5 Hierarchical | Walk blocks; group blocks under the same heading until size is reached; **never split code or table blocks**; prepend `heading_path` to chunk text ("FastAPI > Query Parameters > Optional") | size, prefix on/off |
+| `qa_pairs.py` | 7 Q&A pairs (D-030) | For interview-prep files (group C): one chunk = one question **plus** its whole answer, found by headings like `### Q3.` or `**Q:**`; never split a pair; long answers keep the question as a prefix on every piece | pattern, max size |
 | `contextual.py` | 6 Contextual | Take chunks from the best of 2-5; for each, LLM writes 1-2 sentences placing it in its document; prepend before embedding; keep `display_text` without context | base strategy, prompt version, LLM model |
 
 ### 2.6.1 Recursive sketch
@@ -282,9 +310,20 @@ the **parent** text (the text the LLM will actually see), as the doc requires (s
 
 ## Step 2.8: More corpora and golden set v1
 
-1. `scripts/doc_sources.py`: a plain Python dict of technology -> list of URLs + license
-   link + version. Add Pydantic and Docker first, then Qdrant, LangGraph, Redis.
-2. Grow golden set to about 60 questions; more code, table, and comparison questions.
+1. `scripts/doc_sources.py`: the **corpus register** (D-030), a plain Python list of
+   entries: `domain` (docs / learning / interview), `technology` or topic, URLs or local
+   path, licence + licence link, version or commit, date checked, and `public` or
+   `local_only`. A test fails if any entry has no licence or no visibility flag.
+   - **Group A docs:** Pydantic and Docker first, then Qdrant, LangChain, LangGraph, Redis.
+   - **Group B learning material:** only open-licence sources, each licence checked on the
+     day (candidates: open textbooks, library user guides, free course notes). Start with
+     2-3 sources on embeddings, RAG and evals.
+   - **Group C interview prep:** the learner's own `docs/interview/*.md` (public, own work)
+     plus any open-licence Q&A. Anything else the learner adds is `local_only`: indexed on
+     the laptop only, never committed, never in the public deployment.
+2. Grow golden set to about 60 questions; more code, table, and comparison questions, and
+   **at least 10 per domain** (concept explanations for B, interview questions for C, plus
+   out-of-scope questions per domain for abstention). Each question records its `domain`.
 3. Bump `evals/golden/VERSION` (e.g. `v1`). **Every result JSON stores the golden version.**
 4. Re-run C0 on golden v1. Rows in one ablation table must all use the same golden version,
    otherwise you compare different exams.
@@ -295,7 +334,8 @@ the **parent** text (the text the LLM will actually see), as the doc requires (s
 
 **Files:** `scripts/02_ingest.py` (gains `--strategy`, `--size`, `--collection`),
 `scripts/run_chunking_matrix.py` (loops strategies x sizes, ingests, evaluates),
-`evals/make_ablation.py` (results JSON -> `evals/ABLATION.md`).
+`evals/make_ablation.py` (MLflow runs tagged `ablation=true` -> `evals/ABLATION.md`;
+falls back to the results JSON files if MLflow is unavailable).
 
 ```powershell
 python scripts/02_ingest.py --strategy hierarchical --size 400 --collection docs_hier400_bgesmall_v1
@@ -309,9 +349,32 @@ Output tables in `ABLATION.md`:
 2. **Per-type table:** rows = configs, columns = question types (Recall@5). Code questions
    may favour a different strategy than prose. A different winner per type is a finding,
    not a failure.
+3. **Per-domain table (D-030):** rows = configs, columns = docs / learning / interview
+   (Recall@5, MRR). Q&A-pair chunking is expected to matter for interview files; measure it,
+   do not assume it. A per-domain winner may justify different strategies per domain.
 
 Choosing the winner: best dev Recall@5 and MRR; ties broken by simplicity and ingest cost.
 Then run the **test** split once for the winner and C0. Record both.
+
+---
+
+## Step 2.10: CI retrieval eval gate (decisions D-011, D-024)
+
+**Goal:** a pull request that makes retrieval worse cannot be merged.
+
+1. **Fixture corpus** `tests/fixtures/corpus/`: 5 to 10 short pages **we write ourselves**
+   (so licensing is never an issue), covering code blocks, a table, exact identifiers, and
+   prose. Plus `evals/golden/ci.jsonl`: about 15 questions on that corpus.
+2. **`evals/check_gate.py`**: compares a run's Recall@5 and MRR with `evals/baseline_ci.json`;
+   exits 1 if either is below `baseline - tolerance` (tolerance recorded with its reason).
+3. **New CI job `eval-gate`** in `.github/workflows/ci.yml`: install -> ingest the fixture
+   corpus into **in-memory / local-mode** Qdrant (no Docker service needed yet) -> run the
+   retrieval eval on `ci.jsonl` -> `check_gate.py`. No LLM calls, no secrets.
+4. Branch protection: add `ci / eval-gate` as a required check on `main` and the phase branch.
+5. **Prove it:** a PR that removes the BGE query prefix (or swaps to a broken chunk size)
+   must fail the gate. Screenshot it. Close the PR.
+6. Updating the baseline is a deliberate act: a PR that changes `baseline_ci.json` must say
+   why in its description (an improvement was kept).
 
 ---
 
@@ -320,8 +383,10 @@ Then run the **test** split once for the winner and C0. Record both.
 - [ ] tests for cleaner, includes, blocks, each chunker (code blocks never split)
 - [ ] C0+clean and C0+clean+incl rows recorded (what data quality alone did)
 - [ ] C1 to C5 rows (with sizes) on golden v1, dev; winner + C0 on test
-- [ ] per-type breakdown table
+- [ ] per-type and per-domain breakdown tables; corpus register complete (licence + visibility)
 - [ ] chosen default strategy written in `decisions.md` with the numbers
 - [ ] contextual chunking cost recorded (LLM calls, minutes)
 - [ ] versions pinned (Docling, any tokenizer extras), licenses linked for each corpus
-- [ ] interview notes written; `git tag phase-2`
+- [ ] every run logged in MLflow (C0 re-logged); `ABLATION.md` generated, not typed
+- [ ] CI `eval-gate` required on `main`; failing-gate PR demonstrated
+- [ ] interview notes written; merged to `main` via PR; tag `phase-2` pushed

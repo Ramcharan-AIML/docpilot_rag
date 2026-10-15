@@ -52,6 +52,6 @@ after wasted steps."
 
 ### Q6. "Kubernetes or Compose for this project?"
 
-**Model answer:** "Compose: one VM, few services, few users. Kubernetes pays off with many
-nodes, autoscaling, and rolling updates across replicas. I [tried k3s to learn Deployments,
-Services, Ingress, Secrets / did not], and would move when one VM is no longer enough."
+**Model answer:** "I used both: Compose for local development, k3s for production on one VM
+(rolling updates gated by readiness probes, restarts, CronJobs). Kubernetes pays off fully
+with many nodes, autoscaling, and teams. Details are in the Phase 7 answers."

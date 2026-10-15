@@ -225,10 +225,17 @@ evals/
 ├── run_generation_eval.py            faithfulness, relevancy, abstention (judge LLM)
 ├── run_agent_eval.py                 routing accuracy, tool-call correctness
 ├── run_redteam_eval.py               attack success, false-block rate
-├── make_ablation.py                  results/*.json -> ABLATION.md
+├── tracking.py                       log every run to MLflow (Phase 2+)
+├── check_gate.py                     CI gate: fail if below baseline - tolerance
+├── make_ablation.py                  MLflow runs (ablation=true) -> ABLATION.md
 ├── results/                          one JSON per run (config, split, commit, date, scores)
 └── ABLATION.md                       generated table, real numbers only
 ```
+
+**MLflow** (Phase 2+) is the lab notebook over all of this: every eval run logs params
+(strategy, sizes, models, golden version), metrics, tags (config id, commit), and the result
+JSON as an artifact. Offline evals answer "which recipe is best?"; runtime tracing (section
+14) answers "what happened in this one request?".
 
 | Layer | Deterministic? | Runs where |
 |---|---|---|
@@ -247,28 +254,34 @@ evals/
 | Logs | JSON lines to stdout (`observability/logging.py`) | `{"request_id": "...", "node": "grade", "ms": 412}` |
 | Traces | Tracing tool (D-009) | one tree per request: node -> LLM call -> tokens |
 | Metrics | Prometheus client (`observability/metrics.py`) | `docpilot_request_seconds` histogram |
-| Dashboards | Grafana | p50/p95 latency, error rate, cache hit rate, fallback count, review queue |
+| Dashboards | Grafana | traffic, quality, safety, cost, drift rows |
+| RAG monitoring | `observability/rag_metrics.py`, `groundedness_sampler.py`, `drift_job.py` | retrieval top-score histogram, sampled groundedness, refusal rate, guard blocks, topic drift |
+| Machine monitoring | CloudWatch (AWS only): agent, logs (7-day retention), alarms | status check failed, CPU, disk |
+| Experiments (offline) | MLflow | eval runs compared across configs |
 
-Logs never contain raw PII (masked before logging).
+Logs never contain raw PII (masked before logging). Drift jobs store numbers, not questions.
 
 ---
 
-## 15. Deployment topology
+## 15. Deployment topology (summary; full detail in [3_architecture.md](3_architecture.md))
 
 ```text
-GitHub ──push──▶ Actions: lint ─▶ tests ─▶ retrieval eval gate ─▶ build arm64 image ─▶ GHCR
-                                                                                      │
-                                                                         ssh + compose pull
-                                                                                      ▼
-                         ┌───────── Oracle Cloud Always Free ARM VM ──────────┐
- user ── HTTPS ─▶ DuckDNS ─▶ caddy ─▶ api ─▶ qdrant, redis, postgres         │
-                         │            prometheus ─▶ grafana                    │
-                         └─────────────────────────────────────────────────────┘
- Fallback: run Compose on the laptop + Cloudflare Tunnel.  Demo UI: Hugging Face Space.
+GitHub PR ─▶ CI: test, eval-gate, audit, terraform-check ─▶ merge to main (protected)
+                                                              │
+               deploy.yml: OIDC role ─▶ build amd64+arm64 ─▶ ECR (+ GHCR) ─▶ SSM deploy.sh
+                                                                               │
+ ┌──────────── AWS (free plan, Phase 7; all created by Terraform) ────────────▼──────┐
+ │ VPC ─ public subnet ─ security group (80/443 only, no SSH)                         │
+ │ EC2 m7i-flex.large (VERIFY) running k3s: ingress ─▶ api ─▶ qdrant, redis, postgres │
+ │                                           prometheus ─▶ grafana                     │
+ │ S3 (raw docs, snapshots, tf state)   CloudWatch (logs, alarms)   Budgets (alerts)   │
+ └──────────────────────────────────────────────────────────────────────────────────────┘
+ Month 5: same Terraform structure + boot script + manifests ─▶ Oracle Always Free (ARM).
+ Local dev: Docker Compose with SeaweedFS (S3 API) and MLflow.  Demo UI: Hugging Face Space.
 ```
 
-ARM note: the free VM is `arm64`. Every image and Python wheel (torch, qdrant, presidio)
-must support it. We check this in Phase 3 when Docker arrives, not on deploy day.
+Architecture note: AWS `m7i-flex.large` is amd64, Oracle A1 is arm64, so every image is built
+for both (Docker Buildx). Wheel/image support for both is checked in Phase 3.
 
 ---
 
@@ -278,12 +291,15 @@ must support it. We check this in Phase 3 when Docker arrives, not on deploy day
 |---|---|---|
 | LLM provider 429 | Slightly slower answer | Fallback chain + cooldown |
 | All LLMs down | `503` with a clear message | Health check marks not-ready |
-| Qdrant down | `503` | `/ready` fails; Compose restarts it |
+| Qdrant down | `503` | `/ready` fails; Kubernetes (or Compose locally) restarts it |
 | Redis down | Answers still work, no cache | Cache errors are logged, not fatal |
 | Retrieval finds nothing | "I could not find this in the documents." | Abstention policy |
 | Low confidence | `pending_review` | Human-in-the-loop |
 | Injection attempt | `blocked` | Guardrails |
 | Loop runaway | `not_found` after budget | Loop caps and call budget |
+| Bad deploy (new image never ready) | no change: old pod keeps serving | readiness probe + rollout undo in `deploy.sh` |
+| EC2 instance fails | site down until replaced | CloudWatch alarm email; `terraform apply` recreates it; data restored from S3 snapshot |
+| AWS credits / free plan running out | (nothing yet) | budget alerts; Oracle move at month 5 |
 
 ---
 
@@ -293,18 +309,23 @@ must support it. We check this in Phase 3 when Docker arrives, not on deploy day
 |---|---|
 | 0 | venv, labs, embeddings understood |
 | 1 | Flat `src/docpilot/` modules, local Qdrant file, one LLM, retrieval eval, C0, mini `/ask` |
-| 2 | `ingestion/` package, cleaner, include resolver, 6 chunkers, metadata, C1-C5 |
-| 3 | Qdrant in Docker, sparse + hybrid + rerank, query transforms, filters, generation evals |
+| 1 | + GitHub repo public, PR workflow, CI `test`, branch protection on `main` |
+| 2 | `ingestion/` package, cleaner, include resolver, 6 chunkers, metadata, C1-C5, MLflow, CI eval gate |
+| 3 | Docker Compose (Qdrant, SeaweedFS, MLflow), boto3 storage, hybrid + rerank, transforms, filters, generation evals |
 | 4 | Agent graph (LangGraph) with caps; agentic vs plain comparison |
 | 5 | Supervisor, tools, DuckDB tables, MCP server, HITL with persistent checkpoints |
 | 6 | Guard layers, red-team set, safety table |
-| 7 | Full API, Redis, Postgres, gateway, tracing, metrics, Docker image, CI/CD, public URL |
+| 7 | Full API, Redis, Postgres, gateway, tracing, metrics + RAG monitoring, multi-arch images, CI/CD to ECR, Terraform AWS infra, k3s on EC2, EKS exercise, public URL; Oracle env ready |
 
 ## 18. Deliberately left out
 
 - Fine-tuning (non-goal).
-- Kubernetes as the main deployment (k3s is optional learning only).
+- A managed Kubernetes cluster (EKS) for production: a short exercise only, because its
+  control plane costs money every hour (k3s on one VM is the production choice).
+- A NAT gateway and private subnets (cost; see 3_architecture.md).
 - User accounts and billing.
 - A polished frontend (Gradio/Streamlit page is enough).
 - Running user-supplied code (code helper does syntax checks only, unless a sandbox is
   justified and recorded in the decision log).
+
+Continued in [3_architecture.md](3_architecture.md)

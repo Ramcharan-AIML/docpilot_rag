@@ -2,7 +2,8 @@
 
 Plan file: `docs/implementation_plan/phase_6_guardrails.md`
 
-You start this phase with zero knowledge of guardrails. That is fine. Read sections 1 to 4
+You start this phase with zero knowledge of guardrails. That is fine. **First read
+`primer_guardrails.md`** (the library-robot story, child-level), then sections 1 to 4 here
 before writing any code.
 
 ---

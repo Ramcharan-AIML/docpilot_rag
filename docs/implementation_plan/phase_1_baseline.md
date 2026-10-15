@@ -44,6 +44,8 @@ QDRANT_PATH = PROJECT_ROOT / "qdrant_local"   # local-mode Qdrant stores files h
 
 # --- embeddings (decision D-002) ---
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+# Fixed 2026-10-09: the plan forgot the pinned revision the labs use (D-002, D-026).
+EMBEDDING_REVISION = "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
 EMBEDDING_DIM = 384
 # BGE v1.5 was trained with this instruction on the QUESTION side only.
 # VERIFY: exact text on the model card on build day.
@@ -104,8 +106,17 @@ def load_documents(folder: Path) -> list[Document]:
 Why sorted: the same input must give the same chunks in the same order every run, or eval
 numbers drift for no reason.
 
+**Fixed while building (2026-10-09), see `src/docpilot/loader.py`:**
+1. A missing folder silently returned `[]` (`rglob` on a missing path yields nothing), so
+   ingest would build an empty index without complaint. Now raises `FileNotFoundError`.
+2. A *folder* named like `old.md` passed the suffix check and crashed `read_text`. Now
+   `path.is_file()` is checked first.
+3. `sorted(Path)` is case-insensitive on Windows and case-sensitive on Linux, so the order
+   could differ between the laptop and CI. Now sorts by the `source` string.
+
 **Test:** `tests/test_loader.py` writes two small files into pytest's `tmp_path` and checks
-both come back with the right `source`, and that a `.png` file is ignored.
+both come back with the right `source`, and that a `.png` file is ignored. Added for the
+fixes: a folder named `old.md` is skipped; a missing folder raises `FileNotFoundError`.
 
 ---
 
@@ -159,6 +170,14 @@ def fixed_size_chunks(text: str, source: str, chunk_size: int = 800,
 4. `overlap >= chunk_size` raises `ValueError`
 5. chunk numbers are 0, 1, 2 ... with no gaps
 
+**Changed while building (2026-10-10), see `src/docpilot/chunker.py`:**
+- Defaults now come from `config.CHUNK_SIZE` / `config.CHUNK_OVERLAP` instead of a second
+  copy of `800` / `100` (two copies drift apart; D-005 says one place for settings).
+- Extra test: gluing chunk 0 + every later chunk minus its first `overlap` characters gives
+  the original text back (proves nothing is lost or duplicated). Bad-settings test also
+  covers `chunk_size=0` and negative overlap. Neighbour test uses `itertools.pairwise`
+  (ruff B905 rejects `zip(chunks, chunks[1:])` without `strict`).
+
 **Run:** `pytest tests/test_chunker.py -q`
 
 ---
@@ -201,6 +220,20 @@ def embed_query(question: str) -> list[float]:
 
 Why `lru_cache` instead of a global variable: same effect (load once), but no mutable global
 and easy to reset in tests with `get_model.cache_clear()`.
+
+**Changed while building (2026-10-12), see `src/docpilot/embedder.py`:**
+- **Bug fixed:** the plan loaded the model without `revision=`, so Phase 1 would use
+  whatever files Hugging Face serves today, not the pinned ones the labs use. Now
+  `revision=config.EMBEDDING_REVISION`.
+- `embed_documents([])` returns `[]` at once (no model load for nothing).
+- **Checked, not used:** sentence-transformers 6.1.0 has `encode_query()`, but this
+  model's stored prompts are `{'query': '', 'document': ''}` (empty), so it would silently
+  skip the BGE prefix. The prefix stays explicit in our code.
+- Installed API: `encode(inputs, prompt_name, prompt, batch_size, ..., normalize_embeddings,
+  ...)`; `max_seq_length` 512; device cpu.
+- Added `tests/test_embedder.py` (shapes, length 1, empty list, model cached). It loads
+  the real model, so the full suite now takes about 16 s. **For step 1f CI:** the runner
+  must download about 130 MB or cache it; decide there (e.g. cache `~/.cache/huggingface`).
 
 ---
 
@@ -264,6 +297,17 @@ def search(client: QdrantClient, name: str, query_vector: list[float],
     return hits
 ```
 
+**Changed while building (2026-10-12), see `src/docpilot/vector_store.py`:**
+- **Bug found by a test:** in local mode (1.19.1, Windows), delete + create with the same
+  name brings the old points back, so a "fresh" collection was not fresh. Re-ingesting with
+  new chunk settings in Phase 2 would have mixed old and new chunks and corrupted the
+  numbers. Fix: delete all points with an empty filter, then fail if any remain (D-027).
+- `add_chunks([])` returns at once; `search` copes with an empty payload.
+- API checked on the installed version: `client.search()` is gone; `query_points` returns
+  `QueryResponse.points`, already sorted best first. Second client on the same folder:
+  `RuntimeError` (D-003).
+- Added `tests/test_vector_store.py`: 5 tests with 4-number vectors, no model, about 1.5 s.
+
 ---
 
 ## Step 1a.6: `src/docpilot/llm.py`
@@ -308,6 +352,18 @@ def chat(client: OpenAI, system: str, user: str, model: str = config.LLM_MODEL) 
     return response.choices[0].message.content or ""
 ```
 
+**Changed while building (2026-10-12), see `src/docpilot/llm.py` and D-028:**
+- Model chosen: `openai/gpt-oss-120b` on Groq. The account's `/models` list has no Llama
+  3.x, although the docs page lists them. gpt-oss is a reasoning model: thinking comes back
+  in `message.reasoning`, the answer in `message.content`.
+- **Bug fixed:** `content or ""` turned an empty answer into `""`. A reasoning model can
+  spend the default 1024-token budget thinking and return no answer; evals would score it
+  as a normal wrong answer. Now `chat()` raises with the `finish_reason`.
+- `provider` and `model` default to `None` and read `config` at call time (default
+  arguments are frozen at import time, which breaks tests and late `.env` changes).
+- Unknown provider -> `ValueError` listing the options (was a bare `KeyError`).
+- `tests/test_llm.py`: 5 tests with a fake client (no network, no quota spent).
+
 ---
 
 ## Step 1a.7: `src/docpilot/rag.py`
@@ -344,6 +400,13 @@ def ask(question: str, qdrant_client, llm_client) -> dict:
     return {"answer": answer, "sources": hits}
 ```
 
+**Changed while building (2026-10-12), see `src/docpilot/rag.py`:**
+- No hits (empty index) -> return `NOT_FOUND_PHRASE` without calling the LLM (no wasted
+  request, no answer from an empty context).
+- Type hints for `qdrant_client: QdrantClient` and `llm_client: OpenAI`.
+- `tests/test_rag.py`: 4 tests with monkeypatched `embed_query`/`search`/`chat`: context
+  numbering, prompt layout, empty-index shortcut, NOT_FOUND phrase present in the prompt.
+
 ---
 
 ## Step 1a.8: scripts
@@ -357,5 +420,14 @@ def ask(question: str, qdrant_client, llm_client) -> dict:
 **Done when:** `03_ask.py` prints an answer with `[n]` citations, and the printed sources
 match the citations. The doc reports about 51 chunks at 800/100 from four pages; record the
 count you actually get.
+
+**Built (2026-10-12):**
+- `01_download_docs.py`: pages `first-steps`, `path-params`, `query-params`, `body`, pinned
+  to commit `d62354434b2e` (D-029); `write_bytes` keeps line endings identical on all OSes.
+- `02_ingest.py`: exits with a clear message if no docs (the loader returns `[]`, the
+  script decides that is fatal); prints per-document chunk counts, total, stored points
+  and time; closes the Qdrant client in `finally` (releases the D-003 folder lock).
+- `03_ask.py`: exits if the collection does not exist; prints source, chunk number, score
+  and a 200-character one-line preview per citation number.
 
 Continued in [2_phase_1_baseline.md](2_phase_1_baseline.md)

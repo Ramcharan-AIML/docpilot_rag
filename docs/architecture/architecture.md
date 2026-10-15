@@ -33,7 +33,12 @@ Two jobs happen at different times:
 - **Write path (offline, rare):** read docs, cut into chunks, turn into vectors, store.
   Runs when docs change. No user is waiting.
 - **Read path (online, every question):** a user is waiting, so it must be fast, safe,
-  and capped.
+  and capped. Every stage is timed (`timings_ms`, D-031) so we know where the time goes.
+
+**What goes in (D-030):** three corpus groups, each chunk tagged with a `domain`:
+official technical docs, open-licence AI/ML learning material, and interview-prep notes
+(Q&A pairs). Non-open sources the learner adds are indexed locally only (`local_only`),
+never in the public deployment.
 
 Keeping these separate is a key design choice: slow, expensive work (parsing, embedding,
 contextual chunking) happens once in the write path, never while a user waits.
@@ -57,8 +62,8 @@ contextual chunking) happens once in the write path, never while a user waits.
                            │ download      │ code, CI, images
                            ▼               │
                ┌──────────────────┐  ┌─────┴───────────────┐
-               │ Official docs    │  │ GitHub (Actions,    │
-               │ websites / repos │  │ Container Registry) │
+               │ Official docs    │  │ GitHub (Actions)    │
+               │ websites / repos │  │ + AWS ECR / S3      │
                └──────────────────┘  └─────────────────────┘
 ```
 
@@ -102,6 +107,8 @@ In production everything runs as Docker containers started by one `docker-compos
                │ :3000      │
                └────────────┘
      optional: ollama :11434 (local LLM fallback), mcp server (stdio or HTTP)
+     local dev only: seaweedfs :8333 (S3 API), mlflow :5000 (experiments)
+     on AWS: the same services run as Kubernetes (k3s) objects; HTTPS by the k3s ingress
 ```
 
 | Container | What it holds | Why this one | Why not the alternative |
@@ -113,7 +120,9 @@ In production everything runs as Docker containers started by one `docker-compos
 | `postgres` | LangGraph checkpoints, review queue, API key hashes | Durable, handles many writers | SQLite: fine in dev, weak with concurrent writers |
 | `prometheus` | Time series of metrics | Industry standard pull model | Pushing to a SaaS: paid or limited |
 | `grafana` | Dashboards | Free, works with Prometheus | Building our own charts: waste of time |
-| tracing | Per-request step recordings | See D-009 (Langfuse vs Phoenix) | Print statements: not searchable |
+| tracing | Per-request step recordings | See D-009 (Langfuse vs Phoenix vs MLflow tracing) | Print statements: not searchable |
+| `seaweedfs` (local) | Raw docs, snapshots, MLflow artifacts via the S3 API | Same boto3 code as real S3 (D-019) | MinIO: community edition archived in 2026 |
+| `mlflow` (dev) | Eval runs: params, metrics, artifacts | Compare 50+ experiments (D-022) | JSON files only: no search, no UI |
 
 **Ports rule:** only Caddy is exposed to the internet (443, and 80 for the certificate
 challenge). Every other port stays on the private Docker network.
@@ -199,10 +208,15 @@ src/docpilot/
 │   ├── routes_health.py       # /health, /ready, /metrics
 │   ├── auth.py                # API key check
 │   └── rate_limit.py          # Redis counters
+├── storage/
+│   └── object_store.py        # boto3: SeaweedFS locally, S3 on AWS (endpoint switch)   (Phase 3)
 ├── observability/                                                              (Phase 7)
 │   ├── logging.py             # JSON logs with request id
 │   ├── metrics.py             # Prometheus counters / histograms
-│   └── tracing.py             # tracing tool wrapper
+│   ├── tracing.py             # tracing tool wrapper
+│   ├── rag_metrics.py         # retrieval scores, answers by status, guard blocks
+│   ├── groundedness_sampler.py# judge ~5% of live answers
+│   └── drift_job.py           # topic drift (numbers only)
 └── mcp_server/
     └── server.py              # search_docs, get_doc_section (Phase 5)
 ```
@@ -345,7 +359,8 @@ Entry point: `scripts/02_ingest.py --strategy hierarchical --collection docs_hie
 class Document:
     text: str            # full cleaned text of one file
     source: str          # e.g. "fastapi/query_params.md"
-    technology: str      # "fastapi", "docker", ...
+    domain: str          # "docs" | "learning" | "interview" (D-030, from Phase 2)
+    technology: str      # "fastapi", "docker", ... or a topic for learning material
     version: str | None  # docs version if known
     doc_type: str        # "tutorial", "reference", "guide"
 
@@ -397,5 +412,9 @@ compares them fairly. Phase 1 uses the name `docpilot_naive` from the doc.
 Defined in `PROJECT_DOCUMENTATION.md` section 14.2: `id`, `question`, `type`,
 `should_answer`, `reference_answer`, `evidence` (doc + verbatim snippet), `difficulty`,
 `split`, `notes`.
+
+Outside `src/`: `infra/` (Terraform, Phase 7), `deploy/k8s/` (Kubernetes manifests),
+`deploy/` (Prometheus, Grafana, Caddyfile), `.github/workflows/` (CI/CD). See
+[3_architecture.md](3_architecture.md).
 
 Continued in [2_architecture.md](2_architecture.md)

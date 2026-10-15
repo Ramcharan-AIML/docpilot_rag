@@ -6,6 +6,10 @@ Continues from [phase_7_production.md](phase_7_production.md)
 
 ## 9. Observability: logs, metrics, traces
 
+For AI-specific monitoring (retrieval scores, sampled groundedness, refusal rate, topic
+drift) read `primer_rag_monitoring.md`; for experiment tracking vs tracing read
+`primer_mlflow.md` section 5.
+
 **Like I'm five:** a car dashboard. **Logs** are the trip diary ("10:02 turned left").
 **Metrics** are the gauges (speed, fuel, temperature over time). **Traces** are a dashcam
 recording of one specific trip, step by step.
@@ -87,8 +91,11 @@ the robot runs the checklist. If anything fails, the change does not ship.
 
 - **CI (continuous integration):** on every push/PR: lint, format check, tests, 500-line
   rule, dependency audit, **retrieval eval gate**.
-- **CD (continuous delivery/deployment):** after CI passes on `main`: build the image, push
-  to the registry, deploy to the VM, smoke-test.
+- **CD (continuous delivery/deployment):** after CI passes on `main`: build the images
+  (amd64 + arm64), push to AWS ECR (+ GHCR), deploy to the EC2 server through AWS SSM,
+  smoke-test.
+- **No AWS keys in GitHub:** the workflow uses **OIDC**: GitHub proves who it is and AWS
+  hands back credentials that expire within the hour (see `primer_aws.md` section 4).
 
 **The eval gate is what makes this project special.** Most portfolios test code. Ours tests
 **AI quality**: if a change drops Recall@5 or MRR below `baseline - tolerance`, the build
@@ -98,8 +105,12 @@ fails. It uses only deterministic retrieval metrics, so it is free and reliable 
 **Why a tolerance:** tiny noise (e.g. a library update changing float rounding) should not
 block every PR. The tolerance is a setting with a recorded reason.
 
-**Secrets in CI:** stored in GitHub Secrets, injected as environment variables, never
-printed. Pull requests from forks do not get secrets (a security feature).
+**Secrets in CI:** only the judge-LLM keys live in GitHub Secrets (injected as environment
+variables, never printed). App secrets live in AWS SSM Parameter Store. Pull requests from
+forks do not get secrets (a security feature).
+
+**The eval gate starts early:** CI `test` from Phase 1, `eval-gate` from Phase 2, and branch
+protection makes them required (`primer_git_workflow.md`).
 
 **Building for ARM:** GitHub's standard runners are x86. Buildx with QEMU emulation can build
 `arm64` images (slower). Check whether native ARM runners are available for public repos
@@ -109,22 +120,26 @@ printed. Pull requests from forks do not get secrets (a security feature).
 
 ## 13. Cloud deployment and HTTPS
 
-**Oracle Cloud Always Free ARM VM:** the most generous free VM historically (VERIFY current
-allowance and sign-up requirements). The classic trap: ports must be opened in **both** the
-cloud security list **and** the VM's own firewall.
+**AWS first (Phase 7), Oracle later (before month 6 of the AWS free plan).** Everything is
+created by **Terraform**, and production runs on **k3s** on one EC2 instance. The full
+explanations live in `primer_aws.md`, `primer_terraform.md`, and `primer_kubernetes.md`.
+
+**Oracle trap for later:** ports must be opened in **both** the cloud security list **and**
+the VM's own firewall. On AWS the security group is the only firewall we configure.
 
 **HTTPS:** encrypts traffic so keys and questions cannot be read on the way. Certificates
 come free from Let's Encrypt. **Caddy** requests and renews them automatically; Nginx
 needs certbot setup. **DuckDNS** gives a free subdomain pointing to your VM's IP.
 
 **Reverse proxy:** Caddy receives all traffic on 443 and forwards to the right internal
-service (`api:8000`, `grafana:3000`). One public door, many rooms.
+service (`api:8000`, `grafana:3000`). One public door, many rooms. On k3s, the **ingress
+controller** plays this role (same idea, Kubernetes style).
 
-**Fallback:** a Cloudflare Tunnel publishes a service running on your laptop without
-opening ports. Same Compose stack, different host.
+**Last-resort fallback:** a Cloudflare Tunnel publishes a service running on your laptop
+without opening ports. Same Compose stack, different host.
 
 **Rollback:** every image is tagged with the git commit. Rolling back = deploying the
-previous tag. Keep the command in the README.
+previous tag (`kubectl rollout undo` on k3s). Keep the command in the README.
 
 ---
 
@@ -153,7 +168,8 @@ upsert; removed document -> delete its points. Bump cache versions so stale answ
 Stateless API workers behind a load balancer (state lives in Redis/Postgres/Qdrant);
 a Qdrant cluster or managed Qdrant; a queue (e.g. a job worker) for ingestion; a GPU or
 hosted reranker when latency matters; more caching; paid LLMs with higher limits if the
-budget allows. Say what you would **measure** before each step.
+budget allows; on AWS: private subnets, a load balancer, multiple AZs, managed databases, and
+possibly EKS when one node is no longer enough. Say what you would **measure** before each step.
 
 ---
 
@@ -165,5 +181,6 @@ budget allows. Say what you would **measure** before each step.
 4. Explain multi-stage builds, layer caching, and non-root users.
 5. Why is only Caddy exposed?
 6. What does your CI eval gate check, and how did you prove it works?
-7. Name the Oracle firewall trap. How does Caddy get certificates?
+7. How does Caddy (or the k3s ingress) get certificates? Why OIDC instead of AWS keys in CI?
+7b. Name the Oracle firewall trap for the later move.
 8. How would you scale DocPilot to 1,000 users? What would you measure first?

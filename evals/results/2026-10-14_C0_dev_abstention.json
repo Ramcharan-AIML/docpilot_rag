@@ -1,0 +1,49 @@
+{
+  "kind": "abstention",
+  "config_id": "C0",
+  "collection": "docpilot_naive",
+  "split": "dev",
+  "date": "2026-10-14",
+  "git_commit": "b061d62",
+  "settings": {
+    "chunk_size": 800,
+    "chunk_overlap": 100,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "embedding_revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "answer_top_k": 4,
+    "llm_provider": "groq",
+    "llm_model": "openai/gpt-oss-120b"
+  },
+  "overall": {
+    "n": 22,
+    "accuracy": 0.909,
+    "unanswerable_n": 3,
+    "false_answer": 0,
+    "answerable_n": 19,
+    "false_refusal": 2
+  },
+  "per_question": [
+    {"id": "q-001", "type": "how-to", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "To make a query parameter optional, give it a default value of `None` in the function signature. FastAPI treats any parameter whose default is `None` as optional, so if the client omits it the value will be `None` (or whatever default you set).  \n\nExample (from the docs):\n\n```python\n@app.get(\"/items"},
+    {"id": "q-002", "type": "not-in-docs", "should_answer": false, "said_not_found": true, "correct": true, "answer_preview": "I could not find this in the documents."},
+    {"id": "q-003", "type": "not-in-docs", "should_answer": false, "said_not_found": true, "correct": true, "answer_preview": "I could not find this in the documents."},
+    {"id": "q-004", "type": "exact-identifier", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "`{file_path:path}` is a **path‑converter** declaration. In a FastAPI route you write a URL such as  \n\n```\n/files/{file_path:path}\n```  \n\nThe part before the colon (`file_path`) is the name of the parameter that will be passed to your endpoint function, and the `:path` suffix tells FastAPI (via Starl"},
+    {"id": "q-005", "type": "paraphrase", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "`/users/me` is being matched by the more generic `/users/{user_id}` route because FastAPI checks the routes in the order they are declared. If the path operation for `/users/{user_id}` appears first, it will also match the literal segment “me” and treat it as a `user_id` value, so the request never "},
+    {"id": "q-006", "type": "comparison", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "FastAPI determines the source of each function parameter by looking at its declaration:\n\n* **Path parameter** – If the parameter name also appears in the URL path definition, FastAPI treats it as a path parameter. [2]  \n* **Query parameter** – If the parameter is a “singular” type such as `int`, `fl"},
+    {"id": "q-007", "type": "table-or-code", "should_answer": true, "said_not_found": true, "correct": false, "answer_preview": "I could not find this in the documents."},
+    {"id": "q-008", "type": "table-or-code", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "A `bool` query parameter is interpreted as **True** for any of the typical “truthy” string values that FastAPI converts, such as:\n\n* `1`\n* `true` (any case variation, e.g., `True`, `TRUE`, `tRuE`)\n* `on` (any case variation)\n* `yes` (any case variation)\n\nAny of those values (or similar case‑insensit"},
+    {"id": "q-009", "type": "factual", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "You can view the automatic interactive documentation for your API at the **/docs** endpoint, e.g.:\n\n**http://127.0.0.1:8000/docs**【1】."},
+    {"id": "q-010", "type": "multi-hop", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "Yes. You can limit a query parameter to a set of predefined values by declaring it as an `Enum`, just like you would for a path parameter — FastAPI treats query‑parameter enums the same way as path‑parameter enums【3】."},
+    {"id": "q-011", "type": "factual", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "The example sets the defaults to:\n\n* `skip` = 0  (default value of 0)  \n* `limit` = 10  (default value of 10)\n\nThese defaults are shown in the documentation where it states that “they have default values of `skip=0` and `limit=10`”【3】, and `skip` is explicitly described as “an `int` with a default v"},
+    {"id": "q-012", "type": "how-to", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "To make a query parameter required, simply declare it in the endpoint function **without** providing a default value.  \nWhen FastAPI sees a parameter that has no default, it treats it as a required query parameter and will return a validation error if the client does not include it in the URL [1].  "},
+    {"id": "q-013", "type": "factual", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "If you omit a required query parameter, FastAPI returns a validation error like this:\n\n```json\n{\n  \"detail\": [\n    {\n      \"type\": \"missing\",\n      \"loc\": [\"query\", \"needy\"],\n      \"msg\": \"Field required\",\n      \"input\": null\n    }\n  ]\n}\n```\n\nThis response shows the error type “missing”, the locatio"},
+    {"id": "q-015", "type": "exact-identifier", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "Your request data model must inherit from **Pydantic’s `BaseModel`** class【3】."},
+    {"id": "q-016", "type": "factual", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "You should send a request body with one of the “write” HTTP methods – typically **POST**, **PUT**, **DELETE** or **PATCH** 【1】. (Sending a body with a GET request is undefined and discouraged.)"},
+    {"id": "q-017", "type": "paraphrase", "should_answer": true, "said_not_found": true, "correct": false, "answer_preview": "I could not find this in the documents."},
+    {"id": "q-018", "type": "table-or-code", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "FastAPI reads the incoming request body, parses it into the Pydantic model you declared, validates the data against that model, and then passes the resulting model instance to your path‑operation function as a parameter — FastAPI treats any function argument that is a Pydantic model as coming from t"},
+    {"id": "q-019", "type": "comparison", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "A **request body** is the data that the client sends to your API, while a **response body** is the data that your API returns to the client. [1]"},
+    {"id": "q-020", "type": "factual", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "When the path parameter `item_id` is declared as an `int` and you request **/items/foo**, FastAPI cannot parse the string `\"foo\"` as an integer. It returns a validation error response (HTTP 422) with a JSON body like:\n\n```json\n{\n  \"detail\": [\n    {\n      \"type\": \"int_parsing\",\n      \"loc\": [\"path\", "},
+    {"id": "q-023", "type": "how-to", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "You limit a path parameter by declaring it as an **Enum** type.  \nDefine an `Enum` with the allowed values and use that enum as the type of the path parameter; FastAPI will automatically validate that the incoming value matches one of the enum members and will document the allowed choices. [1]"},
+    {"id": "q-026", "type": "exact-identifier", "should_answer": true, "said_not_found": false, "correct": true, "answer_preview": "The `@app.get(\"/\")` line is a **path‑operation decorator** that registers the function defined right below it as the handler for HTTP GET requests to the root path “/”. In other words, it tells FastAPI that when a request arrives at “/” using the GET method, that function should be called to produce"},
+    {"id": "q-030", "type": "not-in-docs", "should_answer": false, "said_not_found": true, "correct": true, "answer_preview": "I could not find this in the documents."}
+  ]
+}

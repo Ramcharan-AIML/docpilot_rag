@@ -155,6 +155,13 @@ save: evals/results/<date>_<config-id>_<split>.json
 print: a small table
 ```
 
+**Latency baseline L0 (D-031, `teaching/primer_latency.md`):** a second small script,
+`evals/run_latency.py`, runs the full `ask()` (embed, search, LLM) on the dev questions
+after **one warm-up call**, collects `timings_ms` per stage, and reports p50 and p95 per
+stage and total, with n, hardware ("laptop CPU") and provider/model. Sleep between calls
+to respect the free-tier rate limit; record any 429 retries (they are part of the tail).
+Saved next to the retrieval JSON; the ABLATION row C0 gets `p50 total` and `p95 total`.
+
 Each result JSON stores: `config_id`, `collection`, `split`, `date`, `git_commit`
 (from `git rev-parse --short HEAD`), `settings` (chunk size, overlap, model, top_k,
 min_overlap), `overall`, `per_type`, and `per_question` (so failures can be inspected).
@@ -246,6 +253,54 @@ Note: local-mode Qdrant allows one process, so stop the API before running `02_i
 
 ---
 
+## Step 1f: Git workflow, first CI, branch protection (decision D-024)
+
+**Goal:** from now on nothing reaches `main` without a pull request and green checks.
+Teaching: `docs/teaching/primer_git_workflow.md`.
+
+**Note:** in practice, start using feature branches + PRs at the **beginning** of Phase 1
+(step 1a.1), and set up this CI as soon as the first test exists (1a.3). It is listed here so
+all Git work sits in one place.
+
+1. **Make the repo public** (free branch protection and free Actions minutes for public
+   repos; VERIFY current GitHub terms). First: `git log -p | Select-String -Pattern "API_KEY"`
+   style check that no secret was ever committed.
+2. **`.github/pull_request_template.md`**: What changed / Why (plan step, decision id) /
+   How I tested / Eval impact (real numbers or "no retrieval change") / checklist.
+3. **`scripts/check_file_lengths.py`**: lists tracked text files over 500 lines (Rule 1);
+   exits with code 1 if any (except `docs/PROJECT_DOCUMENTATION.md`).
+4. **`.github/workflows/ci.yml`**, job `test`:
+
+```yaml
+# VERIFY: current action versions on build day; pin them
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@vX
+      - uses: actions/setup-python@vX
+        with: {python-version: "3.13"}
+      - run: pip install -r requirements-dev.txt && pip install -e .
+      - run: ruff check . && ruff format --check .
+      - run: pytest -q                      # tests never call a real LLM or download docs
+      - run: python scripts/check_file_lengths.py
+```
+
+5. **Branch protection on `main`:** require PR, require status check `ci / test`, require
+   up-to-date branch, block force-push and deletion.
+6. **Prove it:** open a PR with a deliberately failing test; see the red cross and the
+   disabled merge button; fix it; see green; merge. Screenshot both for the README.
+
+**Done when:** a direct `git push origin main` is rejected, and a PR merges only when green.
+The retrieval **eval gate** joins this workflow in Phase 2 step 2.10.
+
+---
+
 ## Phase 1 gate
 
 - [ ] `pytest` green: chunker, loader, metrics, matching, API tests
@@ -253,7 +308,9 @@ Note: local-mode Qdrant allows one process, so stop the API before running `02_i
 - [ ] golden v0 (about 30 items) passes `validate_golden.py`
 - [ ] C0 retrieval row in `evals/ABLATION.md` with real numbers (dev); test split run once
 - [ ] abstention accuracy for C0 recorded (or `n/a` with a reason)
+- [ ] latency baseline L0: p50/p95 per stage and total, warm, n and hardware named (D-031)
 - [ ] decisions: versions pinned for `qdrant-client`, `openai`, `python-dotenv`, `fastapi`,
       `uvicorn`, `httpx`; Groq (or chosen provider) model name and limits verified with date
 - [ ] learner explains every module and every metric in `docs/interview_notes.md`
-- [ ] `git tag phase-1`
+- [ ] CI `test` job green; branch protection on `main` proven (direct push rejected)
+- [ ] phase branch merged into `main` through a PR; annotated tag `phase-1` pushed

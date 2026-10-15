@@ -1,10 +1,14 @@
 # Teaching Notes, Phase 7: Production (Part 1 of 2)
 
-Plan files: `docs/implementation_plan/phase_7_production.md`, `2_phase_7_production.md`
+Plan files: `docs/implementation_plan/phase_7_production.md` + `2_`, `3_`, `4_`
 
 Part 1: what "production" means, async APIs, streaming, auth, rate limiting, caching,
 LLM gateways. Part 2: observability, Docker images, Compose, CI/CD, cloud, HTTPS, load
 testing, incremental ingestion.
+
+**From-zero primers for this phase (read in this order):** `primer_rag_monitoring.md` ->
+`primer_aws.md` + `2_primer_aws.md` -> `primer_terraform.md` -> `primer_kubernetes.md`.
+Git workflow and CI: `primer_git_workflow.md`.
 
 ---
 

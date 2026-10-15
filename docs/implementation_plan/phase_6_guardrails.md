@@ -4,7 +4,8 @@
 output, and around tools, and **prove** it with two numbers: attack success rate (lower is
 better) and false-block rate on normal questions (lower is better).
 
-**Teaching companion:** `docs/teaching/phase_6_guardrails.md` (includes the guardrails primer)
+**Teaching companion:** start with `docs/teaching/primer_guardrails.md` (from zero, child-level),
+then `docs/teaching/phase_6_guardrails.md` (deeper)
 
 **Ablation row:** C11 (+ guardrails): quality must not drop much. Plus a **safety table**.
 
@@ -218,4 +219,5 @@ under 10%, false blocks under 5%, from `PROJECT_DOCUMENTATION.md` section 1.6).
 - [ ] C11 row; false-block rate on dev; latency overhead
 - [ ] tests for each guard including "must not block" cases
 - [ ] versions pinned (presidio, spaCy model, sqlglot, any library guard), verified dates
-- [ ] interview notes; `git tag phase-6`
+- [ ] every red-team run logged in MLflow experiment `docpilot-redteam` (guard set as a param)
+- [ ] interview notes; merged via PR (CI green); tag `phase-6` pushed

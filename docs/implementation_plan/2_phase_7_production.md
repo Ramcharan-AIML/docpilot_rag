@@ -1,18 +1,20 @@
 Continues from [phase_7_production.md](phase_7_production.md)
 
-# Phase 7: Production (Implementation Plan, Part 2 of 2)
+# Phase 7: Production (Implementation Plan, Part 2 of 4)
 
-Part 2 covers **shipping**: 7.7 to 7.12.
+Part 2 covers **packaging and CI/CD**: 7.8 to 7.10.
+Teaching: `teaching/2_phase_7_production.md`, `teaching/primer_git_workflow.md`,
+`teaching/primer_aws.md` (sections on ECR and IAM/OIDC).
 
 ---
 
-## Step 7.7: Dockerfile and full Compose stack
+## Step 7.8: Dockerfile (multi-stage, multi-architecture)
 
-### 7.7.1 `Dockerfile` (multi-stage)
+### 7.8.1 `Dockerfile`
 
 ```dockerfile
 # ---------- stage 1: build wheels (has compilers; thrown away afterwards) ----------
-# VERIFY: pin an exact patch tag and check arm64. Same minor version as dev (D-015).
+# VERIFY: pin an exact patch tag; confirm amd64 AND arm64 variants. Same minor as dev (D-015).
 FROM python:3.13-slim AS builder
 WORKDIR /build
 COPY requirements.txt .
@@ -25,14 +27,16 @@ RUN useradd --create-home --uid 1000 app
 WORKDIR /app
 COPY --from=builder /wheels /wheels
 RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
+COPY pyproject.toml README.md ./
 COPY src/ src/
-COPY pyproject.toml .
-RUN pip install --no-cache-dir --no-deps -e .
+# a normal (not editable) install: the image never changes after it is built
+RUN pip install --no-cache-dir --no-deps .
 
 # Bake model files into the image so containers never download at start-up
 ENV HF_HOME=/app/hf_cache
 RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; \
-SentenceTransformer('BAAI/bge-small-en-v1.5'); CrossEncoder('BAAI/bge-reranker-base')"
+SentenceTransformer('BAAI/bge-small-en-v1.5', revision='5c38ec7c405ec4b44b94cc5a9bb96e735b38267a'); \
+CrossEncoder('BAAI/bge-reranker-base')"
 
 USER app
 EXPOSE 8000
@@ -41,188 +45,147 @@ urllib.request.urlopen('http://localhost:8000/health')"
 CMD ["uvicorn", "docpilot.api.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-Teaching points: layer order (requirements before source, so code changes do not
-reinstall packages), multi-stage (smaller image, no build tools in production), non-root
-user, baked models, health check.
+Teaching points: layer order (requirements before source, so code changes do not reinstall
+packages), multi-stage (smaller image, no build tools), non-root user, baked and pinned
+models, health check. Dockerfile comments must be on their **own** lines.
 
-CPU-only torch: the default torch wheel may pull large GPU libraries on x86. VERIFY the
-CPU-only install method for torch and record the image size before and after.
+### 7.8.2 Things to check and record
 
-**`.dockerignore`**: `.git`, `.venv`, `data/`, `qdrant_storage/`, `.env`, `evals/results/`,
-`__pycache__`. Smaller build context, no secrets in the image.
+| Check | Why |
+|---|---|
+| CPU-only torch (VERIFY the install method, e.g. the CPU wheel index) | the default Linux torch wheel can pull large GPU libraries; record image size before/after |
+| A Linux lock file | `requirements-lock.txt` was generated on Windows; generate `requirements-lock-linux.txt` inside the build container (D-016 follow-up) |
+| **Two architectures** | AWS `m7i-flex.large` = amd64; Oracle A1 = arm64. Build both with Docker Buildx (`--platform linux/amd64,linux/arm64`) |
+| `.dockerignore` | `.git`, `.venv`, `data/`, `qdrant_storage/`, `seaweed_data/`, `.env`, `mlflow.db`, `mlartifacts/`, `evals/results/`, `infra/`, `__pycache__` |
 
-### 7.7.2 `docker-compose.yml` (full)
+**Done when:** `docker build` works locally; image size recorded; the container answers
+`/health`; `docker buildx build --platform linux/arm64` also succeeds (emulated on your PC).
+
+---
+
+## Step 7.9: Full Docker Compose stack
+
+`docker-compose.yml` (used for local development and as the first deployment on EC2):
 
 | Service | Image | Notes |
 |---|---|---|
-| `api` | `ghcr.io/<user>/docpilot:<git-sha>` | env from `.env`; depends on qdrant, redis, postgres (healthy) |
+| `api` | `<ecr-or-ghcr>/docpilot-api:<git-sha>` | env from `.env`; depends on qdrant, redis, postgres (healthy) |
 | `qdrant` | pinned tag | volume `qdrant_storage` |
-| `redis` | pinned tag | `maxmemory` + eviction policy set; no public port |
+| `redis` | pinned tag | `maxmemory` + eviction policy; no public port |
 | `postgres` | pinned tag | volume `pg_data`; password from `.env` |
-| `prometheus` | pinned tag | `deploy/prometheus.yml` mounted |
-| `grafana` | pinned tag | provisioning mounted; admin password from `.env` |
+| `prometheus` | pinned tag | `deploy/prometheus.yml`, alert rules mounted |
+| `grafana` | pinned tag | provisioning + dashboards mounted; admin password from `.env` |
 | `caddy` | pinned tag | only service with public ports 80/443; `deploy/Caddyfile` |
-| tracing | per D-009 | |
-| `ollama` (optional) | pinned tag | profile `local-llm` so it only starts when asked |
+| tracing | per D-009 | Langfuse / Phoenix / MLflow tracing |
+| `seaweedfs` (profile `local`) | pinned tag | local S3 only; on AWS the app uses real S3 |
+| `mlflow` (profile `dev`) | pinned tag | experiments; not needed on the server |
+| `ollama` (profile `local-llm`) | pinned tag | only when asked |
 
-Every service: `restart: unless-stopped`, a `healthcheck`, memory limits sized to the VM.
+**Profiles** let one file serve laptop and server: `docker compose --profile local up -d`
+on the laptop; plain `docker compose up -d` on EC2.
+Every service: `restart: unless-stopped`, a `healthcheck`, a memory limit sized from
+`docker stats` measurements (record them: they decide the EC2 size in 7.11).
 
 **`deploy/Caddyfile`**
 
 ```text
-docpilot.duckdns.org {            # your DuckDNS name
-    reverse_proxy api:8000         # Caddy gets and renews the HTTPS certificate itself
+# your DuckDNS name; Caddy gets and renews the HTTPS certificate itself
+docpilot.duckdns.org {
+    reverse_proxy api:8000
 }
 grafana.docpilot.duckdns.org {
     reverse_proxy grafana:3000
 }
 ```
 
-**Done when:** `docker compose up -d` on the laptop brings everything up; `/ready` is green;
-Grafana shows the `api` target as UP in Prometheus.
+**Done when:** `docker compose --profile local up -d` brings everything up on the laptop;
+`/ready` is green; Prometheus shows `api` as UP; total RAM use recorded.
 
 ---
 
-## Step 7.8: GitHub Actions CI/CD
+## Step 7.10: GitHub Actions CI/CD into AWS
 
-### 7.8.1 `.github/workflows/ci.yml` (every pull request and push)
+### 7.10.1 `ci.yml` (already exists from Phases 1-2; extend it)
+
+| Job | Added in | Does |
+|---|---|---|
+| `test` | 1f | ruff, pytest, 500-line check |
+| `eval-gate` | 2.10 | retrieval eval on the fixture corpus vs baseline |
+| `audit` | 7.10 | `pip-audit -r requirements.txt` (known vulnerable packages) |
+| `terraform-check` | 7.12 | `terraform fmt -check` and `terraform validate` on `infra/` (no cloud access needed) |
+
+Branch protection on `main` requires all four.
+
+### 7.10.2 `deploy.yml` (on push to `main`, after CI passes)
 
 ```yaml
-# VERIFY: current action versions (checkout, setup-python, docker actions)
-name: ci
-on: [pull_request, push]
+# Sketch. VERIFY action names/versions (configure-aws-credentials, amazon-ecr-login,
+# docker/setup-buildx-action, docker/build-push-action) on build day.
+name: deploy
+on:
+  push:
+    branches: [main]
+permissions:
+  id-token: write        # lets GitHub request a short-lived OIDC token for AWS
+  contents: read
+  packages: write        # push to GHCR as well
 jobs:
-  test:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@vX
-      - uses: actions/setup-python@vX
-        with: {python-version: "3.13"}
-      - run: pip install -r requirements-dev.txt && pip install -e .
-      - run: ruff check . && ruff format --check .
-      - run: pytest -q
-      - run: python scripts/check_file_lengths.py          # Rule 1: max 500 lines
-      - run: pip-audit -r requirements.txt                 # known-vulnerable packages
-  eval-gate:
-    needs: test
-    runs-on: ubuntu-latest
-    services:
-      qdrant: {image: "qdrant/qdrant:vX.Y.Z", ports: ["6333:6333"]}
-    steps:
-      # ... checkout, install
-      - run: python scripts/02_ingest.py --fixture-corpus   # small committed test corpus
-      - run: python evals/run_retrieval_eval.py --split dev --config-id ci
-      - run: python evals/check_gate.py --baseline evals/baseline.json --tolerance 0.02
+      - uses: aws-actions/configure-aws-credentials@vX
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}   # created by Terraform (7.12)
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@vX
+      - uses: docker/setup-qemu-action@vX                     # emulation for arm64 builds
+      - uses: docker/setup-buildx-action@vX
+      - uses: docker/build-push-action@vX
+        with:
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ vars.ECR_REPO }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/docpilot-api:${{ github.sha }}
+      - name: Deploy through SSM (no SSH)
+        run: |
+          aws ssm send-command --instance-ids "${{ vars.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters commands="/opt/docpilot/deploy.sh ${{ github.sha }}"
+      - name: Smoke test
+        run: curl --fail https://${{ vars.PUBLIC_HOST }}/ready
 ```
 
-**The eval gate in plain words:** CI indexes a small corpus that we are allowed to commit
-(our own fixture pages, or doc pages whose license allows it; VERIFY), runs the
-deterministic retrieval eval, and `check_gate.py` exits with an error if Recall@5 or MRR
-is below `baseline - tolerance`. No LLM tokens are used (D-011).
+**Why OIDC (no AWS keys in GitHub):** GitHub proves to AWS "I am a workflow of repo X on
+branch main"; AWS hands back credentials that expire within the hour. Nothing long-lived to
+leak. The trust rule (which repo, which branch) lives in Terraform (7.12).
 
-**Prove it works:** open a pull request that deliberately breaks retrieval (for example
-remove the BGE query prefix). The gate must fail. Screenshot it for the README. Then close
-the PR.
+**Why SSM instead of SSH:** no port 22 open, no SSH key to store in GitHub; every command is
+logged in AWS.
 
-### 7.8.2 `.github/workflows/eval.yml` (manual or nightly)
+**`/opt/docpilot/deploy.sh`** (installed by cloud-init, kept in `infra/bootstrap/`): pulls
+the image tag, applies it (Compose in 7.13; `kubectl set image` once on k3s in 7.14), waits
+for `/ready`, and rolls back to the previous tag if it never gets ready.
 
-Full generation evals with the judge LLM; keys from GitHub Secrets; results uploaded as
-an artifact. Not a merge blocker (tokens are scarce and judges are noisy).
+**Rollback by hand:** re-run `deploy.sh <previous-sha>` (or `kubectl rollout undo`).
+Written in the README.
 
-### 7.8.3 `.github/workflows/deploy.yml` (on push to `main` after CI passes)
+### 7.10.3 `eval.yml` (manual or nightly)
 
-1. Build the image for `linux/arm64` with Docker Buildx (QEMU emulation; VERIFY build time
-   on free runners, or check for native ARM runners for public repos).
-2. Push to GitHub Container Registry tagged with the git SHA.
-3. SSH to the VM (key in GitHub Secrets), `docker compose pull && docker compose up -d`.
-4. Smoke test: `curl https://<domain>/ready`; fail the job if not 200.
+Full generation evals with the judge LLM; keys from GitHub **Secrets** (the only secrets
+GitHub holds: free-tier LLM keys for the judge); results uploaded as an artifact and logged to
+MLflow if a server is reachable. Not a merge blocker.
 
-Rollback: re-deploy the previous SHA tag. Write the one-line command in the README.
+### 7.10.4 GitHub settings checklist
 
-Also: enable Dependabot (or rely on `pip-audit`) and GitHub secret scanning.
+- Variables (not secrets): `AWS_REGION`, `AWS_DEPLOY_ROLE_ARN`, `ECR_REPO`,
+  `EC2_INSTANCE_ID`, `PUBLIC_HOST`.
+- Secrets: judge LLM keys only.
+- Dependabot (or pip-audit only) and secret scanning on.
+- `main` protected; PR template; tags pushed per phase.
 
----
+**Done when (after 7.12 exists):** merging a PR to `main` builds both architectures, pushes to
+ECR and GHCR, deploys through SSM, and the smoke test passes, with no AWS key stored anywhere.
 
-## Step 7.9: Deploy to the free VM
-
-1. VERIFY Oracle Cloud Always Free: current ARM allowance, region capacity, sign-up
-   requirements. Record the date. If sign-up fails, use the fallback (step 4).
-2. Create the VM (Ubuntu, ARM). Open ports 80 and 443 in **both** the cloud security list
-   and the VM firewall (a classic "it does not work" cause on Oracle).
-3. Install Docker; create the `app` deploy user; add the GitHub deploy SSH key.
-4. **Fallback:** run Compose on the laptop and publish with a Cloudflare Tunnel (VERIFY
-   current free terms). The architecture does not change, only the host.
-5. DuckDNS: point a free subdomain to the VM IP. Caddy fetches certificates automatically.
-6. Copy `.env` to the VM by hand (`scp`); it never goes through git.
-7. Ingest the corpus on the VM (or copy the Qdrant snapshot from the laptop: VERIFY the
-   snapshot API).
-8. Demo UI: a small Gradio or Streamlit page (`ui/app.py`) calling the public API with a
-   demo key, hosted on a Hugging Face Space (VERIFY free CPU limits and sleep behaviour).
-   The demo key has a strict rate limit.
-
-**Security checklist** (from `PROJECT_DOCUMENTATION.md` 15.8): no secrets in git, `.env`
-ignored, non-root containers, CORS limited to the UI origin, input size limits, rate
-limiting, dependency scanning, least-privilege tools, PII-free logs, only Caddy exposed,
-Grafana behind a password, SSH by key only.
-
----
-
-## Step 7.10: Load testing
-
-**File:** `loadtest/locustfile.py` (Locust, VERIFY version; k6 is the alternative)
-
-Scenarios:
-1. Steady users asking cached questions (measures the cache path).
-2. Steady users asking new questions (measures the full path; watch free-tier limits:
-   keep the user count low and point at Ollama or a mock LLM if needed).
-3. A burst above the rate limit: expect `429`s, not errors.
-4. Provider failure: bad key for the first provider: expect fallbacks, no `5xx`.
-
-Report p50/p95 latency, error rate, 429 rate, fallback count, with the VM size noted.
-
----
-
-## Step 7.11: Incremental ingestion
-
-**File:** `src/docpilot/ingestion/manifest.py`, manifest stored in Postgres (or a JSON
-file in `data/processed/` for dev)
-
-```text
-for each document:
-    new_hash = sha256(cleaned text)
-    if new_hash == manifest[source]:  skip (nothing changed)
-    else: delete this source's points (filter by source), re-chunk, re-embed, upsert,
-          update manifest[source] = new_hash, version += 1
-for each source in manifest but not on disk:  delete its points (document was removed)
-```
-
-**Test:** change one doc, re-run: only that doc's chunks change (count the upserts).
-Also bump cache versions so stale cached answers are not served.
-
----
-
-## Step 7.12: README, demo, and the big interview file
-
-1. `README.md`: one-paragraph pitch, architecture diagram (from `docs/architecture/`),
-   **the ablation table with real numbers**, the safety table, screenshot of the failing
-   CI gate, Grafana screenshot, demo link, run-it-yourself instructions, honest
-   limitations section.
-2. Short demo video or GIF (free screen recorder).
-3. Merge all `docs/interview/phase_*_interview.md` files into
-   `docs/interview/ALL_INTERVIEW_QUESTIONS.md` (+ `2_`, `3_` parts by Rule 1), with real
-   numbers filled in everywhere a `n/a` placeholder was.
-
----
-
-## Phase 7 gate (and the project's definition of done)
-
-- [ ] public HTTPS URL works; auth and rate limit on
-- [ ] CI: lint, tests, 500-line check, pip-audit, retrieval eval gate; gate failure proven
-- [ ] deploy workflow deploys on merge; rollback documented
-- [ ] traces and Grafana show real traffic; D-009 closed
-- [ ] semantic cache false-hit rate measured (or cache disabled with reason)
-- [ ] load test report with real numbers
-- [ ] HITL works with Postgres checkpointer across a container restart
-- [ ] README complete; big interview file assembled
-- [ ] every version pinned and verified; `git tag phase-7`
-- [ ] everything in `PROJECT_DOCUMENTATION.md` section 23 checked
+Continued in [3_phase_7_production.md](3_phase_7_production.md)

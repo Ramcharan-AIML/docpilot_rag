@@ -1,0 +1,39 @@
+# CI: every pull request (and every push to main) must pass these checks (D-024).
+# Action versions checked on GitHub releases 2026-10-14: checkout v7.0.1, setup-python v7.0.0.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20 # a hung job stops instead of burning minutes
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.13"
+          cache: pip # reuse downloaded packages between runs
+
+      # CPU-only torch first: the default Linux wheel pulls several GB of GPU (CUDA)
+      # libraries we never use. Same version as requirements-lock.txt.
+      - name: Install CPU-only torch
+        run: pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install project
+        run: pip install -r requirements-dev.txt && pip install -e .
+
+      - name: Lint and format
+        run: ruff check . && ruff format --check .
+
+      # Tests never call a real LLM, never need an API key and never download the docs.
+      # test_embedder downloads the pinned embedding model (about 130 MB) from Hugging Face.
+      - name: Tests
+        run: pytest -q
+
+      - name: File length rule (500 lines)
+        run: python scripts/check_file_lengths.py

@@ -17,9 +17,12 @@ Add a new section each time a step or phase finishes.
 1. **What:** an assistant that answers questions about technical docs (FastAPI, Docker,
    Pydantic, Qdrant, LangGraph, Redis) **with citations**.
 2. **How:** RAG = first *find* the right doc pieces, then let an LLM *write* the answer from them.
-3. **Extras:** hybrid search, reranking, agents, a human reviewer, guardrails, deployment.
+3. **Extras:** hybrid search, reranking, agents, a human reviewer, guardrails, MLflow
+   experiment tracking, RAG monitoring, and a cloud deployment on AWS (Terraform, k3s),
+   later moved to Oracle.
 4. **Proof:** every feature must win on measured evals, recorded in an ablation table.
-5. **Constraint:** everything free, runs on a CPU laptop (32 GB RAM, Windows 11).
+5. **Constraint:** everything free, runs on a CPU laptop (32 GB RAM, Windows 11). AWS is used
+   only on its free plan (credits, 6 months), then the demo moves to Oracle Always Free.
 
 **The one rule behind everything:**
 > Build the simplest version, measure it, change one thing, measure again, keep it only if
@@ -61,6 +64,7 @@ docpilot_rag/
 | How will the finished system look? | `docs/architecture/architecture.md` + `2_architecture.md` |
 | What exactly do I build next? | `docs/implementation_plan/phase_N_*.md` |
 | Why does this concept work? | `docs/teaching/phase_N_*.md` |
+| I know nothing about X: start from zero | `docs/teaching/primer_*.md` (evals, guardrails, Git, MLflow, storage, AWS, Terraform, Kubernetes, monitoring) |
 | What will interviewers ask? | `docs/interview/phase_N_interview.md` |
 | My own interview answers | `docs/interview_notes.md` |
 | Why did we choose X and not Y? | `docs/decisions.md` |
@@ -75,20 +79,22 @@ import a module whose name starts with a digit.
 ## 4. The full road ahead
 
 ```text
-Phase 0  Foundations ............ embeddings, setup                         <- YOU ARE HERE
-Phase 1  Naive baseline ......... simplest RAG + eval harness + mini API    -> C0 numbers
-Phase 2  Chunking ............... clean data, 6 chunking strategies         -> C1-C5
-Phase 3  Retrieval .............. Docker, hybrid, RRF, reranker, judges     -> C6-C8
-Phase 4  Agents ................. LangGraph: route, grade, rewrite, check   -> C9
-Phase 5  Multi-agent + HITL ..... tools, supervisor, human review, MCP      -> C10
-Phase 6  Guardrails ............. injection, PII, red-team set              -> C11 + safety table
-Phase 7  Production ............. API, Redis, tracing, Docker, CI/CD, cloud -> public URL
+Phase 0  Foundations ............ embeddings, setup                               <- YOU ARE HERE
+Phase 1  Naive baseline ......... simplest RAG + evals + mini API + PRs/CI         -> C0 numbers
+Phase 2  Chunking ............... clean data, 6 strategies, MLflow, CI eval gate   -> C1-C5
+Phase 3  Retrieval .............. Docker, SeaweedFS/boto3, hybrid, reranker, judges -> C6-C8
+Phase 4  Agents ................. LangGraph: route, grade, rewrite, check         -> C9
+Phase 5  Multi-agent + HITL ..... tools, supervisor, human review, MCP            -> C10
+Phase 6  Guardrails ............. injection, PII, red-team set                    -> C11 + safety table
+Phase 7  Production ............. API, Redis, tracing, RAG monitoring, Docker,
+                                  CI/CD -> AWS via Terraform, k3s, EKS exercise    -> public URL
+         (month 5 of AWS plan) .. move to Oracle Always Free with the same setup
 Phase 8  Stretch ................ GraphRAG-lite, DSPy, ColBERT (optional)
 ```
 
 Every phase ends with a **gate**: tests pass, eval numbers recorded, decisions logged,
 interview notes written in your own words, `progress.md` updated, git tag `phase-N`.
-Estimated total: 8 to 10 weeks at about 5 hours a day.
+Estimated total: 10 to 12 weeks at about 5 hours a day (2 weeks added for the cloud work).
 
 ---
 
@@ -295,6 +301,56 @@ which method got each question right, and why the other failed.
 
 ---
 
+## 10b. Step 1a.1: `config.py`, all settings in one place (2026-10-09, not yet committed)
+
+**Goal:** one file holds every setting (paths, model, chunk size, top-k, LLM provider), so an
+experiment changes one line. Secrets stay in `.env` (gitignored).
+
+**Files:** `src/docpilot/config.py` (new), `requirements.txt` + lock (`python-dotenv==1.2.4`),
+`docs/decisions.md` (D-026).
+
+**Key lines:**
+- `PROJECT_ROOT = Path(__file__).resolve().parents[2]`: paths are built from where the file
+  lives, not from the folder you run Python in.
+- `load_dotenv(PROJECT_ROOT / ".env")`: copies `.env` into `os.environ`; never overwrites a
+  variable that is already set.
+- `EMBEDDING_REVISION`: pinned model files (the plan forgot this; fixed openly).
+- `NOT_FOUND_PHRASE`: one copy, used by the prompt now and by the evals later.
+
+**Check and real result:**
+```powershell
+python -c "from docpilot import config; print(config.DOCS_DIR)"
+# C:\Users\rajes\OneDrive\Desktop\1\AIML\9_DOCPILOT_RAG_BASED\docpilot_rag\data\docs
+```
+
+**Lessons:** (1) `print(path)` shows only the path, no label: that single line *is* the
+output. (2) Importing `config` does not check that the folder exists or has files; it only
+builds a path. (3) No prediction was written before the run: write one next time.
+
+---
+
+## 10c. Step 1a.2: `loader.py`, files into Documents (2026-10-10, not yet committed)
+
+**Goal:** read every `.md`/`.txt` under `data/docs/` into `Document(text, source)`, in the
+same order on every machine. **Files:** `src/docpilot/loader.py`, `tests/test_loader.py`.
+
+**Plan bugs fixed:** missing folder returned `[]` silently (now `FileNotFoundError`); a
+folder named `x.md` crashed `read_text` (now `is_file()`); `sorted(Path)` differs between
+Windows and Linux (now sort by the `source` string).
+
+**Real results:**
+| Run | You predicted | Real |
+|---|---|---|
+| real `data/docs` (only `.gitkeep`) | error | `[]` (no error) |
+| `no_such_folder` | `FileNotFoundError`, line 19 | `FileNotFoundError`, line 19 |
+| `pytest tests/test_loader.py -v` | n/a | 4 passed |
+
+**Lessons:** "folder is missing" (a mistake: stop) and "folder is empty" (a fact: let the
+caller decide) are different cases. A traceback is read bottom-up: the last line is the
+error, the line above it is where it was raised.
+
+---
+
 ## 11. Where we are right now (2026-10-08)
 
 | Item | Status |
@@ -310,6 +366,46 @@ which method got each question right, and why the other failed.
 git add labs/lab2_keyword_vs_meaning.py docs/ CLAUDE.md
 git commit -m "phase0: lab 2 keyword vs meaning, user guide, CLAUDE.md, chat context"
 ```
+
+---
+
+## 11b. Scope change v1.1 (2026-10-08): new technologies
+
+**What you asked for:** AWS (EC2, S3, ECR, IAM, CloudWatch, VPC) as the main deployment target
+on the free plan; Terraform; MinIO + boto3; k3s planned; EKS as a short exercise; MLflow from
+Phase 2; RAG monitoring; a stronger Git workflow; and child-level teaching of evals and
+guardrails.
+
+**What we checked on the web first (Rule 4), and what it changed**
+
+| Finding (2026-10-08) | Consequence |
+|---|---|
+| AWS free plan: USD 100 + up to 100 credits, max 6 months, then suspension and deletion | Account created at the **start of Phase 7** (your choice); move to **Oracle** before month 6 (your choice) |
+| Server time is paid from credits; the free plan cannot bill beyond them | Credits treated as a budget: Rule 17 (cost safety) |
+| EKS control plane USD 0.10/hour, no free tier | EKS = `terraform plan` by default; any apply destroyed in the same sitting |
+| Public IPv4 USD 0.005/hour | One address only |
+| MinIO community edition archived (Apr 2026), images and binaries removed (Sep 2026) | **SeaweedFS** replaces it (your choice); boto3 code unchanged |
+| MLflow 3 also does GenAI tracing | MLflow becomes a third candidate for the tracing decision (D-009) |
+| Terraform is BSL; OpenTofu is the open-source fork | Plain HCL that runs on both |
+| k3s needs about 2 GB RAM for a server node | Fits on `m7i-flex.large` (verify) after measuring our stack |
+
+**Where each new thing lives**
+
+| Topic | Primer | Plan steps |
+|---|---|---|
+| Evals from zero | `teaching/primer_evals.md` | 1c-1d, 3.9, 4.5, 5.7, 6.1 |
+| Guardrails from zero | `teaching/primer_guardrails.md` | 6.1-6.8 |
+| Git workflow | `teaching/primer_git_workflow.md` | 1f, 2.10 |
+| MLflow | `teaching/primer_mlflow.md` | 2.0, 3.1b |
+| SeaweedFS + boto3 | `teaching/primer_object_storage.md` | 3.1b |
+| RAG monitoring | `teaching/primer_rag_monitoring.md` | 7.7 |
+| AWS | `teaching/primer_aws.md`, `2_primer_aws.md` | 7.10-7.13 |
+| Terraform | `teaching/primer_terraform.md` | 7.11-7.12, 7.15, 7.18 |
+| Kubernetes (k3s, EKS) | `teaching/primer_kubernetes.md` | 7.14-7.15 |
+
+Also new: `architecture/3_architecture.md` (cloud, IAM, secrets, storage, Kubernetes,
+pipeline, MLOps loop, portability, costs), Phase 7 plan in four parts, decisions D-017 to
+D-025, Rule 17, and `PROJECT_DOCUMENTATION.md` v1.1.
 
 ---
 
@@ -345,6 +441,7 @@ git commit -m "phase0: lab 2 keyword vs meaning, user guide, CLAUDE.md, chat con
 | 1c | `evals/golden/dev.jsonl`, `test.jsonl` | the answer key (about 30 questions) |
 | 1d | `evals/metrics.py`, `matching.py`, `run_retrieval_eval.py` | Recall@k, MRR, nDCG; record **C0** |
 | 1e | `src/docpilot/api.py` + tests | FastAPI `POST /ask` |
+| 1f | `.github/workflows/ci.yml`, PR template, branch protection | PRs, CI, protected `main` (start using PRs at 1a.1) |
 
 Before Phase 1 you will need a **free LLM API key** (Groq first). We check current free
 models and limits on build day and record them in `decisions.md`.
@@ -380,6 +477,8 @@ git log --oneline --graph -10               # see history
 | `.gitignore` / `.gitkeep` | keep secrets out; keep empty folders in |
 | `--no-ff` merge | keeps a visible merge commit per branch |
 | Predict before you run | the habit that turns runs into learning |
+| Settings vs secrets | settings in `config.py` (in git); secrets in `.env` (never in git) |
+| `load_dotenv` | copies `.env` into environment variables; real env vars win |
 
 ---
 
@@ -387,4 +486,5 @@ git log --oneline --graph -10               # see history
 
 At the end of each step, add a section like 7 to 10 above: goal, files, commands, checks,
 **your real numbers**, lessons. Update section 11 (where we are). When a part passes 500
-lines, continue in `2_USER_GUIDE.md`.
+lines, continue in `2_USER_GUIDE.md`. **Part 2 started 2026-10-12 (step 1a.3 onward):**
+[2_USER_GUIDE.md](2_USER_GUIDE.md).

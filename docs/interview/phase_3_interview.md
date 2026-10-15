@@ -114,3 +114,16 @@ numbers I could not have reasoned about the trade-off."
 irrelevant text, and models are known to use information in the middle of long contexts
 less reliably. Reranking keeps recall from the wide search but shows the LLM only the best
 few chunks. I'd test top-k on the generation metrics before claiming either way."
+
+---
+
+### Q12. "Where do you store files like raw docs and index snapshots, and why not on disk?"
+
+**Model answer:** "In object storage through the S3 API with boto3: SeaweedFS locally, Amazon S3
+on AWS. The only difference is the endpoint setting, and on AWS the server uses its IAM role,
+so there are no keys. Servers are replaceable, so anything that must survive (raw docs,
+Qdrant snapshots, MLflow artifacts, Terraform state) lives outside the machine. Snapshots also
+let me move the index between clouds without re-embedding."
+
+**Follow-up:** "Why SeaweedFS?" "MinIO's free edition was archived in 2026 with its images
+removed; SeaweedFS is Apache-2.0, mature, one container, and boto3 works unchanged."
