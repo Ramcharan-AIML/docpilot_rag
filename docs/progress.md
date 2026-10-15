@@ -9,7 +9,7 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 1 (Phase 0 gate still open: learner's choice, 2026-10-09) |
-| Current step | 1e + 1f done; draft PR #1 (phase-1-baseline -> main): CI green on GitHub (62 passed on Linux) |
+| Current step | Phase 1 gate: test split run once (Recall@5 1.000, MRR 0.635, n=8); left: 3 summary lines + interview notes (learner), merge PR #1, tag `phase-1` |
 | Next step | Phase 1 gate: test split once, interview notes, 3 summary lines, merge PR, tag `phase-1` |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | (1) Two own-words sentences for Lab 2 (which method got each question right, and why). (2) Answer Phase 0 questions in `interview_notes.md`. (3) Lab 1 homework: why the paraphrase (0.799) beat the Pydantic sentence (0.708) |

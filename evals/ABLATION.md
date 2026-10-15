@@ -28,6 +28,12 @@ question moves Recall by about 5 points; differences that small are ties.
 
 Faithfulness and answer relevancy need an LLM judge: Phase 3.9. Until then `n/a`.
 
+**C0 on the test split (run once, Phase 1 gate, 2026-10-15, commit `ccd45ec`, n=8):**
+Recall@1 0.375, Recall@3 0.875, Recall@5 1.000, strict Recall@5 0.938, MRR 0.635,
+nDCG@5 0.687 (`results/2026-10-15_C0_test_retrieval.json`). Same picture as dev: the right
+chunk is found (8 of 8 in the top 5) but first for only 3 of 8. With n=8, one question =
+12.5 points. Not used for any tuning.
+
 ## Source of each C0 number
 
 | Column | Result file | Date | Commit |

@@ -7,6 +7,21 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-15, session 12b: Phase 1 gate, test split run once (learner)
+
+- Prediction: not given (third run in a row without one).
+- Real output, `python -m evals.run_retrieval_eval --split test --config-id C0`, commit
+  `ccd45ec` clean, n=8 answerable test items: Recall@1 0.375, Recall@3 0.875,
+  **Recall@5 1.000**, strict Recall@5 0.938, **MRR 0.635**, **nDCG@5 0.687**; search
+  p50 1.2 ms, p95 1.8 ms. File `evals/results/2026-10-15_C0_test_retrieval.json`.
+- Reading: consistent with dev (finds well, ranks first rarely: 3 of 8 at rank 1).
+  Recall@5 1.000 vs dev 0.842 is within noise (n=8: one question = 12.5 points); no
+  sign of overfitting (nothing was tuned on dev either). Test must not be used for tuning.
+- Learner asked "is next Phase 2?": not yet. Phase 1 gate still needs the 3 summary lines
+  and Phase 1 interview notes in the learner's own words, merge of PR #1, tag `phase-1`.
+  Phase 0 gate is also still open (Lab 2 sentences, Phase 0 notes, tag `phase-0`), and
+  CLAUDE.md forbids starting phase N+1 before phase N's gate passes.
+
 ### 2026-10-15, session 12: first CI run on GitHub (learner)
 
 - Learner committed 1d abstention + guide (`72697d3`), 1e (`9e18b96`), 1f (`656cb64`),

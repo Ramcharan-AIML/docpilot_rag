@@ -472,3 +472,6 @@ Linux: CPU-only torch (196 MB), ruff clean, **62 tests passed in 12.4 s**, lengt
 GitGuardian (an app on your account) also found no secrets. Branch protection: deferred to
 project end.
 
+**Test split, run once at the gate (2026-10-15, commit `ccd45ec`, n=8):** Recall@1 0.375,
+Recall@5 1.000, MRR 0.635, nDCG@5 0.687. Same story as dev: found, but rarely first.
+
