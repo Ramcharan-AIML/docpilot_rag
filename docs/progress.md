@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.1 refactor done, 66 tests pass; learner's regression check pending (re-ingest + eval must equal C0) |
-| Next step | 2.2 cleaner (remove HTML noise outside code blocks) |
+| Current step | 2.2 cleaner built + tested (73 tests); learner's C0+clean run pending (predict first) |
+| Next step | 2.3 include resolver (download docs_src code, replace `{* ... *}` markers) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 
@@ -51,8 +51,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | Step | What | Status |
 |---|---|---|
 | 2.0 | MLflow tracking; re-log C0 | built 2026-10-15 (D-036; 4 tests; smoke re-log equal to JSON); learner saw C0 runs in the UI and compared dev vs test (2026-10-15) |
-| 2.1 | Refactor into `ingestion/` package | done 2026-10-15 (git mv, 66 tests pass); C0 equality check pending |
-| 2.2 | Cleaner (HTML noise) | not started |
+| 2.1 | Refactor into `ingestion/` package | done 2026-10-15: 66 tests pass; regression check C0-2.1 == C0 on all metrics and all 19 questions (`785120a`) |
+| 2.2 | Cleaner (HTML noise) | built 2026-10-15 (7 tests; 144 tags -> 0; 30 code blocks byte-identical); C0+clean run pending |
 | 2.3 | Include resolver (`{* ... *}` markers) | not started |
 | 2.4 | Block parser (code, tables, headings kept whole) | not started |
 | 2.5 | Metadata (source, heading path, doc type, version, technology) | not started |

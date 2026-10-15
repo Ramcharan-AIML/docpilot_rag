@@ -7,6 +7,28 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-15, session 16: 2.1 regression check passed; step 2.2 cleaner
+
+- Learner's run: `02_ingest.py` + `run_retrieval_eval --config-id C0-2.1` (commit
+  `785120a` clean). Learner compared C0 test vs C0 dev in MLflow by mistake (n 8 vs 19).
+  Mentor compared the right files: all 7 overall metrics, per-type table, and all 19
+  questions' retrieved chunks/order/scores identical to C0. Only search latency differed
+  (p95 2.2 -> 1.7 ms: machine timing) and the two settings labels added in 2.0.
+  **Refactor regression check: passed.**
+- Learner asked how to judge eval results good or bad (answered in chat; see the evals
+  guide sections 9, 13, 16).
+- 2.2: measured the real noise first: 144 tags, of which **114 inside ```console blocks**
+  (terminal screenshot) and 30 in prose; none in python/JSON/TOML/plain blocks. **Plan
+  bug:** the plan's cleaner skips every fence, so it would leave 114 of 144 tags. Fix:
+  `console` fences are cleaned like prose (+ `html.unescape` for `&apos;`); every other
+  fence stays exact. Tag list widened to the tags actually found (b, u, dfn, abbr, code).
+- `src/docpilot/ingestion/cleaner.py`, `tests/test_cleaner.py` (7). On the 4 pages:
+  tags 144 -> 0; chars 34350 -> 31720; all 30 real code blocks byte-identical (checked
+  with a fence parser; a first regex check gave a false alarm and was itself wrong).
+- `02_ingest.py --clean --collection docpilot_clean` (C0 collection stays intact).
+  Full suite 73 passed. The eval cannot see how a collection was built: the config id
+  (`C0+clean`) and collection name carry that until 2.9 records ingest settings.
+
 ### 2026-10-15, session 15: step 2.1 refactor into packages
 
 - Learner opened MLflow (Model training -> docpilot-retrieval), compared C0 dev vs test:

@@ -97,5 +97,39 @@ python scripts/02_ingest.py
 python -m evals.run_retrieval_eval --split dev --config-id C0-2.1
 ```
 
-**Real results:** tests 66 passed (2026-10-15). Regression check: n/a (pending).
+**Real results (2026-10-15):** tests 66 passed. Regression check (commit `785120a`): every
+metric and all 19 questions' retrieved chunks identical to C0; only search latency
+moved (machine timing). **Passed.**
+
+---
+
+## 31. Step 2.2: the cleaner (2026-10-15, not yet committed)
+
+**Goal:** remove HTML noise that changes embeddings but means nothing to a reader. Like
+washing vegetables before cooking: same vegetables, no mud.
+
+**Measure first:** 144 tags in the 4 pages; **114 inside ```console blocks** (the coloured
+terminal screenshot), 30 in normal text; **none** inside python/JSON code.
+
+**Plan bug found and fixed:** the plan's cleaner skipped every code fence, so it would have
+left 114 of 144 tags. Our rule: normal text and `console` blocks are cleaned (a console
+block is a picture of a terminal, not code you run); every other code block is never
+touched.
+
+| Input | Output |
+|---|---|
+| `<dfn title="...">conversion</dfn>` | `conversion` |
+| `$ <font color="#4E9A06">uv run fastapi</font> dev` (console) | `$ uv run fastapi dev` |
+| `html = "<span>x</span>"` inside ```python | unchanged |
+| `<https://fastapi.tiangolo.com>` (a link) | unchanged |
+
+**Result on the real pages:** tags 144 -> 0; characters 34350 -> 31720; all 30 real code
+blocks byte-identical. 7 tests.
+
+**Run (hands-on):**
+```powershell
+python scripts/02_ingest.py --clean --collection docpilot_clean
+python -m evals.run_retrieval_eval --collection docpilot_clean --split dev --config-id C0+clean
+```
+**Real results:** n/a (your run, after a prediction).
 
