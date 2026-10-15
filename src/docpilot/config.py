@@ -31,6 +31,7 @@ BGE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 # --- chunking (D-006: a weak baseline on purpose) ---
 CHUNK_SIZE = 800  # characters, not tokens
 CHUNK_OVERLAP = 100
+CHUNK_STRATEGY = "fixed"  # Phase 2 adds recursive, semantic, ... (one name per strategy)
 
 # --- retrieval ---
 TOP_K = 4
@@ -45,3 +46,9 @@ LLM_TIMEOUT_SECONDS = 30
 # The exact sentence the model must say when the documents do not contain the answer.
 # Evals search for this text to count abstentions, so it lives in one place.
 NOT_FOUND_PHRASE = "I could not find this in the documents."
+
+# --- experiment tracking (D-022, D-036): local MLflow "lab notebook", gitignored ---
+MLFLOW_TRACKING_URI = os.getenv(
+    "MLFLOW_TRACKING_URI", f"sqlite:///{PROJECT_ROOT.as_posix()}/mlflow.db"
+)
+MLFLOW_ARTIFACT_DIR = PROJECT_ROOT / "mlartifacts"  # attached result files live here

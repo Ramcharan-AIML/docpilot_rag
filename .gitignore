@@ -54,3 +54,11 @@ htmlcov/
 .idea/
 Thumbs.db
 .DS_Store
+
+# ---------------------------------------------------------------
+# MLflow experiment tracking (D-036): local database and attached
+# files; the results JSON in evals/results/ is the committed copy
+# ---------------------------------------------------------------
+mlflow.db
+mlartifacts/
+mlruns/

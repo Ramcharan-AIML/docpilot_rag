@@ -15,6 +15,7 @@ from docpilot.rag import ask, elapsed_ms
 from evals.validate_golden import GOLDEN_DIR, load_items, validate
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
+GOLDEN_VERSION = "v0"  # bump when questions or evidence change (v1 in step 2.8)
 
 
 def load_split(split: str) -> list[dict]:
@@ -54,6 +55,8 @@ def base_record(config_id: str, split: str, kind: str) -> dict:
         "date": date.today().isoformat(),
         "git_commit": git_commit(),
         "settings": {
+            "golden_version": GOLDEN_VERSION,  # scores are comparable only on the same set
+            "chunk_strategy": config.CHUNK_STRATEGY,
             "chunk_size": config.CHUNK_SIZE,
             "chunk_overlap": config.CHUNK_OVERLAP,
             "embedding_model": config.EMBEDDING_MODEL,

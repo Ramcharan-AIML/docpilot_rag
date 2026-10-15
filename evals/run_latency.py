@@ -12,6 +12,7 @@ from docpilot.llm import get_llm_client
 from docpilot.vector_store import get_client
 from evals.common import ask_with_retries, base_record, load_split, save_result
 from evals.metrics import percentile
+from evals.tracking import log_record
 
 STAGES = ("embed_query", "search", "llm", "total")
 HARDWARE = "laptop CPU (Windows 11, no GPU used)"
@@ -31,6 +32,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Latency baseline of ask().")
     parser.add_argument("--split", default="dev", choices=["dev", "test"])
     parser.add_argument("--config-id", default="C0")
+    parser.add_argument(
+        "--ablation", action="store_true", help="mark this run for evals/ABLATION.md"
+    )
     parser.add_argument("--sleep", type=float, default=2.0, help="seconds between LLM calls")
     parser.add_argument("--limit", type=int, default=0, help="only the first N items (0 = all)")
     args = parser.parse_args()
@@ -80,6 +84,7 @@ def main() -> None:
     record["retries_429_total"] = sum(row["retries_429"] for row in rows)
     record["per_question"] = rows
     path = save_result(record)
+    run_id = log_record(record, path, ablation=args.ablation)  # MLflow (D-036)
 
     print(f"\n{args.config_id} latency on {args.split}, warm, {HARDWARE}, {config.LLM_MODEL}")
     for stage, summary in record["per_stage_ms"].items():
@@ -89,6 +94,7 @@ def main() -> None:
         )
     print(f"429 retries: {record['retries_429_total']}")
     print(f"saved {path}")
+    print(f"logged to MLflow: run {run_id} (open with: mlflow ui)")
 
 
 if __name__ == "__main__":

@@ -7,6 +7,28 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-15, session 14: Phase 2 starts; step 2.0 MLflow; PDF/Word; resume entry
+
+- Learner: "yes, yes" (follow the ablation table: C1-C5 in Phase 2; build 2.0). Asked for
+  PDF and Word support ("more important") and a resume title/description/tech list.
+- Branch `phase-2-chunking` from `main` (after the `phase-1` merge).
+- 2.0: PyPI 2026-10-15: mlflow 3.17.1, mlflow-skinny 3.17.1 (skinny has no UI/SQL ->
+  full mlflow, dev only). Installed: 60 new packages, protobuf 7.36.2 -> 6.33.6, `pip
+  check` clean. Files: `config.py` (`CHUNK_STRATEGY`, `MLFLOW_TRACKING_URI`,
+  `MLFLOW_ARTIFACT_DIR`), `.gitignore` (mlflow.db, mlartifacts/, mlruns/),
+  `evals/common.py` (`golden_version`, `chunk_strategy` in settings),
+  `evals/tracking.py`, runners log automatically (+ `--ablation`),
+  `evals/relog_results_to_mlflow.py` (moved from the plan's `scripts/`: imports `evals`),
+  `tests/test_tracking.py` (4). Full suite 66 passed. D-036.
+- Smoke re-log into a throwaway DB: 4 C0 files logged, second run skipped all,
+  recall_at_5 / mrr / total_p50_ms / accuracy equal to the JSON, JSON attached; DB and
+  artifacts deleted (learner does the real run).
+- PDF/Word: Docling lists PDF and DOCX (docs page 2026-10-15; docling 2.139.0). Step 2.7
+  widened to PDF + Word + HTML; corpus files only, uploads stay 8.6 (D-037).
+- Resume: `docs/interview/resume_entry.md` (titles, version A = true today with real
+  numbers, version B = target with n/a placeholders, skills line, checklist).
+- `decisions.md` is at 495 lines: the next decision entries go to `2_decisions.md`.
+
 ### 2026-10-15, session 13: Phase 0 and Phase 1 gates closed
 
 - Learner (no time) asked the mentor to write the remaining gate texts and complete

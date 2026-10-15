@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | Phase 2 not started: next is 2.0 (MLflow primer, then tracking) after the learner's go |
-| Next step | 2.0 MLflow: teach from zero (`teaching/primer_mlflow.md`), then log C0 |
+| Current step | 2.0 MLflow built + tested (branch `phase-2-chunking`); learner's hands-on: re-log C0, open `mlflow ui` |
+| Next step | 2.1 refactor into packages (no behaviour change) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 
@@ -50,14 +50,14 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 ### Phase 2: Ingestion quality and chunking
 | Step | What | Status |
 |---|---|---|
-| 2.0 | MLflow tracking; re-log C0 | not started |
+| 2.0 | MLflow tracking; re-log C0 | built 2026-10-15 (D-036; 4 tests; smoke re-log equal to JSON); learner's UI check pending |
 | 2.1 | Refactor into `ingestion/` package | not started |
 | 2.2 | Cleaner (HTML noise) | not started |
 | 2.3 | Include resolver (`{* ... *}` markers) | not started |
 | 2.4 | Block parser (code, tables, headings kept whole) | not started |
 | 2.5 | Metadata (source, heading path, doc type, version, technology) | not started |
 | 2.6 | Six chunking strategies | not started |
-| 2.7 | Docling for PDF/HTML | not started |
+| 2.7 | Docling for PDF, Word (DOCX), HTML (D-037) | not started |
 | 2.8 | Corpus register; groups A docs, B learning, C interview prep (D-030) + golden set per domain | not started |
 | 2.9 | Index per strategy, run evals, per-type breakdown | not started |
 | 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | not started |

@@ -22,6 +22,7 @@ from evals.metrics import (
     reciprocal_rank,
     strict_recall_at_k,
 )
+from evals.tracking import log_record
 
 # Fetch 10 so we can report @1, @3 and @5 from one search. ask() still uses TOP_K (4).
 SEARCH_K = 10
@@ -73,6 +74,9 @@ def main() -> None:
     parser.add_argument("--collection", default=config.COLLECTION_NAME)
     parser.add_argument("--split", default="dev", choices=["dev", "test"])
     parser.add_argument("--config-id", default="C0")
+    parser.add_argument(
+        "--ablation", action="store_true", help="mark this run for evals/ABLATION.md"
+    )
     args = parser.parse_args()
 
     # Unanswerable items have no evidence, so retrieval cannot be scored for them;
@@ -108,8 +112,10 @@ def main() -> None:
     }
     record["per_question"] = rows
     path = save_result(record)
+    run_id = log_record(record, path, ablation=args.ablation)  # MLflow (D-036)
     print_table(record)
     print(f"saved {path}")
+    print(f"logged to MLflow: run {run_id} (open with: mlflow ui)")
 
 
 if __name__ == "__main__":
