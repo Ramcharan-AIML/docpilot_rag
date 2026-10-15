@@ -7,6 +7,18 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-15, session 12: first CI run on GitHub (learner)
+
+- Learner committed 1d abstention + guide (`72697d3`), 1e (`9e18b96`), 1f (`656cb64`),
+  pushed, and opened **draft PR #1** `phase-1-baseline -> main` with the filled template
+  (https://github.com/Ramcharan-AIML/docpilot_rag/pull/1). Prediction: not given.
+- Real result: **ci / test green**, run `38682492687`, 1 min 36 s, ubuntu-latest:
+  CPU-only `torch-2.14.1+cpu` (196.3 MB wheel), ruff clean (38 files), **62 passed in
+  12.39 s**, length check OK. A second check, **GitGuardian Security Checks** (an app on
+  the learner's GitHub account, not part of our workflow), reported no secrets.
+- Draft PR stays open until the Phase 1 gate; merge only when green (no branch
+  protection while private, D-035).
+
 ### 2026-10-14, session 11: steps 1e (mini API) and 1f (CI files); evals guide
 
 - Learner asked: build 1e and 1f, and write one complete evals guide with interview Qs.

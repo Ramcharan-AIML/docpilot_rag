@@ -467,6 +467,8 @@ whole project is finished, then go public. Until then CI still runs on every pul
 you follow the PR workflow by habit instead of by a locked door (D-035).
 
 **Real results:** local CI simulation: 62 tests passed, ruff clean, length check OK.
-First GitHub CI run: n/a (after your push and PR). Branch protection: deferred to project
-end.
+First GitHub CI run (2026-10-15, draft PR #1, run 38682492687): **green** in 1 min 36 s on
+Linux: CPU-only torch (196 MB), ruff clean, **62 tests passed in 12.4 s**, length check OK.
+GitGuardian (an app on your account) also found no secrets. Branch protection: deferred to
+project end.
 
