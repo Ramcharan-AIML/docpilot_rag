@@ -16,6 +16,7 @@ import time
 from docpilot import config
 from docpilot.embedding.dense import embed_documents
 from docpilot.ingestion.chunkers.fixed import fixed_size_chunks
+from docpilot.ingestion.chunkers.tokens import MAX_CHUNK_TOKENS, count_tokens
 from docpilot.ingestion.cleaner import clean_markdown
 from docpilot.ingestion.includes import resolve_includes
 from docpilot.ingestion.loader import load_documents
@@ -56,6 +57,14 @@ def main() -> None:
         print(f"includes resolved: {resolved_total}, missing: {len(missing_total)}")
         for path in missing_total:
             print(f"  missing: {path}")
+
+    # Chunks over the model limit are cut off silently when embedded: report, never hide.
+    token_counts = [count_tokens(chunk.text) for chunk in chunks]
+    over_limit = sum(count > MAX_CHUNK_TOKENS for count in token_counts)
+    print(
+        f"chunk tokens: largest {max(token_counts)}, "
+        f"over the {MAX_CHUNK_TOKENS}-token limit: {over_limit}"
+    )
 
     vectors = embed_documents([chunk.text for chunk in chunks])
 

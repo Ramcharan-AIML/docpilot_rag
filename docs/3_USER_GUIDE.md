@@ -214,3 +214,31 @@ q-018's answer is one whole block. No tables exist in these pages yet (2.7, 2.8 
 
 **Not used yet:** today's fixed chunker ignores blocks; 2.6's chunkers will build on them.
 
+
+---
+
+## 35. Did clean data help? And the first piece of step 2.6 (2026-10-17)
+
+**The two data-quality runs** (same exam: 19 dev questions; same fixed 800/100 chunks;
+only the text changed):
+
+| Config | Recall@1 | Recall@5 | MRR |
+|---|---|---|---|
+| C0 (raw) | 0.526 | 0.842 | 0.667 |
+| C0+clean | 0.526 | 0.947 | 0.665 |
+| C0+clean+incl | 0.474 | 0.895 | 0.643 |
+
+**In plain words:** cleaning pulled 2 more questions into the top 5. Pasting the real code
+in pushed code answers to rank 1 but pushed some prose answers down, because the new code
+chunks compete with the text. One question = 0.053, so these moves are 1 to 2 questions.
+We keep both (D-039): the final system needs the code, and the smarter chunkers of 2.6 are
+supposed to stop code and prose from getting mixed.
+
+**Why tokens now (D-038):** the model reads **tokens** (word pieces), not characters, and
+quietly ignores everything after 512 of them (510 for our text: 2 seats are taken by the
+start and end markers). Like a bus with 512 seats: extra passengers are left behind and
+nobody tells you. `chunkers/tokens.py` counts seats with the model's own tokenizer, and
+`02_ingest.py` now prints the biggest chunk and how many are over.
+
+**Small bug fixed:** a new result file made the next run look "+dirty". Result files are
+outputs, not code, so they no longer count.

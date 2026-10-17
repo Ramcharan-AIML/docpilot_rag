@@ -28,6 +28,32 @@ question moves Recall by about 5 points; differences that small are ties.
 
 Faithfulness and answer relevancy need an LLM judge: Phase 3.9. Until then `n/a`.
 
+## Data-quality rows (Phase 2, steps 2.2 and 2.3; fixed 800/100 chunks, dev, n=19)
+
+Same chunker as C0; only the input text changes. Retrieval only (no LLM), so the other
+columns stay `n/a`. One question = 0.053.
+
+| Config | What changed | Recall@1 | Recall@3 | Recall@5 | strict R@5 | MRR | nDCG@5 | chunks | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| C0 | raw text | 0.526 | 0.842 | 0.842 | 0.781 | 0.667 | 0.670 | 51 | `2026-10-14_C0_dev_retrieval.json` (`06891f1`) |
+| C0+clean | HTML noise removed | 0.526 | 0.737 | 0.947 | 0.904 | 0.665 | 0.703 | 51 | `2026-10-17_C0+clean_dev_retrieval.json` (`d8a3608`) |
+| C0+clean+incl | + real code pasted in | 0.474 | 0.842 | 0.895 | 0.833 | 0.643 | 0.656 | 57 | `2026-10-17_C0+clean+incl_dev_retrieval.json` (`d8a3608`*) |
+
+\* labelled `d8a3608+dirty` only because the C0+clean result file was still uncommitted;
+no code had changed. Fixed in `evals/common.py` (result files no longer count).
+
+Reading (flipped questions, from the result files):
+- **clean vs C0:** top 5 gained q-017 and q-023 (misses -> rank 5 and 4); q-018 is still
+  missed. Rank 1 is a swap (+q-001, q-006, q-011; -q-008, q-013, q-026), so Recall@1 and
+  MRR do not move. Recall@3 fell because q-010 and q-015 slid from rank 3 to 5.
+- **clean+incl vs clean:** code questions rose to rank 1 (q-015, q-023, q-026); prose
+  questions fell (q-001, q-004, q-011: 1 -> 3; q-005: 1 -> 4; q-020: 3 -> 8, out of the
+  top 5). Pasted code makes more and longer code chunks that compete with prose chunks.
+- **Decision (D-039):** keep both for every chunker in 2.6. Cleaning has no clear
+  downside; the includes cost about 1 question at fixed size, but without them the LLM
+  can never show the real code. The structure-aware chunkers (2.6) are meant to fix
+  exactly this code-versus-prose mixing.
+
 **C0 on the test split (run once, Phase 1 gate, 2026-10-15, commit `ccd45ec`, n=8):**
 Recall@1 0.375, Recall@3 0.875, Recall@5 1.000, strict Recall@5 0.938, MRR 0.635,
 nDCG@5 0.687 (`results/2026-10-15_C0_test_retrieval.json`). Same picture as dev: the right

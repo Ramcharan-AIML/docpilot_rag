@@ -5,6 +5,7 @@ Every entry answers: **what, why, alternatives, trade-offs, date, evidence**.
 Evidence is filled only with real eval numbers, or `n/a`.
 
 D-001 to D-011 are copied from `PROJECT_DOCUMENTATION.md` section 19.
+D-038 onwards: [2_decisions.md](2_decisions.md) (this file reached the 500-line limit).
 
 ---
 

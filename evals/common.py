@@ -35,12 +35,17 @@ def git_commit() -> str:
     """Short commit id, plus '+dirty' if there are uncommitted changes.
 
     '+dirty' warns that the code that produced a number is not exactly any commit.
+    New result files in evals/results/ are ignored: they are outputs, not code, and
+    counting them made the second of two back-to-back runs "+dirty" (2026-10-17).
     """
     commit = subprocess.run(
         ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, check=True
     ).stdout.strip()
     changes = subprocess.run(
-        ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+        ["git", "status", "--porcelain", "--", ".", ":(exclude)evals/results"],
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
     return commit + ("+dirty" if changes else "")
 

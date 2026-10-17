@@ -7,6 +7,24 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-17, session 18: data-quality rows recorded; 2.6 started (token counter)
+
+- Learner committed 2.3-2.5 (`d8a3608`) and ran C0+clean and C0+clean+incl (no
+  prediction given). Asked for clarity on cleaner, ingest, retrieval eval and the table;
+  quiz answer for `[0,0,1,0,0]`: Recall@1 0 and Recall@5 1.0 right, MRR said 0, correct is
+  1/3 (MRR is 0 only when nothing relevant is in the top 10).
+- Results (dev, n=19, fixed 800/100): C0+clean R@1 0.526, R@5 0.947, MRR 0.665, nDCG@5
+  0.703; C0+clean+incl R@1 0.474, R@5 0.895, MRR 0.643, nDCG@5 0.656. Flips and reading in
+  `evals/ABLATION.md`. Decision D-039: chunkers run on clean + includes text.
+- Bug fixed: `evals/common.git_commit` counted new result files, so the second
+  back-to-back run said `+dirty`. Now `evals/results` is excluded.
+- 512-token limit verified on the pinned model (D-038, new file `docs/2_decisions.md`
+  because decisions.md is full). 3.07-3.46 chars/token on the 4 pages: C0 chunks are about
+  250 tokens, no truncation so far.
+- Built `ingestion/chunkers/tokens.py` (`count_tokens`, `fits_in_model`,
+  `MAX_CHUNK_TOKENS = 510`) + `tests/test_tokens.py` (4). `02_ingest.py` prints the largest
+  chunk in tokens and how many are over the limit. 94 passed; ruff clean.
+
 ### 2026-10-17, session 17b: step 2.4 block parser
 
 - Learner: "I forgot 2.4, implement it too".
