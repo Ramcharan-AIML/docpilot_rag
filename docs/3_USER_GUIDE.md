@@ -133,3 +133,84 @@ python -m evals.run_retrieval_eval --collection docpilot_clean --split dev --con
 ```
 **Real results:** n/a (your run, after a prediction).
 
+---
+
+## 32. Step 2.3: put the real code into the docs (2026-10-17, not yet committed)
+
+**Goal:** the pages say `{* ../../docs_src/first_steps/tutorial001_py310.py *}` instead of
+showing code. Like a recipe book that says "see page 112" for every recipe: the search found
+the right page, but the recipe was missing. This step fetches page 112 and pastes it in.
+
+**Files:** `src/docpilot/ingestion/includes.py`, `tests/test_includes.py`;
+`scripts/01_download_docs.py` (also downloads the 18 code files, same pinned commit, into
+`data/code/fastapi/`, gitignored); `scripts/02_ingest.py --includes`.
+
+**Checked before building:** the code lives at the FastAPI repo root (`docs_src/...` -> HTTP
+200; `docs/en/docs_src/...` -> 404).
+
+**Rules:** a missing file is reported and its marker kept, never hidden; the code goes in
+as a ```python block, so the cleaner and later chunkers treat it as code.
+
+**Result (dry run, 2026-10-17):** includes resolved **29**, missing **0**; the "minimal app"
+chunk now holds real code. Chunks 51 -> 57 (the code adds text). Fixes the cause of
+failure-log Q1 (invented code) and q-007 (false refusal), to be measured.
+
+**Run (hands-on):**
+```powershell
+python scripts/01_download_docs.py
+python scripts/02_ingest.py --clean --includes --collection docpilot_clean_incl
+python -m evals.run_retrieval_eval --collection docpilot_clean_incl --split dev --config-id C0+clean+incl
+```
+**Real results:** n/a (your run).
+
+---
+
+## 33. Step 2.5: metadata on every chunk (2026-10-17, not yet committed)
+
+**Goal:** every chunk knows where it came from and what is inside it. Like a label on every
+jar in a pantry: what it is, where it came from, when it was made.
+
+| Field | Example | Used for |
+|---|---|---|
+| technology | `fastapi` | filters in Phase 3 ("only Docker docs") |
+| domain | `docs` (learning / interview later, D-030) | per-domain scores (2.9) |
+| doc_type, version | `tutorial`, commit `d623544...` | "which docs version said this?" |
+| heading_path | `["Query Parameters", "Defaults"]` | better citations |
+| has_code, has_table | `True`, `False` | per-type analysis |
+| content_hash | sha256 of the text | spot duplicates, re-embed only changes |
+
+**Files:** `ingestion/sources.py` (one place for source facts; the download script reads its
+pinned commit from here), `ingestion/metadata.py`, `tests/test_metadata.py`.
+
+**Rules:** `#` inside a code block is a comment, not a heading; a document with no register
+entry stops ingestion (unknown licence, D-030). Metadata goes into the Qdrant **payload
+only**; the embedded text is unchanged, so retrieval scores do not move.
+
+**Real results:** 5 tests; full suite 83 passed (2026-10-17).
+
+---
+
+## 34. Step 2.4: the block parser (2026-10-17, not yet committed)
+
+**Goal:** see the document as **pieces with a meaning** (heading, paragraph, code, table,
+list), so the chunkers of 2.6 can keep them whole. Like cutting a cake along its layers
+instead of with a ruler every 8 cm.
+
+**Files:** `src/docpilot/ingestion/blocks.py`, `tests/test_blocks.py`.
+
+| Rule | Why |
+|---|---|
+| Everything between two ``` fences is ONE code block | code must never be cut |
+| `# comment` inside code is not a heading | Python comments start with `#` too |
+| Table rows (`|`) and list items (`*`, `-`, `1.`) stay together | q-018's answer was a list cut in two |
+| Each block remembers its heading path | "Request Body > Results", for citations and the hierarchical chunker |
+
+**Plan fixes:** heading anchors `{ #x }` removed (one shared `parse_heading`, also used by
+metadata); a `list` kind added (the plan treated lists as paragraphs); `#hashtag` without a
+space is not a heading.
+
+**Result on the real pages:** 0 lines lost; 63 code blocks = 63 fence pairs; 16 lists;
+q-018's answer is one whole block. No tables exist in these pages yet (2.7, 2.8 bring them).
+
+**Not used yet:** today's fixed chunker ignores blocks; 2.6's chunkers will build on them.
+

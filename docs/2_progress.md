@@ -7,6 +7,44 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-17, session 17b: step 2.4 block parser
+
+- Learner: "I forgot 2.4, implement it too".
+- `src/docpilot/ingestion/blocks.py`, `tests/test_blocks.py` (7: `#` comment in code is
+  not a heading, table stays one block, heading path `["A", "B"]` and reset, anchor
+  removed + `#hashtag` not a heading, list with sub-items one block, blank line splits
+  paragraphs, unclosed code block kept).
+- Plan fixes: (1) heading anchors `{ #x }` removed; `parse_heading` is now the ONE heading
+  rule, used by metadata.py too; (2) a `list` kind added (plan: lists = paragraphs) because
+  q-018's answer is a bullet list that fixed chunks split; (3) a heading needs a space.
+- Real pages (clean + includes): 64 headings, 256 paragraphs, 63 code blocks (= fence
+  pairs), 16 lists, 0 tables (none in these 4 pages; tables tested on made-up text only);
+  **0 lines lost**; q-018's answer is one `list` block under `Request Body > Results`.
+- Full suite 90 passed; ruff clean. Blocks are not used by ingestion yet: the fixed
+  chunker ignores them; block-based chunkers come in 2.6.
+
+### 2026-10-17, session 17: steps 2.3 (includes) and 2.5 (metadata)
+
+- Learner (no time) skipped the C0+clean prediction/run and asked for 2.3 and 2.5. Step
+  2.4 (blocks) was not requested; 2.5's heading path is computed from a line scan of the
+  text instead of from Blocks (noted; 2.4 can reuse or replace it).
+- 2.3: verified paths at commit d623544: `docs_src/...` at repo root -> 200,
+  `docs/en/docs_src/...` -> 404, so the marker's `../../` maps to the repo root.
+  `ingestion/includes.py` (find + resolve; missing files reported, marker kept);
+  `01_download_docs.py` downloads the 18 referenced files to `data/code/fastapi/`
+  (gitignored, `config.CODE_DIR`); `02_ingest.py --includes`. Dry run on the 4 pages
+  (clean + includes, no embedding): **includes resolved 29, missing 0**, markers left 0;
+  first-steps chunk 0 now contains the real minimal-app code. Chunks 51 -> 57
+  (12 + 19 + 17 + 9). 5 tests.
+- 2.5: `ingestion/sources.py` (register: fastapi = docs / tutorial / commit / MIT /
+  public; the download script now reads the commit from it), `Chunk` gains strategy,
+  char_start, domain, technology, doc_type, version, heading_path, has_code, has_table,
+  content_hash (defaults keep old code working); `ingestion/metadata.py` (heading scan
+  skips code blocks and `{ #anchor }`; unknown source -> KeyError, D-030 licence rule);
+  Qdrant payload = all Chunk fields. Embedded text unchanged, so C0 is unaffected. 5 tests.
+- Full suite 83 passed; ruff clean; length check OK. Learner runs still pending:
+  `C0+clean` (2.2) and `C0+clean+incl` (2.3), each with a one-line prediction.
+
 ### 2026-10-15, session 16: 2.1 regression check passed; step 2.2 cleaner
 
 - Learner's run: `02_ingest.py` + `run_retrieval_eval --config-id C0-2.1` (commit

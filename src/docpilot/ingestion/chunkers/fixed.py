@@ -33,7 +33,15 @@ def fixed_size_chunks(
         piece = text[start : start + chunk_size]
         if piece.strip():  # skip pieces that are only whitespace
             # len(chunks), not a loop counter: numbers stay 0, 1, 2 with no gaps after a skip
-            chunks.append(Chunk(text=piece, source=source, chunk_number=len(chunks)))
+            chunks.append(
+                Chunk(
+                    text=piece,
+                    source=source,
+                    chunk_number=len(chunks),
+                    strategy="fixed",
+                    char_start=start,  # lets metadata find the heading above it
+                )
+            )
         if start + chunk_size >= len(text):
             break  # this piece already reached the end; another would only repeat text
         start += step

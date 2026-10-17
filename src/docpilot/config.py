@@ -18,6 +18,9 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 # --- paths ---
 DOCS_DIR = PROJECT_ROOT / "data" / "docs"
+# Code files the docs include with {* ... *} markers (step 2.3), one folder per technology:
+# data/code/fastapi/docs_src/... Kept apart from DOCS_DIR so the loader never reads them.
+CODE_DIR = PROJECT_ROOT / "data" / "code"
 QDRANT_PATH = PROJECT_ROOT / "qdrant_local"  # local-mode Qdrant saves its files here (gitignored)
 
 # --- embeddings (D-002, model card checked 2026-10-07) ---
