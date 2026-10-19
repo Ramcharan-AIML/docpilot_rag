@@ -7,6 +7,21 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-19, session 19: fixed chunker in tokens; collection manifests
+
+- Learner pasted the ingest summary only (no `chunk tokens:` line, no prediction); mentor
+  measured: clean+incl fixed 800/100 chunks are 65 to 323 tokens (median 248), 0 over 510.
+  Learner (no time): "go forward". Also asked whether we use LangChain/LangGraph: LangGraph
+  from Phase 4 (plain loop first), LangChain only if a step needs it (plan 4).
+- Built `fixed_token_chunks` (fixed.py; slices the original text between token offsets,
+  refuses sizes over 510) and `token_offsets` (tokens.py); `config.CHUNK_TOKENS` 400,
+  `CHUNK_OVERLAP_TOKENS` 50. `02_ingest.py` gained `--strategy`, `--size`, `--overlap`.
+- Plan bug fixed (D-040): evals took chunk settings from config.py, so every new strategy
+  would have been recorded as fixed 800/100. New `ingestion/manifest.py`; ingest writes
+  `data/processed/collections/<name>.json`; `base_record` reads it (`settings_source`).
+- Real pages (clean + incl): 200/25 -> 68 chunks, 400/50 -> 36 chunks; re-counted, no
+  chunk over its size; 0 non-space characters lost. Tests: 102 passed (+8); ruff clean.
+
 ### 2026-10-17, session 18: data-quality rows recorded; 2.6 started (token counter)
 
 - Learner committed 2.3-2.5 (`d8a3608`) and ran C0+clean and C0+clean+incl (no

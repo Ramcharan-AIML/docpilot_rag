@@ -36,3 +36,19 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
 - **Alternative:** compare chunkers on cleaned text only. **Why not:** the final system
   will include the code, so the chunker must be chosen on the text it will really see.
 - **Revisit** if every block-based chunker still loses prose questions with includes.
+
+## D-040: every collection carries a manifest; evals record it (2026-10-19)
+
+- **What:** `02_ingest.py` writes `data/processed/collections/<collection>.json` (strategy,
+  size, overlap, unit, cleaned, includes, chunk count, largest chunk in tokens).
+  `evals/common.base_record` reads it, so result files and MLflow params show the real
+  build settings; `settings_source` says `manifest` or `config.py` (old collections).
+- **Why (plan bug):** results took chunk settings from `config.py`, so a "recursive 400"
+  run would have been recorded as "fixed 800/100". With one collection per strategy, the
+  settings belong to the collection, not to the config file.
+- **Alternative:** read settings from the Qdrant payload. **Why not:** the payload holds
+  per-chunk facts (strategy, but not size, overlap or cleaning flags); copying build
+  settings into every point wastes space. **Alternative:** put them in the config id.
+  **Why not:** a typo in a name cannot be checked; a file written by the ingest can.
+- No new dependency (json from the standard library). Manifests are gitignored like the
+  index itself; both are rebuilt by `02_ingest.py`.

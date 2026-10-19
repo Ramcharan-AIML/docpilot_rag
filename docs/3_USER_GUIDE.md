@@ -242,3 +242,22 @@ nobody tells you. `chunkers/tokens.py` counts seats with the model's own tokeniz
 
 **Small bug fixed:** a new result file made the next run look "+dirty". Result files are
 outputs, not code, so they no longer count.
+
+---
+
+## 36. The ruler, now in tokens, and a label on every library (2026-10-19)
+
+**Fixed chunker in tokens:** same ruler as C0, but it measures in **tokens** (what the model
+reads) instead of characters. 400 tokens with 50 overlap gives 36 chunks on our 4 pages
+(800 characters on the same clean + includes text gave 57). It still cuts through code and lists on purpose: it is the
+**control row**. When the recursive chunker (C1) is tested at 400 tokens, we compare it with
+this one at 400 tokens. Then the only difference is *where* we cut, not *how big*.
+
+**Why it slices the original text:** the tokenizer lower-cases words and drops spaces. If we
+glued tokens back together, code would lose its indentation. So we remember where each token
+starts and ends in the page and cut the page itself at those places.
+
+**A label on every library (D-040):** every collection now gets a small file saying how it
+was built (strategy, size, overlap, cleaned, includes). Before, the eval copied the settings
+from `config.py`, so a recursive-400 run would have been written down as "fixed 800": like a
+lab sample with the wrong sticker. The eval now reads the label, and MLflow shows it too.

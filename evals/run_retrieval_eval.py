@@ -100,8 +100,7 @@ def main() -> None:
     for row in rows:
         by_type[row["type"]].append(row)
 
-    record = base_record(args.config_id, args.split, "retrieval")
-    record["collection"] = args.collection
+    record = base_record(args.config_id, args.split, "retrieval", args.collection)
     record["settings"].update({"search_k": SEARCH_K, "min_overlap": MIN_OVERLAP})
     record["overall"] = aggregate(rows)
     record["per_type"] = {name: aggregate(group) for name, group in sorted(by_type.items())}

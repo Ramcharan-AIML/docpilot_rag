@@ -22,6 +22,9 @@ DOCS_DIR = PROJECT_ROOT / "data" / "docs"
 # data/code/fastapi/docs_src/... Kept apart from DOCS_DIR so the loader never reads them.
 CODE_DIR = PROJECT_ROOT / "data" / "code"
 QDRANT_PATH = PROJECT_ROOT / "qdrant_local"  # local-mode Qdrant saves its files here (gitignored)
+# How each collection was built (strategy, size, clean, includes), one JSON per collection,
+# so an eval records the real settings of the index it tested (gitignored, rebuilt by ingest).
+MANIFEST_DIR = PROJECT_ROOT / "data" / "processed" / "collections"
 
 # --- embeddings (D-002, model card checked 2026-10-07) ---
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
@@ -35,6 +38,10 @@ BGE_QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 CHUNK_SIZE = 800  # characters, not tokens
 CHUNK_OVERLAP = 100
 CHUNK_STRATEGY = "fixed"  # Phase 2 adds recursive, semantic, ... (one name per strategy)
+# Phase 2 chunkers measure size in model tokens (D-038; the model reads at most 510).
+# 50 of 400 = 12.5% overlap, the same share as C0's 100 of 800 characters.
+CHUNK_TOKENS = 400
+CHUNK_OVERLAP_TOKENS = 50
 
 # --- retrieval ---
 TOP_K = 4

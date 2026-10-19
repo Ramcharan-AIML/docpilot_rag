@@ -11,6 +11,7 @@ from openai import OpenAI, RateLimitError
 from qdrant_client import QdrantClient
 
 from docpilot import config
+from docpilot.ingestion.manifest import load_manifest
 from docpilot.rag import ask, elapsed_ms
 from evals.validate_golden import GOLDEN_DIR, load_items, validate
 
@@ -50,12 +51,19 @@ def git_commit() -> str:
     return commit + ("+dirty" if changes else "")
 
 
-def base_record(config_id: str, split: str, kind: str) -> dict:
-    """The labels every result file carries, so a number can always be traced back."""
-    return {
+def base_record(
+    config_id: str, split: str, kind: str, collection: str = config.COLLECTION_NAME
+) -> dict:
+    """The labels every result file carries, so a number can always be traced back.
+
+    Chunk settings come from the collection's manifest (written by 02_ingest.py), because
+    each collection can be built differently. Collections built before manifests existed
+    fall back to config.py, and the record says so.
+    """
+    record = {
         "kind": kind,  # "retrieval", "latency" or "abstention"
         "config_id": config_id,
-        "collection": config.COLLECTION_NAME,
+        "collection": collection,
         "split": split,
         "date": date.today().isoformat(),
         "git_commit": git_commit(),
@@ -69,6 +77,11 @@ def base_record(config_id: str, split: str, kind: str) -> dict:
             "answer_top_k": config.TOP_K,  # chunks given to the LLM in ask()
         },
     }
+    manifest = load_manifest(collection)
+    record["settings"]["settings_source"] = "manifest" if manifest else "config.py"
+    if manifest:
+        record["settings"].update(manifest)
+    return record
 
 
 def to_json(record: dict) -> str:

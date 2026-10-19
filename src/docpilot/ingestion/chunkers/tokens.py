@@ -25,6 +25,18 @@ def count_tokens(text: str) -> int:
     return len(get_model().tokenizer.encode(text, add_special_tokens=False, verbose=False))
 
 
+def token_offsets(text: str) -> list[tuple[int, int]]:
+    """(start, end) character positions of every token of `text`, in order.
+
+    Lets a chunker cut at a token border and still slice the ORIGINAL text, so spaces,
+    line breaks and code indentation survive (the tokens themselves are lower-cased).
+    """
+    encoding = get_model().tokenizer(
+        text, add_special_tokens=False, return_offsets_mapping=True, verbose=False
+    )
+    return encoding["offset_mapping"]
+
+
 def fits_in_model(text: str) -> bool:
     """True if the model will see all of `text` (nothing silently cut off)."""
     return count_tokens(text) <= MAX_CHUNK_TOKENS

@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.6 started: token counter built (D-038, limit 510); C0+clean and C0+clean+incl recorded (D-039) |
-| Next step | 2.6: fixed chunker in tokens, then recursive (C1) |
+| Current step | 2.6: token counter (D-038), fixed chunker in tokens, collection manifests (D-040) built; fixed_tokens-400 run pending |
+| Next step | 2.6: recursive chunker (C1) on blocks, compared with fixed_tokens at the same size |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 
@@ -56,7 +56,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.3 | Include resolver (`{* ... *}` markers) | built 2026-10-17: 18 code files downloaded, includes resolved 29, missing 0; C0+clean+incl dev R@5 0.895, MRR 0.643 (2026-10-17) |
 | 2.4 | Block parser (code, tables, headings kept whole) | built 2026-10-17 (7 tests; real pages: 0 lines lost, 63 code blocks whole, lists kept whole) |
 | 2.5 | Metadata (source, heading path, doc type, version, technology) | built 2026-10-17 (payload only; text unchanged) |
-| 2.6 | Six chunking strategies | in progress: tokens.py (limit 510 verified, D-038) |
+| 2.6 | Six chunking strategies | in progress: tokens.py (limit 510, D-038); fixed_tokens + manifests (D-040) |
 | 2.7 | Docling for PDF, Word (DOCX), HTML (D-037) | not started |
 | 2.8 | Corpus register; groups A docs, B learning, C interview prep (D-030) + golden set per domain | not started |
 | 2.9 | Index per strategy, run evals, per-type breakdown | not started |
