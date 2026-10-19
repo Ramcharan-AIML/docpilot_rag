@@ -109,7 +109,11 @@ def save_result(record: dict) -> Path:
 
 
 def ask_with_retries(
-    question: str, qdrant_client: QdrantClient, llm_client: OpenAI, max_attempts: int = 4
+    question: str,
+    qdrant_client: QdrantClient,
+    llm_client: OpenAI,
+    max_attempts: int = 4,
+    collection: str = config.COLLECTION_NAME,
 ) -> dict:
     """Run ask() and count rate-limit (429) retries ourselves.
 
@@ -121,7 +125,7 @@ def ask_with_retries(
     start = time.perf_counter()
     for attempt in range(1, max_attempts + 1):
         try:
-            result = ask(question, qdrant_client, counted_client)
+            result = ask(question, qdrant_client, counted_client, collection)
             return {**result, "retries_429": attempt - 1, "wall_ms": elapsed_ms(start)}
         except RateLimitError as error:
             if attempt == max_attempts:

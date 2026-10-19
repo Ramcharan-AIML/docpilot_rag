@@ -75,6 +75,14 @@ Re-run on golden v1 in step 2.9 (rows in one table must share the golden version
 | Config | Strategy | Size / overlap (tokens) | Chunks | Recall@1 | Recall@3 | Recall@5 | MRR | nDCG@5 | Result file (commit) |
 |---|---|---|---|---|---|---|---|---|---|
 | fixed_tokens-400 | fixed, in tokens (control row) | 400 / 50 | 36 | 0.474 | 0.684 | 0.684 | 0.626 | 0.607 | `2026-10-19_fixed_tokens-400_dev_retrieval.json` (`524f200`) |
+| fixed_tokens-200 | fixed, in tokens (control row) | 200 / 25 | 68 | 0.579 | 0.737 | 0.789 | 0.684 | 0.699 | `2026-10-19_fixed_tokens-200_dev_retrieval.json` (`509d687`) |
+| C1-400 | recursive | 400 / 50 | 37 | 0.526 | 0.789 | 0.895 | 0.679 | 0.665 | `2026-10-19_C1-400_dev_retrieval.json` (`509d687`) |
+| C1-200 | recursive | 200 / 25 | 73 | 0.579 | 0.684 | 0.789 | 0.657 | 0.666 | `2026-10-19_C1-200_dev_retrieval.json` (`509d687`) |
+| C2-400 | semantic (percentile 10) | max 400 | 64 | 0.316 | 0.737 | 0.789 | 0.537 | 0.562 | `2026-10-19_C2-400_dev_retrieval.json` (`509d687`) |
+| C3-128 | parent-child (scored on parents) | child 128, parent max 800 | 131 (62 parents) | 0.579 | 0.789 | 0.895 | 0.696 | 0.718 | `2026-10-19_C3-128_dev_retrieval.json` (`509d687`) |
+| C4-400 | hierarchical + heading prefix | 400 | 65 | 0.737 | 0.842 | 0.842 | 0.795 | 0.768 | `2026-10-19_C4-400_dev_retrieval.json` (`509d687`) |
+| C4-200 | hierarchical + heading prefix | 200 | 95 | 0.684 | 0.842 | 0.895 | 0.782 | 0.758 | `2026-10-19_C4-200_dev_retrieval.json` (`509d687`) |
+| C4-400-noprefix | hierarchical, no prefix | 400 | 65 | 0.684 | 0.789 | 0.842 | 0.744 | 0.729 | `2026-10-19_C4-400-noprefix_dev_retrieval.json` (`509d687`) |
 
 Reading fixed_tokens-400 vs C0+clean+incl (800 characters, about 250 tokens, 57 chunks):
 13 questions changed rank. 7 went up (q-001, q-011, q-013 to rank 1), but 5 fell out of
@@ -82,3 +90,37 @@ the top 5 (q-006 1 -> 8, q-009 1 -> 6, q-010 3 -> 6, q-017 3 -> 9, q-023 1 -> 6)
 q-020 came back in (8 -> 2). Bigger chunks hold more topics, so their vector is a blurrier
 average: good matches get sharper ranks, mixed ones sink. Recall@5 0.895 -> 0.684 is
 4 questions: size alone matters a lot; 200-token rows are needed.
+
+C5 (contextual) not run: learner skipped it (about 65 LLM calls). C0+clean+incl for
+comparison: R@1 0.474, R@5 0.895, MRR 0.643, nDCG@5 0.656 (57 chunks).
+
+**Context sent to the LLM** (top 4 chunks, the real `ask()` input; dev questions, n=22,
+tokens of the chunk texts, measured 2026-10-19; search itself is about 2 ms for all):
+
+| Collection | p50 tokens | p95 tokens |
+|---|---|---|
+| C0 (docpilot_naive) | 1013 | 1118 |
+| C0+clean+incl | 953 | 1026 |
+| C1-400 | 1372 | 1445 |
+| C3-128 (4 parents) | 1211 | 1570 |
+| C4-400 | 1011 | 1158 |
+| C4-200 | 575 | 725 |
+
+Reading (golden v0, n=19, one question = 0.053):
+- **C4 (hierarchical) leads on ranking:** best Recall@1 (C4-400 0.737 = 14/19 vs C0
+  10/19), MRR and nDCG. C4-400 and C4-200 are within 1 question on every metric: a tie.
+- **Tie broken by latency (plan: simplicity and cost):** C4-200 sends 575 tokens to the
+  LLM (p50) vs 1011 for C4-400 and 1013 for C0, about 43% less. Provisional leader:
+  **C4-200** (D-042); final choice in 2.9 on golden v1 + test split + latency/abstention.
+- **Recall@5 cannot pick the winner:** four configs tie at 0.895 (C0+clean+incl, C1-400,
+  C3-128, C4-200). Learner predicted recursive: tied for best Recall@5, but mid on
+  Recall@1/MRR.
+- **Heading prefix helps a little, consistently:** C4-400 vs no prefix: q-017 rank 5 -> 2,
+  q-020 3 -> 1, q-010 7 -> 8; R@1 +1 question, MRR +0.051.
+- **Semantic is worst** (R@1 0.316): many tiny chunks of a few sentences.
+- **q-023 is missed by every block-based config** (C3, C4): the answer sentence sits in
+  sub-heading "### Create an Enum class", now its own chunk; the top hit is the parent
+  section's intro. Fixed 800-character chunks kept both together by luck. Idea for later
+  (not tuned now, to avoid fitting dev): let a short section keep its sub-sections.
+- **q-018 (bullet list):** the list now stays whole, but code chunks of the same page
+  still outrank it (rank 7-9): a ranking problem for Phase 3 (hybrid, reranker).

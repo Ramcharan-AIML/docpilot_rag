@@ -1,0 +1,132 @@
+{
+  "kind": "retrieval",
+  "config_id": "C3-128",
+  "collection": "docpilot_pc128",
+  "split": "dev",
+  "date": "2026-10-19",
+  "git_commit": "509d687",
+  "settings": {
+    "golden_version": "v0",
+    "chunk_strategy": "parent_child",
+    "chunk_size": 128,
+    "chunk_overlap": 0,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "embedding_revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "answer_top_k": 4,
+    "settings_source": "manifest",
+    "chunk_unit": "tokens",
+    "cleaned": true,
+    "includes": true,
+    "chunk_count": 131,
+    "largest_chunk_tokens": 128,
+    "chunks_over_limit": 0,
+    "parent_max_tokens": 800,
+    "parents_file": "C:\\Users\\rajes\\OneDrive\\Desktop\\1\\AIML\\9_DOCPILOT_RAG_BASED\\docpilot_rag\\data\\processed\\parents_docpilot_pc128.json",
+    "parent_count": 62,
+    "largest_parent_tokens": 616,
+    "median_parent_tokens": 164,
+    "search_k": 10,
+    "min_overlap": 0.7,
+    "scored_on": "parent"
+  },
+  "overall": {
+    "n": 19,
+    "recall@1": 0.579,
+    "recall@3": 0.789,
+    "recall@5": 0.895,
+    "strict_recall@5": 0.833,
+    "mrr": 0.696,
+    "ndcg@5": 0.718
+  },
+  "per_type": {
+    "comparison": {
+      "n": 2,
+      "recall@1": 0.5,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.667,
+      "mrr": 0.667,
+      "ndcg@5": 0.617
+    },
+    "exact-identifier": {
+      "n": 3,
+      "recall@1": 0.667,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.778,
+      "ndcg@5": 0.833
+    },
+    "factual": {
+      "n": 5,
+      "recall@1": 0.8,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.9,
+      "ndcg@5": 0.926
+    },
+    "how-to": {
+      "n": 3,
+      "recall@1": 0.667,
+      "recall@3": 0.667,
+      "recall@5": 0.667,
+      "strict_recall@5": 0.667,
+      "mrr": 0.667,
+      "ndcg@5": 0.667
+    },
+    "multi-hop": {
+      "n": 1,
+      "recall@1": 0.0,
+      "recall@3": 0.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.5,
+      "mrr": 0.25,
+      "ndcg@5": 0.264
+    },
+    "paraphrase": {
+      "n": 2,
+      "recall@1": 0.5,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.75,
+      "ndcg@5": 0.815
+    },
+    "table-or-code": {
+      "n": 3,
+      "recall@1": 0.333,
+      "recall@3": 0.333,
+      "recall@5": 0.667,
+      "strict_recall@5": 0.667,
+      "mrr": 0.437,
+      "ndcg@5": 0.462
+    }
+  },
+  "search_latency_ms": {
+    "n": 19,
+    "p50": 3.0,
+    "p95": 3.8
+  },
+  "per_question": [
+    {"id": "q-001", "type": "how-to", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#5 0.827", "fastapi/query-params.md#13 0.781", "fastapi/query-params.md#3 0.779", "fastapi/query-params.md#0 0.743", "fastapi/body.md#22 0.720", "fastapi/body.md#6 0.706", "fastapi/query-params.md#7 0.685", "fastapi/query-params.md#11 0.672", "fastapi/body.md#8 0.669", "fastapi/path-params.md#7 0.662"]},
+    {"id": "q-004", "type": "exact-identifier", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.3333333333333333, "ndcg@5": 0.5, "retrieved": ["fastapi/path-params.md#36 0.775", "fastapi/first-steps.md#27 0.754", "fastapi/path-params.md#39 0.713", "fastapi/first-steps.md#31 0.711", "fastapi/first-steps.md#35 0.706", "fastapi/path-params.md#0 0.695", "fastapi/path-params.md#16 0.691", "fastapi/path-params.md#26 0.683", "fastapi/path-params.md#25 0.675", "fastapi/path-params.md#2 0.673"]},
+    {"id": "q-005", "type": "paraphrase", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/path-params.md#16 0.726", "fastapi/first-steps.md#31 0.629", "fastapi/query-params.md#11 0.617", "fastapi/first-steps.md#35 0.600", "fastapi/first-steps.md#27 0.597", "fastapi/query-params.md#17 0.595", "fastapi/query-params.md#6 0.593", "fastapi/path-params.md#1 0.585", "fastapi/path-params.md#7 0.580", "fastapi/first-steps.md#4 0.576"]},
+    {"id": "q-006", "type": "comparison", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 0.3333333333333333, "rr": 0.3333333333333333, "ndcg@5": 0.23463936301137822, "retrieved": ["fastapi/body.md#18 0.860", "fastapi/query-params.md#0 0.846", "fastapi/body.md#20 0.838", "fastapi/query-params.md#6 0.834", "fastapi/query-params.md#11 0.816", "fastapi/path-params.md#0 0.795", "fastapi/path-params.md#2 0.782", "fastapi/path-params.md#5 0.782", "fastapi/first-steps.md#35 0.780", "fastapi/first-steps.md#31 0.777"]},
+    {"id": "q-007", "type": "table-or-code", "relevance": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.2, "ndcg@5": 0.38685280723454163, "retrieved": ["fastapi/path-params.md#12 0.739", "fastapi/path-params.md#5 0.709", "fastapi/first-steps.md#25 0.701", "fastapi/first-steps.md#26 0.698", "fastapi/first-steps.md#1 0.697", "fastapi/path-params.md#41 0.695", "fastapi/first-steps.md#44 0.692", "fastapi/first-steps.md#41 0.691", "fastapi/first-steps.md#17 0.688", "fastapi/first-steps.md#21 0.681"]},
+    {"id": "q-008", "type": "table-or-code", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#7 0.765", "fastapi/query-params.md#2 0.763", "fastapi/query-params.md#3 0.752", "fastapi/body.md#20 0.727", "fastapi/query-params.md#5 0.717", "fastapi/query-params.md#13 0.715", "fastapi/body.md#8 0.701", "fastapi/body.md#6 0.685", "fastapi/query-params.md#12 0.684", "fastapi/path-params.md#36 0.671"]},
+    {"id": "q-009", "type": "factual", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#6 0.861", "fastapi/path-params.md#10 0.794", "fastapi/first-steps.md#8 0.793", "fastapi/body.md#12 0.774", "fastapi/first-steps.md#17 0.718", "fastapi/first-steps.md#15 0.709", "fastapi/path-params.md#25 0.704", "fastapi/path-params.md#12 0.693", "fastapi/first-steps.md#12 0.679", "fastapi/path-params.md#5 0.674"]},
+    {"id": "q-010", "type": "multi-hop", "relevance": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 1.0, "strict_recall@5": 0.5, "rr": 0.25, "ndcg@5": 0.2640681225725909, "retrieved": ["fastapi/query-params.md#3 0.813", "fastapi/query-params.md#2 0.798", "fastapi/query-params.md#6 0.785", "fastapi/query-params.md#13 0.776", "fastapi/body.md#22 0.768", "fastapi/query-params.md#11 0.766", "fastapi/path-params.md#36 0.747", "fastapi/path-params.md#18 0.746", "fastapi/body.md#8 0.740", "fastapi/query-params.md#7 0.724"]},
+    {"id": "q-011", "type": "factual", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#3 0.878", "fastapi/query-params.md#2 0.856", "fastapi/query-params.md#18 0.787", "fastapi/query-params.md#5 0.772", "fastapi/body.md#20 0.716", "fastapi/query-params.md#10 0.695", "fastapi/body.md#6 0.694", "fastapi/query-params.md#11 0.693", "fastapi/path-params.md#18 0.674", "fastapi/body.md#8 0.671"]},
+    {"id": "q-012", "type": "how-to", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#13 0.819", "fastapi/query-params.md#5 0.782", "fastapi/query-params.md#0 0.769", "fastapi/query-params.md#3 0.755", "fastapi/body.md#22 0.743", "fastapi/body.md#6 0.725", "fastapi/body.md#8 0.725", "fastapi/query-params.md#7 0.722", "fastapi/query-params.md#11 0.709", "fastapi/path-params.md#36 0.674"]},
+    {"id": "q-013", "type": "factual", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#13 0.781", "fastapi/query-params.md#0 0.734", "fastapi/query-params.md#6 0.724", "fastapi/body.md#23 0.706", "fastapi/query-params.md#3 0.705", "fastapi/path-params.md#7 0.680", "fastapi/body.md#6 0.669", "fastapi/query-params.md#7 0.669", "fastapi/query-params.md#11 0.657", "fastapi/path-params.md#32 0.641"]},
+    {"id": "q-015", "type": "exact-identifier", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#5 0.766", "fastapi/body.md#20 0.713", "fastapi/path-params.md#20 0.695", "fastapi/query-params.md#15 0.693", "fastapi/body.md#3 0.693", "fastapi/body.md#19 0.689", "fastapi/body.md#9 0.684", "fastapi/first-steps.md#39 0.679", "fastapi/body.md#16 0.675", "fastapi/first-steps.md#25 0.675"]},
+    {"id": "q-016", "type": "factual", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#0 0.790", "fastapi/first-steps.md#30 0.735", "fastapi/body.md#20 0.711", "fastapi/first-steps.md#33 0.683", "fastapi/body.md#18 0.682", "fastapi/path-params.md#6 0.666", "fastapi/body.md#10 0.664", "fastapi/query-params.md#16 0.651", "fastapi/body.md#8 0.643", "fastapi/path-params.md#5 0.642"]},
+    {"id": "q-017", "type": "paraphrase", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["fastapi/path-params.md#1 0.729", "fastapi/body.md#2 0.725", "fastapi/query-params.md#16 0.722", "fastapi/body.md#7 0.714", "fastapi/first-steps.md#16 0.713", "fastapi/body.md#10 0.703", "fastapi/first-steps.md#39 0.701", "fastapi/first-steps.md#33 0.688", "fastapi/path-params.md#7 0.685", "fastapi/path-params.md#4 0.685"]},
+    {"id": "q-018", "type": "table-or-code", "relevance": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.1111111111111111, "ndcg@5": 0.0, "retrieved": ["fastapi/body.md#18 0.864", "fastapi/body.md#20 0.822", "fastapi/body.md#1 0.819", "fastapi/path-params.md#5 0.782", "fastapi/body.md#3 0.770", "fastapi/body.md#5 0.765", "fastapi/body.md#8 0.756", "fastapi/body.md#16 0.750", "fastapi/body.md#10 0.747", "fastapi/first-steps.md#38 0.743"]},
+    {"id": "q-019", "type": "comparison", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#0 0.860", "fastapi/body.md#18 0.689", "fastapi/body.md#20 0.689", "fastapi/path-params.md#1 0.669", "fastapi/body.md#10 0.645", "fastapi/path-params.md#5 0.644", "fastapi/first-steps.md#30 0.626", "fastapi/first-steps.md#16 0.617", "fastapi/query-params.md#9 0.613", "fastapi/first-steps.md#36 0.609"]},
+    {"id": "q-020", "type": "factual", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["fastapi/query-params.md#6 0.780", "fastapi/path-params.md#7 0.775", "fastapi/query-params.md#12 0.763", "fastapi/path-params.md#1 0.753", "fastapi/path-params.md#2 0.752", "fastapi/query-params.md#8 0.747", "fastapi/query-params.md#16 0.737", "fastapi/body.md#21 0.735", "fastapi/body.md#10 0.733", "fastapi/path-params.md#16 0.724"]},
+    {"id": "q-023", "type": "how-to", "relevance": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.0, "ndcg@5": 0.0, "retrieved": ["fastapi/query-params.md#18 0.760", "fastapi/path-params.md#18 0.757", "fastapi/query-params.md#2 0.748", "fastapi/query-params.md#3 0.742", "fastapi/path-params.md#36 0.729", "fastapi/path-params.md#0 0.728", "fastapi/query-params.md#6 0.720", "fastapi/path-params.md#26 0.713", "fastapi/query-params.md#11 0.709", "fastapi/body.md#8 0.707"]},
+    {"id": "q-026", "type": "exact-identifier", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#31 0.820", "fastapi/first-steps.md#36 0.790", "fastapi/path-params.md#16 0.735", "fastapi/first-steps.md#44 0.716", "fastapi/query-params.md#2 0.699", "fastapi/body.md#20 0.692", "fastapi/query-params.md#6 0.691", "fastapi/path-params.md#0 0.686", "fastapi/body.md#2 0.686", "fastapi/first-steps.md#38 0.683"]}
+  ]
+}

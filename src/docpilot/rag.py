@@ -35,8 +35,16 @@ def elapsed_ms(start: float) -> float:
     return round((time.perf_counter() - start) * 1000, 1)
 
 
-def ask(question: str, qdrant_client: QdrantClient, llm_client: OpenAI) -> dict:
-    """Answer `question` from the indexed docs.
+def ask(
+    question: str,
+    qdrant_client: QdrantClient,
+    llm_client: OpenAI,
+    collection: str = config.COLLECTION_NAME,
+) -> dict:
+    """Answer `question` from the indexed docs in `collection`.
+
+    `collection` lets the evals measure latency and abstention for any chunking strategy
+    (step 2.6); the API keeps the default from config.py.
 
     Returns {"answer": str, "sources": hits, "timings_ms": {stage: ms}}. Timing every stage
     tells us WHERE the time goes, not just how much (D-031, primer_latency.md).
@@ -49,7 +57,7 @@ def ask(question: str, qdrant_client: QdrantClient, llm_client: OpenAI) -> dict:
     timings["embed_query"] = elapsed_ms(start)
 
     start = time.perf_counter()
-    hits = search(qdrant_client, config.COLLECTION_NAME, query_vector, config.TOP_K)
+    hits = search(qdrant_client, collection, query_vector, config.TOP_K)
     timings["search"] = elapsed_ms(start)
 
     if not hits:

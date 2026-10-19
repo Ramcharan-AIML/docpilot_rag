@@ -7,6 +7,29 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-19, session 21: chunking rows run; provisional leader C4-200
+
+- Learner predicted "recursive has the best recall"; asked to skip C5 (65 LLM calls) and
+  let the mentor run the rest; asked how to check that the winner fits low latency.
+- Mentor ran 8 rows on clean commit `509d687` (dev, golden v0, n=19), all in ABLATION.md:
+  R@1 / R@5 / MRR: fixed_tokens-200 0.579/0.789/0.684; C1-400 0.526/0.895/0.679; C1-200
+  0.579/0.789/0.657; C2-400 0.316/0.789/0.537; C3-128 0.579/0.895/0.696; C4-400
+  0.737/0.842/0.795; C4-200 0.684/0.895/0.782; C4-400-noprefix 0.684/0.842/0.744.
+- Prediction: recursive tied for best Recall@5 (0.895, with C3-128, C4-200,
+  C0+clean+incl) but is mid on Recall@1/MRR. Recall@5 alone cannot pick a winner here.
+- Latency side measured without the LLM: search about 2 ms everywhere; LLM context p50
+  (top 4): C0 1013, C1-400 1372, C3-128 1211, C4-400 1011, C4-200 575 tokens.
+- Decision D-042: provisional leader C4-200 (ties C4-400 on quality, 43% less context).
+  Final in 2.9 on golden v1 + test split. App still on C0.
+- Flips read: q-023 missed by every block-based config (answer in its own sub-heading
+  chunk); q-018 list whole now but outranked by code chunks (Phase 3 problem).
+- `rag.ask()`, `ask_with_retries`, `run_latency.py`, `run_abstention_check.py` take
+  `--collection` (before: C0 only). +1 test (126 passed); ruff clean.
+- Optional next (22 LLM calls each, commit first):
+  `python -m evals.run_latency --collection docpilot_hier200 --config-id C4-200`,
+  same with `docpilot_naive --config-id C0-recheck` (same day = fair), and
+  `python -m evals.run_abstention_check --collection docpilot_hier200 --config-id C4-200`.
+
 ### 2026-10-19, session 20: step 2.6 complete (all chunkers + parent scoring)
 
 - Learner ran fixed_tokens-400 (`524f200`, manifest recorded correctly): R@1 0.474, R@5

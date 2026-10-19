@@ -287,3 +287,33 @@ of the page (0 characters lost, checked on all 4 pages).
 
 **The fixed_tokens-400 result** (Recall@5 0.684, down from 0.895) showed that size alone
 matters: bigger chunks are blurrier. That is why every strategy is also tested at 200.
+
+---
+
+## 38. Which way of cutting won? (2026-10-19)
+
+**Your guess:** recursive. **Result:** recursive tied for the best Recall@5 (0.895), but so
+did three others, so Recall@5 could not choose. The tie-breakers were the rank metrics:
+
+| Config | Recall@1 | Recall@5 | MRR | Tokens sent to the LLM (p50) |
+|---|---|---|---|---|
+| C0 (raw, 800 characters) | 0.526 | 0.842 | 0.667 | 1013 |
+| C1-400 recursive | 0.526 | 0.895 | 0.679 | 1372 |
+| C3-128 parent-child | 0.579 | 0.895 | 0.696 | 1211 |
+| C4-400 hierarchical | **0.737** | 0.842 | **0.795** | 1011 |
+| C4-200 hierarchical | 0.684 | 0.895 | 0.782 | **575** |
+| C2-400 semantic | 0.316 | 0.789 | 0.537 | n/a |
+
+**In plain words:** cutting along the page's own layout (hierarchical) puts the right chunk
+**first** far more often: 14 of 19 questions at rank 1, against 10 for C0. C4-400 and C4-200
+are a tie (1 question apart), so we pick the one that sends the LLM **43% fewer tokens**:
+C4-200 (D-042). It is "provisional": the final pick happens in 2.9 on a bigger exam.
+
+**How to check that a strategy fits low latency** (a time budget, like a household budget):
+1. *Search time:* about 2 ms for every strategy, so it never decides.
+2. *Tokens sent to the LLM:* the LLM was about 96% of C0's time, and it reads every token
+   we send. Measured without any LLM call: C4-200 sends 575, C0 sends 1013.
+3. *Free-tier limit:* Groq allows 8000 tokens a minute; fewer tokens per question means
+   fewer "429 wait" pauses (C0 had 15).
+4. *Proof:* run the real latency test (22 LLM calls) for C4-200 and C0 on the same day,
+   and the abstention check, to confirm the smaller context did not hurt answers.

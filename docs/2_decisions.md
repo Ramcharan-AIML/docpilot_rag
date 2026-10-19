@@ -86,3 +86,21 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   token, so its content is invisible to the model.
 - **Alternatives:** LangChain/LlamaIndex splitters. **Why not:** Rule 8 (raw first); the
   comparison with LangChain's splitter is optional and needs its own decision entry.
+
+## D-042: provisional chunking leader = C4-200, hierarchical + heading prefix (2026-10-19)
+
+- **Evidence (golden v0, dev, n=19, commit `509d687`):** C4-400 R@1 0.737, R@5 0.842,
+  MRR 0.795; C4-200 R@1 0.684, R@5 0.895, MRR 0.782 (a tie: within 1 question).
+  C1-400 R@1 0.526, MRR 0.679; C3-128 0.579, 0.696; C2-400 0.316, 0.537; C0+clean+incl
+  0.474, 0.643. LLM context p50: C4-200 575 tokens, C4-400 1011, C0 1013.
+- **Why C4-200:** ties on quality with C4-400; about 43% fewer tokens per question means
+  a faster LLM step (the LLM was about 96% of C0's latency) and fewer 429s under Groq's
+  8000 tokens/minute. Search time is about 2 ms for every config, so it does not decide.
+- **Not final:** the plan picks the winner in 2.9 on golden v1 (about 60 questions, three
+  domains), then runs the test split once. Before that: latency and abstention for
+  C4-200 vs C0 (both runners now take `--collection`). Smaller context could also drop
+  facts the LLM needs; answer quality (faithfulness) is measured in Phase 3.9.
+- **Alternative:** C4-400 (best R@1, MRR). **Why not now:** 1 question is noise; it costs
+  76% more tokens. **Alternative:** C1 recursive (learner's guess). **Why not:** ties on
+  R@5 only; 4 fewer questions at rank 1 than C4-400.
+- The app still uses C0 (`docpilot_naive`) until 2.9 confirms the choice.

@@ -44,6 +44,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Abstention accuracy on the golden set.")
     parser.add_argument("--split", default="dev", choices=["dev", "test"])
     parser.add_argument("--config-id", default="C0")
+    parser.add_argument("--collection", default=config.COLLECTION_NAME)
     parser.add_argument(
         "--ablation", action="store_true", help="mark this run for evals/ABLATION.md"
     )
@@ -62,7 +63,9 @@ def main() -> None:
         for number, item in enumerate(items, start=1):
             if number > 1:
                 time.sleep(args.sleep)  # stay under the free-tier requests-per-minute limit
-            answer = ask_with_retries(item["question"], qdrant_client, llm_client)["answer"]
+            answer = ask_with_retries(
+                item["question"], qdrant_client, llm_client, collection=args.collection
+            )["answer"]
             refused = said_not_found(answer)
             rows.append(
                 {
@@ -78,7 +81,7 @@ def main() -> None:
     finally:
         qdrant_client.close()
 
-    record = base_record(args.config_id, args.split, "abstention")
+    record = base_record(args.config_id, args.split, "abstention", args.collection)
     record["settings"].update({"llm_provider": config.LLM_PROVIDER, "llm_model": config.LLM_MODEL})
     record["overall"] = score(rows)
     record["per_question"] = rows

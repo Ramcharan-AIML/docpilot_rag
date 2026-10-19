@@ -32,6 +32,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Latency baseline of ask().")
     parser.add_argument("--split", default="dev", choices=["dev", "test"])
     parser.add_argument("--config-id", default="C0")
+    parser.add_argument("--collection", default=config.COLLECTION_NAME)
     parser.add_argument(
         "--ablation", action="store_true", help="mark this run for evals/ABLATION.md"
     )
@@ -49,10 +50,12 @@ def main() -> None:
     try:
         # Warm-up: loads the embedding model and opens the HTTPS connection. Not recorded:
         # we measure what a user sees once the service is running (cold start is separate).
-        ask_with_retries("warm-up question", qdrant_client, llm_client)
+        ask_with_retries("warm-up question", qdrant_client, llm_client, collection=args.collection)
         for number, item in enumerate(items, start=1):
             time.sleep(args.sleep)  # stay under the free-tier requests-per-minute limit
-            result = ask_with_retries(item["question"], qdrant_client, llm_client)
+            result = ask_with_retries(
+                item["question"], qdrant_client, llm_client, collection=args.collection
+            )
             timings = result["timings_ms"]
             rows.append(
                 {
@@ -66,7 +69,7 @@ def main() -> None:
     finally:
         qdrant_client.close()
 
-    record = base_record(args.config_id, args.split, "latency")
+    record = base_record(args.config_id, args.split, "latency", args.collection)
     record["settings"].update(
         {
             "hardware": HARDWARE,
