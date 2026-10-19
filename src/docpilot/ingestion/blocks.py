@@ -22,6 +22,10 @@ class Block:
     kind: str  # heading | paragraph | code | table | list
     text: str
     heading_path: list[str] = field(default_factory=list)
+    # Character positions in the document: text == document[start:end]. Chunkers (2.6)
+    # cut the document at these positions, so chunk text is always an exact slice.
+    start: int = 0
+    end: int = 0
 
 
 def parse_heading(line: str) -> tuple[int, str] | None:
@@ -50,18 +54,27 @@ def parse_blocks(text: str) -> list[Block]:
     heading_path: list[str] = []
     buffer: list[str] = []
     buffer_kind = "paragraph"
+    buffer_start = 0  # character position where the buffer's first line starts
     inside_code = False
 
     def flush() -> None:
         if buffer and "".join(buffer).strip():
-            blocks.append(Block(buffer_kind, "\n".join(buffer), list(heading_path)))
+            joined = "\n".join(buffer)
+            end = buffer_start + len(joined)
+            blocks.append(Block(buffer_kind, joined, list(heading_path), buffer_start, end))
         buffer.clear()
 
-    for line in text.splitlines():
+    offset = 0  # character position of the current line
+    for raw in text.splitlines(keepends=True):
+        line_start, offset = offset, offset + len(raw)
+        line = raw.rstrip("\r\n")
+        if not buffer:
+            buffer_start = line_start  # a new block would start on this line
         if line.strip().startswith(FENCE):
             if not inside_code:
                 flush()  # whatever came before the code is finished
                 buffer_kind = "code"
+                buffer_start = line_start
             buffer.append(line)
             if inside_code:
                 flush()  # the closing fence ends the code block
@@ -76,13 +89,16 @@ def parse_blocks(text: str) -> list[Block]:
             flush()
             level, title = heading
             heading_path[:] = heading_path[: level - 1] + [title]
-            blocks.append(Block("heading", title, list(heading_path)))
+            end = line_start + len(line)
+            blocks.append(Block("heading", title, list(heading_path), line_start, end))
             continue
         kind = line_kind(line) if line.strip() else buffer_kind
         if line.strip() == "" or kind != buffer_kind:
             flush()  # a blank line or a change of kind ends the current block
             buffer_kind = kind
         if line.strip():
+            if not buffer:
+                buffer_start = line_start
             buffer.append(line)
     flush()  # also keeps an unclosed code block at the end of the file
     return blocks

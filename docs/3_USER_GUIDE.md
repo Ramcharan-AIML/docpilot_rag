@@ -261,3 +261,29 @@ starts and ends in the page and cut the page itself at those places.
 was built (strategy, size, overlap, cleaned, includes). Before, the eval copied the settings
 from `config.py`, so a recursive-400 run would have been written down as "fixed 800": like a
 lab sample with the wrong sticker. The eval now reads the label, and MLflow shows it too.
+
+---
+
+## 37. Step 2.6: six ways to cut a page (2026-10-19)
+
+All chunkers cut the page at exact character positions, so a chunk is always a real piece
+of the page (0 characters lost, checked on all 4 pages).
+
+| Strategy | How it cuts (like ...) | On our 4 pages |
+|---|---|---|
+| fixed_tokens (control) | a ruler every 400 tokens | 36 chunks; 7 of 79 code/list blocks cut |
+| C1 recursive | tear at chapters, then paragraphs, then sentences | 37 chunks; 2 of 79 cut |
+| C2 semantic | cut where the topic jumps (sentence vectors) | 64 chunks; 0 cut; some tiny |
+| C3 parent-child | find the line in the index, read the whole page | 131 children, 62 parents |
+| C4 hierarchical | cut a cake along its layers; label each slice | 65 chunks; 0 of 79 cut |
+| C5 contextual | C4 + an LLM "sticky note" on every chunk | needs about 65 LLM calls |
+| Q&A pairs | never split a question from its answer | for interview files (2.8) |
+
+**Two lessons from building them:**
+1. *One change per row.* C4 with and without the heading prefix first made 66 vs 65
+   chunks, so two things changed. Fixed: the size now ignores the prefix.
+2. *Free tiers shape design.* Groq allows 8000 tokens a minute. Sending the whole page with
+   every chunk would allow only 2 notes a minute, so C5 sends the chunk's section instead.
+
+**The fixed_tokens-400 result** (Recall@5 0.684, down from 0.895) showed that size alone
+matters: bigger chunks are blurrier. That is why every strategy is also tested at 200.

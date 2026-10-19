@@ -52,3 +52,12 @@ def test_paragraph_lines_join_and_blank_lines_split():
 def test_unclosed_code_block_is_kept():
     blocks = parse_blocks("```python\nx = 1\n")
     assert [b.kind for b in blocks] == ["code"] and "x = 1" in blocks[0].text
+
+
+def test_every_block_knows_its_exact_position():
+    text = "# A\n\nFirst para\nstill first.\n\n```python\nx = 1\n\ny = 2\n```\n* item\n"
+    for block in parse_blocks(text):
+        if block.kind == "heading":
+            assert text[block.start : block.end] == "# A"
+        else:
+            assert text[block.start : block.end] == block.text

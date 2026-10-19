@@ -7,6 +7,32 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-19, session 20: step 2.6 complete (all chunkers + parent scoring)
+
+- Learner ran fixed_tokens-400 (`524f200`, manifest recorded correctly): R@1 0.474, R@5
+  0.684, MRR 0.626, nDCG@5 0.607 (n=19). 13 questions changed rank vs C0+clean+incl;
+  5 fell out of the top 5. Bigger chunks = blurrier vectors (ABLATION.md).
+  Asked: which strategy is in use (the app still uses C0, `docpilot_naive`) and which is
+  best (unknown until the rows are run). Asked mentor to finish all of 2.6 (learner: no time).
+- Built (D-041): Block start/end; `Chunk.prefix`, `Chunk.parent_id`; `recursive.py` (C1),
+  `semantic.py` (C2), `parent_child.py` (C3), `hierarchical.py` (C4, + noprefix variant),
+  `contextual.py` (C5, ContextWriter: cache, 429 retries, cost stats), `qa_pairs.py`;
+  `02_ingest.py` gained all strategies + `--base`; eval scores parent text automatically
+  (plan 2.6.3, via the manifest instead of a flag).
+- Verified: Groq headers 8000 tokens/min, 1000 requests/day (gpt-oss-120b and -20b).
+- Dry run on the 4 pages (clean + incl): 0 characters lost and 0 bad slices for every
+  strategy; code/list blocks split: fixed_tokens 7/79, recursive 2/79, hierarchical 0/79,
+  semantic 0/79; hierarchical 65 chunks (median 174 tokens); semantic percentile 25 gave
+  119 tiny chunks, set to 10 (64 chunks, median 174); parent-child 131 children, 62 parents
+  (median 164, max 616). Q&A pairs on phase_1_interview.md: 15 pairs -> 15 chunks.
+- Design fixes during the build: hierarchical size now counts text only (with/without
+  prefix gave 66 vs 65 chunks = two changes in one row); semantic percentile now the same
+  nearest-rank rule as evals/metrics.py; tokenizer fact: words over 100 chars = one [UNK].
+- Smoke run (throwaway collection, deleted): parent-child ingest -> manifest + parents
+  file -> 30 children lifted to 10 distinct parents. Tests 125 passed (+23); ruff clean.
+- Rows to run (learner; commit first): fixed_tokens-200, C1-400, C1-200, C2-400,
+  C3-128, C4-400, C4-200, C4-400-noprefix, C5 (contextual, about 65 LLM calls).
+
 ### 2026-10-19, session 19: fixed chunker in tokens; collection manifests
 
 - Learner pasted the ingest summary only (no `chunk tokens:` line, no prediction); mentor

@@ -10,6 +10,8 @@ from collections import defaultdict
 
 from docpilot import config
 from docpilot.embedding.dense import embed_query
+from docpilot.ingestion.chunkers.parent_child import lift_to_parents, load_parents
+from docpilot.ingestion.manifest import load_manifest
 from docpilot.rag import elapsed_ms
 from docpilot.store.qdrant_store import get_client, search
 from evals.common import base_record, load_split, save_result
@@ -84,13 +86,22 @@ def main() -> None:
     items = [item for item in load_split(args.split) if item["should_answer"]]
     embed_query("warm-up")  # load the model now, so the first question is not a cold number
 
+    # Parent-child (plan 2.6.3): score the PARENT text, the text the LLM will read. Found
+    # in the collection's manifest, so it cannot be forgotten on the command line.
+    manifest = load_manifest(args.collection) or {}
+    parents = load_parents(manifest["parents_file"]) if "parents_file" in manifest else None
+    # Several children can share a parent: fetch more, so 10 different parents remain.
+    fetch_k = SEARCH_K * 3 if parents else SEARCH_K
+
     client = get_client(config.QDRANT_PATH)
     rows, search_times = [], []
     try:
         for item in items:
             vector = embed_query(item["question"])
             start = time.perf_counter()
-            hits = search(client, args.collection, vector, SEARCH_K)
+            hits = search(client, args.collection, vector, fetch_k)
+            if parents:
+                hits = lift_to_parents(hits, parents, SEARCH_K)
             search_times.append(elapsed_ms(start))
             rows.append(score_item(item, hits))
     finally:
@@ -101,7 +112,13 @@ def main() -> None:
         by_type[row["type"]].append(row)
 
     record = base_record(args.config_id, args.split, "retrieval", args.collection)
-    record["settings"].update({"search_k": SEARCH_K, "min_overlap": MIN_OVERLAP})
+    record["settings"].update(
+        {
+            "search_k": SEARCH_K,
+            "min_overlap": MIN_OVERLAP,
+            "scored_on": "parent" if parents else "chunk",
+        }
+    )
     record["overall"] = aggregate(rows)
     record["per_type"] = {name: aggregate(group) for name, group in sorted(by_type.items())}
     record["search_latency_ms"] = {

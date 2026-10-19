@@ -483,7 +483,7 @@ D-038 onwards: [2_decisions.md](2_decisions.md) (this file reached the 500-line 
 
 | Service | What was checked | Result | Verified on |
 |---|---|---|---|
-| Groq | models, rate limits | models seen by the account: gpt-oss-120b/20b (production), qwen3.8-27b (preview), no Llama 3.x; free-plan limits n/a (docs show Developer table) | 2026-10-12 |
+| Groq | models, rate limits | models seen by the account: gpt-oss-120b/20b (production), qwen3.8-27b (preview), no Llama 3.x; response headers 2026-10-19: gpt-oss-120b and -20b 8000 tokens/min, 1000 requests/day (D-041) | 2026-10-19 |
 | Gemini | free limits, data-use terms | n/a | n/a |
 | OpenRouter | current free models | n/a | n/a |
 | Oracle Cloud | Always Free allowance, region | n/a | n/a |

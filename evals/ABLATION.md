@@ -67,3 +67,18 @@ chunk is found (8 of 8 in the top 5) but first for only 3 of 8. With n=8, one qu
 | Recall@5, MRR, nDCG@5 | `results/2026-10-14_C0_dev_retrieval.json` (dev, n=19) | 2026-10-14 | `06891f1` (clean) |
 | Abstention acc. (dev, n=22: 0/3 false answers, 2/19 false refusals) | `results/2026-10-14_C0_dev_abstention.json` | 2026-10-14 | `b061d62` (clean) |
 | p50 / p95 total (warm, n=22, excl. 429 waits; 15 retries) | `results/2026-10-14_C0_dev_latency.json` | 2026-10-14 | `8295859` (clean) |
+
+## Chunking rows (Phase 2, step 2.6; clean + includes text; golden v0, dev, n=19)
+
+Re-run on golden v1 in step 2.9 (rows in one table must share the golden version).
+
+| Config | Strategy | Size / overlap (tokens) | Chunks | Recall@1 | Recall@3 | Recall@5 | MRR | nDCG@5 | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| fixed_tokens-400 | fixed, in tokens (control row) | 400 / 50 | 36 | 0.474 | 0.684 | 0.684 | 0.626 | 0.607 | `2026-10-19_fixed_tokens-400_dev_retrieval.json` (`524f200`) |
+
+Reading fixed_tokens-400 vs C0+clean+incl (800 characters, about 250 tokens, 57 chunks):
+13 questions changed rank. 7 went up (q-001, q-011, q-013 to rank 1), but 5 fell out of
+the top 5 (q-006 1 -> 8, q-009 1 -> 6, q-010 3 -> 6, q-017 3 -> 9, q-023 1 -> 6) and only
+q-020 came back in (8 -> 2). Bigger chunks hold more topics, so their vector is a blurrier
+average: good matches get sharper ranks, mixed ones sink. Recall@5 0.895 -> 0.684 is
+4 questions: size alone matters a lot; 200-token rows are needed.

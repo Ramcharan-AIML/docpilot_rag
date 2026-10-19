@@ -42,6 +42,19 @@ CHUNK_STRATEGY = "fixed"  # Phase 2 adds recursive, semantic, ... (one name per 
 # 50 of 400 = 12.5% overlap, the same share as C0's 100 of 800 characters.
 CHUNK_TOKENS = 400
 CHUNK_OVERLAP_TOKENS = 50
+# Parent-child (C3): small children are searched, their parent section goes to the LLM.
+# Parents are not embedded, so they may pass 510; the cap keeps 4 parents in the prompt
+# small enough for Groq's free 8000 tokens per minute (checked 2026-10-19, D-041).
+CHILD_TOKENS = 128
+PARENT_TOKENS = 800
+# Semantic (C2): a new chunk starts where neighbour similarity is in the lowest N percent.
+# Dry run 2026-10-19 (4 pages, size 400): 25 -> 119 chunks, median 44 tokens (too small);
+# 5 -> 50, median 320 (mostly cut by the size cap); 10 -> 64, median 174, the same size as
+# hierarchical (65, median 174), so C2 vs C4 compares WHERE we cut, not how big (D-041).
+SEMANTIC_PERCENTILE = 10
+# Contextual (C5): change the version whenever the prompt changes (it is the cache key).
+CONTEXT_PROMPT_VERSION = "ctx-v1"
+CONTEXT_CACHE = PROJECT_ROOT / "data" / "processed" / "context_cache.jsonl"
 
 # --- retrieval ---
 TOP_K = 4
