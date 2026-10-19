@@ -1,4 +1,10 @@
-# Golden dataset v0 (Phase 1, step 1c)
+# Golden dataset v0.1 (Phase 1 step 1c; extended in Phase 2 step 2.7)
+
+**v0.1 (2026-10-19):** v0 + 8 table questions (q-033 to q-040): 4 on the RAGAS paper PDF
+(`ragas/ragas_2309.15217v2.pdf`), 4 on the Word notes (`interview/phase_1_notes.docx`).
+Snippets for PDF/DOCX are copied from the Docling Markdown (`data/processed/converted/`),
+which is what the validator checks. Now 40 items: dev 28 (3 unanswerable), test 12 (2).
+Rows measured on v0 (32 items, FastAPI only) are not comparable with v0.1 rows.
 
 The answer key for DocPilot. Without it "better" is an opinion; with it, it is a number.
 Decision: D-032 (design), D-010 (labels are document + verbatim snippet).

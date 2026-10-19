@@ -1,6 +1,6 @@
 """Build the vector index: load -> (clean) -> (includes) -> chunk -> metadata -> embed -> store.
 
-Run: python scripts/02_ingest.py                     (C0: raw text, collection docpilot_naive)
+Run: python scripts/02_ingest.py --sources fastapi   (C0: raw text, collection docpilot_naive)
      python scripts/02_ingest.py --clean --includes --strategy recursive --size 400
          --collection docpilot_rec400                 (2.6: one collection per strategy+size)
      strategies: fixed (characters), fixed_tokens, recursive, semantic, parent_child,
@@ -73,6 +73,9 @@ def main() -> None:
     )
     parser.add_argument("--size", type=int, help="chunk size (default from config.py)")
     parser.add_argument("--overlap", type=int, help="overlap (default from config.py)")
+    # Step 2.7 added PDF/DOCX sources; "--sources fastapi" rebuilds the golden-v0 corpus
+    # (the 4 FastAPI pages every row before 2.7 was measured on).
+    parser.add_argument("--sources", nargs="+", help="only these sources (default: all)")
     # A separate collection per variant keeps C0 intact, so both can be evaluated.
     parser.add_argument("--collection", default=config.COLLECTION_NAME)
     args = parser.parse_args()
@@ -88,6 +91,8 @@ def main() -> None:
     writer = ContextWriter() if args.strategy == "contextual" else None
 
     documents = load_documents(config.DOCS_DIR)
+    if args.sources:
+        documents = [doc for doc in documents if technology_of(doc.source) in args.sources]
     if not documents:
         # The loader reports facts; the script decides an empty folder is fatal (see 1a.2).
         sys.exit(f"No .md/.txt files in {config.DOCS_DIR}. Run scripts/01_download_docs.py first.")
@@ -138,6 +143,7 @@ def main() -> None:
         "chunk_unit": unit,
         "cleaned": args.clean,
         "includes": args.includes,
+        "sources": " ".join(args.sources) if args.sources else "all",
         "chunk_count": len(chunks),
         "largest_chunk_tokens": max(token_counts),
         "chunks_over_limit": over_limit,

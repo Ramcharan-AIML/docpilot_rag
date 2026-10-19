@@ -317,3 +317,26 @@ C4-200 (D-042). It is "provisional": the final pick happens in 2.9 on a bigger e
    fewer "429 wait" pauses (C0 had 15).
 4. *Proof:* run the real latency test (22 LLM calls) for C4-200 and C0 on the same day,
    and the abstention check, to confirm the smaller context did not hurt answers.
+
+---
+
+## 39. Step 2.7: DocPilot reads PDF and Word (2026-10-19)
+
+**Why a special reader:** a PDF stores *where letters sit on a page*, not "this is a table".
+Pull the text out naively and a results table becomes a row of loose numbers. Docling looks
+at the page like a person (small layout and table models) and writes clean Markdown, so a
+PDF goes through the same cleaner, chunkers and eval as a FastAPI page.
+
+| File | Source | Result |
+|---|---|---|
+| `ragas/ragas_2309.15217v2.pdf` | RAGAS paper, CC BY 4.0 | 8 pages, 4 tables, 26 s warm |
+| `interview/phase_1_notes.docx` | your own notes + your real C0 table | 1 table, exact |
+
+**Lessons:**
+1. *Read the defaults:* OCR was ON by default; we switched it off (digital files only).
+2. *Packages can lie about their needs:* the table model needed OpenCV without saying so.
+3. *Slow steps get a cache:* 26 s per paper is fine once; a re-ingest now takes 0.03 s.
+4. *A new exam needs a new label:* 8 table questions were added, so the golden set is now
+   v0.1 (40 items). Old v0 rows stay valid for the old exam only.
+
+**Commands:** rebuild the old corpus with `--sources fastapi`; the full corpus without it.

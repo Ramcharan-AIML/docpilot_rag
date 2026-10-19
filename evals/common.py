@@ -16,7 +16,9 @@ from docpilot.rag import ask, elapsed_ms
 from evals.validate_golden import GOLDEN_DIR, load_items, validate
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
-GOLDEN_VERSION = "v0"  # bump when questions or evidence change (v1 in step 2.8)
+# Bump when questions, evidence or the corpus change. v0 = 32 items, 4 FastAPI pages;
+# v0.1 = + 8 table questions on the RAGAS PDF and the notes DOCX (step 2.7); v1 in 2.8.
+GOLDEN_VERSION = "v0.1"
 
 
 def load_split(split: str) -> list[dict]:

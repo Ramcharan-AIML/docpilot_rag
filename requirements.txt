@@ -9,3 +9,10 @@ qdrant-client==1.19.1          # vector database client, local mode in Phase 1 (
 openai==3.29.0                 # OpenAI-compatible client, pointed at free providers (D-028, checked 2026-10-12)
 fastapi==0.143.1               # web API framework, POST /ask (D-034, checked 2026-10-14)
 uvicorn==0.54.0                # server that runs the FastAPI app (D-034, checked 2026-10-14)
+# PDF + Word -> Markdown with layout and table models, no OCR (D-043, checked 2026-10-19).
+# The slim package with 4 extras pulls 24 packages (+89 MB); full "docling" pulls 54.
+docling-slim[convert-core,format-pdf,format-docx,models-local]==2.140.0
+# Docling's table model imports cv2 but does not declare it (full docling gets it only
+# through the OCR extra). Headless = no GUI libraries. Same version full docling resolves.
+opencv-python-headless==5.0.0.93
+

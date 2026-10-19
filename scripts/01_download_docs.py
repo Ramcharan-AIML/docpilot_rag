@@ -1,5 +1,6 @@
 """Download four FastAPI tutorial pages (raw Markdown) into data/docs/fastapi/, plus the
-code files they include with {* ... *} markers into data/code/fastapi/ (step 2.3).
+code files they include with {* ... *} markers into data/code/fastapi/ (step 2.3), plus
+the RAGAS paper PDF into data/docs/ragas/ (step 2.7, CC BY 4.0, D-043).
 
 Run: python scripts/01_download_docs.py
 
@@ -7,6 +8,7 @@ The docs are MIT-licensed (checked 2026-10-12) but stay out of git (data/docs/ a
 data/code/ are gitignored): this script recreates them on any machine.
 """
 
+import hashlib
 import urllib.request
 
 from docpilot import config
@@ -20,6 +22,11 @@ FASTAPI_COMMIT = SOURCES["fastapi"].version
 REPO_URL = f"https://raw.githubusercontent.com/fastapi/fastapi/{FASTAPI_COMMIT}"
 BASE_URL = f"{REPO_URL}/docs/en/docs/tutorial"
 PAGES = ["first-steps", "path-params", "query-params", "body"]
+
+# Step 2.7: one pinned arXiv version; the hash proves we got exactly the file we checked.
+RAGAS_URL = "https://arxiv.org/pdf/2309.15217v2"
+RAGAS_FILE = config.DOCS_DIR / "ragas" / "ragas_2309.15217v2.pdf"
+RAGAS_SHA256 = "6c24762a3f277fd120ed1adf34b01420ecf92f18ff6d1b5435fa0a09cb804ecb"
 
 
 def download(url: str) -> bytes:
@@ -53,6 +60,14 @@ def main() -> None:
         save(code_root / relative, download(f"{REPO_URL}/{relative}"))
     shown = code_root.relative_to(config.PROJECT_ROOT).as_posix()
     print(f"done: {len(unique_paths)} included code files -> {shown}")
+
+    pdf = download(RAGAS_URL)
+    if hashlib.sha256(pdf).hexdigest() != RAGAS_SHA256:
+        # A different file would silently change chunks and golden snippets: stop.
+        raise RuntimeError(f"{RAGAS_URL} changed: sha256 differs from the pinned one")
+    save(RAGAS_FILE, pdf)
+    print(f"saved {RAGAS_FILE.relative_to(config.PROJECT_ROOT).as_posix()}  ({len(pdf)} bytes)")
+    print("Word notes: run python scripts/make_notes_docx.py (built from docs/interview/)")
 
 
 if __name__ == "__main__":

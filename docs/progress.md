@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.6 done: 9 chunking rows on golden v0 (C5 skipped); provisional leader C4-200 hierarchical (D-042); runners take --collection |
-| Next step | optional: latency + abstention C4-200 vs C0 (commands in 2_progress session 21); then 2.7 Docling |
+| Current step | 2.7 built: Docling PDF + DOCX (D-043), RAGAS paper + notes DOCX, golden v0.1 (40 items), 132 tests |
+| Next step | learner runs 2 v0.1 rows (commands in 2_progress session 22), then 2.8 corpus register + golden v1 |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 
@@ -57,7 +57,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.4 | Block parser (code, tables, headings kept whole) | built 2026-10-17 (7 tests; real pages: 0 lines lost, 63 code blocks whole, lists kept whole) |
 | 2.5 | Metadata (source, heading path, doc type, version, technology) | built 2026-10-17 (payload only; text unchanged) |
 | 2.6 | Six chunking strategies | done 2026-10-19: rows C1-C4 + controls (v0, dev); C5 skipped by learner; leader C4-200 (D-042) |
-| 2.7 | Docling for PDF, Word (DOCX), HTML (D-037) | not started |
+| 2.7 | Docling for PDF, Word (DOCX), HTML (D-037) | built 2026-10-19 (D-043): RAGAS PDF 8 pages/4 tables, notes DOCX 1 table, golden v0.1; HTML not needed (docs are Markdown) |
 | 2.8 | Corpus register; groups A docs, B learning, C interview prep (D-030) + golden set per domain | not started |
 | 2.9 | Index per strategy, run evals, per-type breakdown | not started |
 | 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | not started |

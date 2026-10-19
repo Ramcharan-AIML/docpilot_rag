@@ -124,3 +124,13 @@ Reading (golden v0, n=19, one question = 0.053):
   (not tuned now, to avoid fitting dev): let a short section keep its sub-sections.
 - **q-018 (bullet list):** the list now stays whole, but code chunks of the same page
   still outrank it (rank 7-9): a ranking problem for Phase 3 (hybrid, reranker).
+
+**End-to-end latency, C4-200** (`2026-10-19_C4-200_dev_latency.json`, commit `1de3d22`,
+warm, n=22, Groq gpt-oss-120b, laptop CPU): total p50 978 ms, p95 1230 ms; LLM p50 945 ms;
+9 retries after 429. C0 (2026-10-14): p50 1107 ms, p95 1764 ms, LLM p50 1060 ms, 15 retries.
+Different days, so not a fair pair yet: a same-day `C0-recheck` run is still to do.
+
+## From step 2.7: golden v0.1 (40 items) on 6 documents
+
+Rows above use golden v0 on the 4 FastAPI pages. Step 2.7 added the RAGAS PDF, the notes
+DOCX and 8 table questions (v0.1). New rows from here on; do not compare them with v0 rows.

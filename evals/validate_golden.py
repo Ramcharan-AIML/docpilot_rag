@@ -12,6 +12,7 @@ from collections import Counter
 from pathlib import Path
 
 from docpilot import config
+from docpilot.ingestion.loader import read_text
 
 GOLDEN_DIR = Path(__file__).resolve().parent / "golden"
 SPLITS = ("dev", "test")
@@ -87,14 +88,18 @@ def check_item(item: dict, expected_split: str) -> list[str]:
 
 
 def check_snippets(item: dict, docs_dir: Path) -> list[str]:
-    """Every snippet must appear EXACTLY (character for character) in its raw document."""
+    """Every snippet must appear EXACTLY (character for character) in its raw document.
+
+    "Raw" = the text the pipeline sees before cleaning: the file itself for .md, the
+    Docling Markdown for .pdf/.docx (step 2.7). Copy PDF snippets from that Markdown.
+    """
     errors = []
     for evidence in item["evidence"]:
         doc_path = docs_dir / evidence["doc"]
         if not doc_path.is_file():
             errors.append(f"{item['id']}: document {evidence['doc']} not found in {docs_dir}")
             continue
-        if evidence["snippet"] not in doc_path.read_text(encoding="utf-8"):
+        if evidence["snippet"] not in read_text(doc_path, evidence["doc"]):
             snippet = evidence["snippet"]
             errors.append(f"{item['id']}: snippet not in {evidence['doc']}: {snippet!r}")
     return errors

@@ -20,9 +20,10 @@ jobs:
           cache: pip # reuse downloaded packages between runs
 
       # CPU-only torch first: the default Linux wheel pulls several GB of GPU (CUDA)
-      # libraries we never use. Same version as requirements-lock.txt.
+      # libraries we never use. Same version as requirements-lock.txt. torchvision (needed
+      # by Docling, D-043) must come from the SAME index, or it pulls CUDA torch back in.
       - name: Install CPU-only torch
-        run: pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+        run: pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install project
         run: pip install -r requirements-dev.txt && pip install -e .

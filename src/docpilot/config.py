@@ -25,6 +25,8 @@ QDRANT_PATH = PROJECT_ROOT / "qdrant_local"  # local-mode Qdrant saves its files
 # How each collection was built (strategy, size, clean, includes), one JSON per collection,
 # so an eval records the real settings of the index it tested (gitignored, rebuilt by ingest).
 MANIFEST_DIR = PROJECT_ROOT / "data" / "processed" / "collections"
+# PDF/DOCX converted to Markdown by Docling (step 2.7), cached: about 3 s per PDF page on CPU.
+CONVERTED_DIR = PROJECT_ROOT / "data" / "processed" / "converted"
 
 # --- embeddings (D-002, model card checked 2026-10-07) ---
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"

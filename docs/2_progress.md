@@ -7,6 +7,29 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-19, session 22: step 2.7 Docling (PDF + DOCX)
+
+- Learner committed `1de3d22` and ran C4-200 latency: p50 978 ms, p95 1230 ms, 9 retries
+  (C0 on 2026-10-14: 1107 / 1764 ms, 15 retries; different days, C0-recheck not run).
+- Learner chose: PDF = RAGAS paper (CC BY 4.0), DOCX = own notes. Licences checked on
+  arXiv today: RAGAS CC BY 4.0, BEIR CC BY-SA 4.0, MTEB and Lost-in-the-Middle non-exclusive.
+- Installed docling-slim 2.140.0 with 4 extras (24 packages, +89 MB; full docling = 54).
+  First conversion crashed: table model needs cv2, undeclared -> pinned
+  opencv-python-headless 5.0.0.93. typer 0.27.2 -> 0.26.8. CI installs torchvision from
+  the CPU index. Lock file regenerated.
+- RAGAS PDF: 8 pages, 4 tables, 36.4 s cold / 26.1 s warm; Table 1 exact; flaws recorded
+  (heading spaces, hyphens, flat headings, a footnote in a prompt box). Notes DOCX
+  (scripts/make_notes_docx.py, 15 Q&A + real C0 table): table exact, 8.0 s. Cache re-read
+  0.03 s.
+- Built `ingestion/document_loader.py` (cached by sha256 + Docling version), loader reads
+  .pdf/.docx, validator checks snippets in the converted Markdown, sources `ragas` and
+  `interview`, pinned RAGAS download with sha256, `02_ingest.py --sources`.
+- Golden v0.1: +8 table questions q-033..q-040 (6 dev, 2 test); validator OK (40 items).
+- Dry run C4-200: DOCX table whole; RAGAS Table 1 whole; appendix tables (704-1463
+  tokens) split by rows, 0 chunks over 510. Tests 132 passed (+6); ruff clean.
+- To run (learner, after commit): v0.1 rows for fixed 800 and C4-200 on the full corpus
+  (commands in USER_GUIDE section 39 and the chat).
+
 ### 2026-10-19, session 21: chunking rows run; provisional leader C4-200
 
 - Learner predicted "recursive has the best recall"; asked to skip C5 (65 LLM calls) and

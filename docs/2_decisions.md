@@ -104,3 +104,35 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   76% more tokens. **Alternative:** C1 recursive (learner's guess). **Why not:** ties on
   R@5 only; 4 fewer questions at rank 1 than C4-400.
 - The app still uses C0 (`docpilot_naive`) until 2.9 confirms the choice.
+
+## D-043: Docling (slim) for PDF and DOCX; first PDF = RAGAS paper, first DOCX = own notes (2026-10-19)
+
+- **What:** `ingestion/document_loader.py` converts .pdf/.docx to Markdown with
+  `docling-slim[convert-core,format-pdf,format-docx,models-local]==2.140.0` (+
+  `opencv-python-headless==5.0.0.93`), then the normal pipeline runs. OCR off, table
+  structure on. Results cached in `data/processed/converted/` by sha256 + Docling version.
+- **Verified 2026-10-19:** PyPI latest docling 2.140.0 (Python >=3.10). Full `docling`
+  = 54 packages; slim with 4 extras = 24 packages, +89 MB in site-packages; torch stays
+  2.14.1, adds torchvision 0.29.1; downgrades typer 0.27.2 -> 0.26.8 (`pip check` clean).
+  API read from the installed package: `PdfPipelineOptions.do_ocr` defaults to **True**
+  (we set False). **Packaging gap:** the table model imports `cv2` but its package does
+  not declare it (full docling gets OpenCV only via the OCR extra); pinned explicitly.
+- **Speed (this laptop, CPU):** RAGAS PDF, 8 pages: 36.4 s cold, 26.1 s warm (about
+  3.3 s/page), 4 tables found; DOCX (notes): 8.0 s first time; cached re-read 0.03 s.
+- **Quality seen (RAGAS):** Table 1 exact; flaws: missing spaces in some headings
+  ("RelatedWork"), line-break hyphens kept ("Op- penheimer"), all headings `##` (nesting
+  lost), a footnote placed inside a prompt box (reading order). Appendix tables of
+  704-1463 tokens must be split (limit 510): pieces after the first lose the header row.
+- **Why Docling, not PyMuPDF:** PyMuPDF is faster and smaller but gives text in reading
+  order without table structure: a results table becomes loose numbers, which is what
+  our table questions need. **Why not full `docling`:** 30 extra packages (OCR, OpenCV GUI,
+  Excel, PowerPoint, email, code parsers) we do not use. **Why no OCR:** both files are
+  digital; scanned PDFs are out of scope until a need appears.
+- **Sources (licences checked on arxiv.org 2026-10-19):** RAGAS (2309.15217v2) CC BY 4.0
+  -> public, group B; BEIR CC BY-SA 4.0 (candidate later); MTEB and Lost in the Middle
+  arXiv non-exclusive -> would be `local_only`. DOCX: open .docx files are rare, so
+  `scripts/make_notes_docx.py` builds one from the learner's own
+  `docs/interview/phase_1_interview.md` + a table of real C0 numbers (own work, public,
+  group C). Learner chose both (2026-10-19). Download pinned by sha256.
+- **Golden v0.1:** +8 table questions (q-033 to q-040), snippets copied by code from the
+  converted Markdown. `02_ingest.py --sources fastapi` rebuilds the v0 corpus exactly.
