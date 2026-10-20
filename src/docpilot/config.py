@@ -74,7 +74,7 @@ TOP_K = 4
 COLLECTION_NAME = "docpilot_v1_ft200"
 # The app's ingest recipe in one place; the CI eval gate builds its index with it too, so
 # the gate always tests the chunking the app really uses.
-INGEST_ARGS = ["--clean", "--includes", "--strategy", "fixed_tokens", "--size", "200"]
+INGEST_ARGS = ["--clean", "--includes", "--strategy", "fixed", "--size", "200"]
 INGEST_ARGS += ["--overlap", "25"]
 INGEST_COMMAND = (
     f"python scripts/02_ingest.py {' '.join(INGEST_ARGS)} --collection {COLLECTION_NAME}"
