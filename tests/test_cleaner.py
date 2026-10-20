@@ -43,3 +43,23 @@ def test_autolinks_and_generic_brackets_survive():
 def test_clean_text_is_unchanged():
     text = "# Title\n\nNothing to clean here.\n"
     assert clean_markdown(text) == text
+
+
+def test_front_matter_becomes_the_title():
+    # Docker pages (Hugo): the title exists only in the YAML block at the top.
+    text = '---\ntitle: "What is a container?"\nweight: 10\naliases:\n- /old/\n---\n\nBody.\n'
+    assert clean_markdown(text) == "# What is a container?\n\nBody.\n"
+
+
+def test_shortcodes_removed_but_tab_names_kept_and_code_untouched():
+    text = (
+        "{{< youtube-embed W1kWqFkiu7k >}}\n"
+        '{{< tab name="Using the CLI" >}}\n'
+        "Run it.\n"
+        "{{< /tab >}}\n"
+        '```yaml\nkey: "{{< not-a-shortcode-in-code >}}"\n```\n'
+    )
+    cleaned = clean_markdown(text)
+    assert "youtube" not in cleaned and "{{< /tab" not in cleaned
+    assert "Using the CLI:\nRun it." in cleaned
+    assert '"{{< not-a-shortcode-in-code >}}"' in cleaned  # code stays exact

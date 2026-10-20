@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.7 built: Docling PDF + DOCX (D-043); PDF = Chain-of-Thought paper (D-044, replaced RAGAS), notes DOCX, golden v0.2 (40 items), 132 tests |
-| Next step | on learner's word: fixes A (includes only for FastAPI), B (shrink table dash lines), C (caption + table together); v0.2 rows; then 2.8 |
+| Current step | 2.8 built: register + 20-document corpus in 3 domains, golden v1 (65 items) (D-045), 143 tests |
+| Next step | learner: C0 + C4-200 rows on golden v1; then fixes A/B/C (pending) and 2.9 matrix |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 
@@ -58,7 +58,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.5 | Metadata (source, heading path, doc type, version, technology) | built 2026-10-17 (payload only; text unchanged) |
 | 2.6 | Six chunking strategies | done 2026-10-19: rows C1-C4 + controls (v0, dev); C5 skipped by learner; leader C4-200 (D-042) |
 | 2.7 | Docling for PDF, Word (DOCX), HTML (D-037) | built 2026-10-19 (D-043); PDF swapped to Chain-of-Thought 2026-10-20 (D-044, 43 pages/8 tables); notes DOCX; golden v0.2; HTML not needed |
-| 2.8 | Corpus register; groups A docs, B learning, C interview prep (D-030) + golden set per domain | not started |
+| 2.8 | More corpora + golden set v1 | built 2026-10-20 (D-045): Pydantic, Docker, Wikipedia x3, interview notes; golden v1 = 65 items; C0 on v1 pending |
 | 2.9 | Index per strategy, run evals, per-type breakdown | not started |
 | 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | not started |
 | Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | not started |

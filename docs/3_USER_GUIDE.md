@@ -361,3 +361,28 @@ idea of asking an LLM to "think step by step". It is a classic interview topic.
 q-041 LaMDA 420M on GSM8K with CoT (0.4%: CoT hurts tiny models); q-042 did CoT help
 GPT-3 on CSQA (no: 79.5 vs 73.5); q-043 PaLM 62B on GSM8K (9.6 vs 29.9); q-044 PaLM 540B
 on StrategyQA (68.6 to 77.8, hidden test question).
+
+---
+
+## 41. Step 2.8: a bigger library and a bigger exam (2026-10-20)
+
+**The library (corpus v1): 20 documents in 3 rooms (domains).**
+
+| Room | Books | Licence |
+|---|---|---|
+| docs | FastAPI (4 pages), Pydantic (3), Docker (5) | MIT, MIT, Apache-2.0 |
+| learning | Chain-of-Thought paper (PDF), Wikipedia: RAG, word embedding, IR evaluation | CC BY 4.0, CC BY-SA 4.0 |
+| interview | your notes: phases 0, 2, 3 (Markdown) + phase 1 (Word) | your own work |
+
+The **register** (`src/docpilot/ingestion/sources.py`) is the library's catalogue card for
+each book: where it came from, which exact version, which licence, when we checked. A test
+fails if a card is incomplete. `python scripts/01_download_docs.py` rebuilds the library.
+
+**The exam (golden v1): 65 questions**, 46 practice (dev) and 19 final (test), at least 10
+per room. Every question now says which room its answer is in (`domain`), so we can see if
+a strategy is good for docs but bad for interview notes.
+
+**Lesson from this step:** adding books can make an old "not in the library" question
+answerable. q-003 ("which status code on validation failure?") was "not in the docs", but
+your Word notes say "422". Now it is a normal question. Rule: after adding documents,
+re-check every unanswerable question.

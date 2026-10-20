@@ -13,6 +13,7 @@ from pathlib import Path
 
 from docpilot import config
 from docpilot.ingestion.loader import read_text
+from docpilot.ingestion.sources import DOMAINS, SOURCES
 
 GOLDEN_DIR = Path(__file__).resolve().parent / "golden"
 SPLITS = ("dev", "test")
@@ -25,8 +26,10 @@ REQUIRED_FIELDS = (
     "evidence",
     "difficulty",
     "split",
+    "domain",  # docs | learning | interview (step 2.8, D-030)
     "notes",
 )
+MIN_PER_DOMAIN = 10  # plan 2.8: at least 10 questions per domain (dev + test together)
 # Question types from PROJECT_DOCUMENTATION section 2 that the 4 Phase 1 pages can test.
 # The others (version-specific, concept, interview, adversarial, risky) need other
 # documents or guardrails and join in later phases (see evals/golden/README.md).
@@ -39,6 +42,8 @@ TYPES = (
     "multi-hop",
     "table-or-code",
     "not-in-docs",
+    "concept",  # step 2.8: "explain X" questions on learning material (group B)
+    "interview",  # step 2.8: interview questions answered by the learner's notes (group C)
 )
 DIFFICULTIES = ("easy", "medium", "hard")
 
@@ -81,7 +86,14 @@ def check_item(item: dict, expected_split: str) -> list[str]:
     if (item["type"] == "not-in-docs") == bool(item["should_answer"]):
         errors.append(f"{label}: type not-in-docs must go with should_answer false (and only it)")
 
+    if item["domain"] not in DOMAINS:
+        errors.append(f"{label}: domain {item['domain']!r} not in {DOMAINS}")
     for evidence in item["evidence"]:
+        # The domain is where the answer lives: it must match the register entry of the doc.
+        source = SOURCES.get(evidence.get("doc", "").split("/", 1)[0])
+        if source is not None and source.domain != item["domain"]:
+            doc = evidence["doc"]
+            errors.append(f"{label}: domain {item['domain']!r}, but {doc} is {source.domain!r}")
         if "\n" in evidence.get("snippet", ""):
             errors.append(f"{label}: snippet spans lines; keep it to one line")
     return errors
@@ -105,7 +117,9 @@ def check_snippets(item: dict, docs_dir: Path) -> list[str]:
     return errors
 
 
-def validate(golden_dir: Path, docs_dir: Path) -> tuple[list[dict], list[str]]:
+def validate(
+    golden_dir: Path, docs_dir: Path, min_per_domain: int = MIN_PER_DOMAIN
+) -> tuple[list[dict], list[str]]:
     """Validate dev and test together (ids must be unique across both files)."""
     all_items, errors = [], []
     for split in SPLITS:
@@ -124,6 +138,12 @@ def validate(golden_dir: Path, docs_dir: Path) -> tuple[list[dict], list[str]]:
 
     id_counts = Counter(item.get("id") for item in all_items)
     errors += [f"duplicate id {item_id}" for item_id, n in id_counts.items() if n > 1]
+    per_domain = Counter(item.get("domain") for item in all_items)
+    errors += [
+        f"domain {domain!r} has {per_domain[domain]} items; needs at least {min_per_domain}"
+        for domain in DOMAINS
+        if per_domain[domain] < min_per_domain
+    ]
     return all_items, errors
 
 
@@ -135,6 +155,10 @@ def print_summary(items: list[dict]) -> None:
         unanswerable = sum(not item["should_answer"] for item in in_split)
         types = Counter(item["type"] for item in in_split)
         print(f"  {split}: {len(in_split)} items, {unanswerable} unanswerable, {dict(types)}")
+    for domain in DOMAINS:
+        in_domain = [item for item in items if item["domain"] == domain]
+        unanswerable = sum(not item["should_answer"] for item in in_domain)
+        print(f"  {domain}: {len(in_domain)} items ({unanswerable} unanswerable)")
 
 
 def main() -> None:

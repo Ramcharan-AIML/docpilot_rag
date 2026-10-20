@@ -7,6 +7,23 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-20, session 24: step 2.8 corpus register + golden v1
+
+- Learner committed the CoT swap (`178bd5f`) and asked for 2.8.
+- Register grown in place (sources.py: topic, url, licence_url, checked) + test_sources.py.
+  Licences checked today: Pydantic MIT, Docker docs Apache-2.0, Wikipedia CC BY-SA 4.0.
+- Corpus v1 = 20 documents: FastAPI 4, Pydantic 3, Docker 5, CoT PDF, Wikipedia 3,
+  interview notes 3 Markdown + 1 Word. `01_download_docs.py` rebuilds all (pinned commits,
+  sha256, Wikipedia revision ids). Problems met: Python's Windows certificate store
+  rejected Wikipedia (fixed with certifi); Wikipedia formulas = ~60 lines of symbols
+  (only LaTeX kept); Docker front matter + Hugo shortcodes (cleaner rules, tests).
+- Unanswerable re-check found q-003 answerable since 2.7 (Word notes say 422): corrected.
+- Golden v1: 65 items (dev 46, test 19); docs 41, learning 12, interview 12; `domain` on
+  every item, types concept/interview; VERSION file; validator checks domain vs register
+  and >= 10 per domain. Retrieval eval prints a per-domain table.
+- Dry run C4-200 on corpus v1: 733 chunks (CoT 364), largest 491 tokens, 0 over 510.
+- Tests 143 passed (+11); ruff clean; validator OK. Fixes A/B/C still pending.
+
 ### 2026-10-20, session 23: PDF swapped to the Chain-of-Thought paper
 
 - Learner ran ingest for fixed800 + C4-200 on the full corpus and the C4-200 eval (v0.1,

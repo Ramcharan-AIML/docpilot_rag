@@ -138,3 +138,8 @@ DOCX and 8 table questions (v0.1). New rows from here on; do not compare them wi
 **Superseded:** `2026-10-19_C4-200-v0.1_dev_retrieval.json` was measured with the RAGAS PDF
 (golden v0.1). The RAGAS PDF was replaced on 2026-10-20 (D-044, golden v0.2), so that run
 is kept as history only.
+
+## From step 2.8: golden v1 (65 items, 3 domains) on corpus v1 (20 documents)
+
+No rows yet. Re-run C0 and C4-200 on golden v1 first (plan 2.8 step 4); rows of v0, v0.1,
+v0.2 and v1 must never be compared with each other.

@@ -38,6 +38,7 @@ def score_item(item: dict, hits: list[dict]) -> dict:
     return {
         "id": item["id"],
         "type": item["type"],
+        "domain": item["domain"],
         "relevance": relevance,
         "recall@1": recall_at_k(relevance, 1),
         "recall@3": recall_at_k(relevance, 3),
@@ -59,11 +60,12 @@ def aggregate(rows: list[dict]) -> dict:
 
 
 def print_table(record: dict) -> None:
-    """One line overall, then one line per question type."""
+    """One line overall, then one line per domain and one per question type."""
     columns = ("n", "recall@1", "recall@3", "recall@5", "strict_recall@5", "mrr", "ndcg@5")
     print(f"\n{record['config_id']} on {record['split']}  ({record['git_commit']})")
     print(f"{'':18}" + "".join(f"{c:>16}" for c in columns))
-    groups = {"OVERALL": record["overall"], **record["per_type"]}
+    domains = {f"[{name}]": summary for name, summary in record["per_domain"].items()}
+    groups = {"OVERALL": record["overall"], **domains, **record["per_type"]}
     for name, summary in groups.items():
         print(f"{name:18}" + "".join(f"{summary[c]:>16}" for c in columns))
     latency = record["search_latency_ms"]
@@ -107,9 +109,10 @@ def main() -> None:
     finally:
         client.close()
 
-    by_type = defaultdict(list)
+    by_type, by_domain = defaultdict(list), defaultdict(list)
     for row in rows:
         by_type[row["type"]].append(row)
+        by_domain[row["domain"]].append(row)  # plan 2.9: per-domain table (D-030)
 
     record = base_record(args.config_id, args.split, "retrieval", args.collection)
     record["settings"].update(
@@ -121,6 +124,7 @@ def main() -> None:
     )
     record["overall"] = aggregate(rows)
     record["per_type"] = {name: aggregate(group) for name, group in sorted(by_type.items())}
+    record["per_domain"] = {name: aggregate(group) for name, group in sorted(by_domain.items())}
     record["search_latency_ms"] = {
         "n": len(search_times),
         "p50": percentile(search_times, 50),

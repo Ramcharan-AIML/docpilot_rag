@@ -1,4 +1,9 @@
-# Golden dataset v0.2 (Phase 1 step 1c; extended in Phase 2 step 2.7)
+# Golden dataset v1 (Phase 1 step 1c; extended in Phase 2 steps 2.7 and 2.8)
+
+**v1 (2026-10-20, D-045):** 65 items, dev 46 + test 19, three domains: docs 41 (5
+unanswerable), learning 12 (1), interview 12 (1). Every item has a `domain` (where the
+answer lives; checked against `ingestion/sources.py`). New types `concept`, `interview`.
+q-003 is answerable now (the Word notes say 422). Version is in `evals/golden/VERSION`.
 
 **v0.2 (2026-10-20, D-044):** the RAGAS PDF was replaced by the Chain-of-Thought paper
 (`cot/cot_2201.11903v6.pdf`). q-033..q-036 removed; q-041..q-044 added (table rows of

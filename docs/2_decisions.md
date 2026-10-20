@@ -158,3 +158,35 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   can never be mixed up. Notes DOCX questions q-037..q-040 unchanged.
 - **Alternative:** BEIR (CC BY-SA 4.0). **Why not:** retrieval benchmarks are close to what
   this project does, so it could cause the same kind of confusion.
+
+## D-045: corpus v1 (three domains, 20 documents) and golden set v1 (65 items) (2026-10-20)
+
+- **Register:** kept in `src/docpilot/ingestion/sources.py` (grown from step 2.5), not the
+  plan's `scripts/doc_sources.py`: ingest, metadata and downloads must read ONE list. New
+  fields: topic, url, licence_url, checked date. `tests/test_sources.py` fails if any entry
+  lacks licence, licence link, visibility, domain, version or a valid check date.
+- **Sources (all public; licences checked 2026-10-20):** docs = FastAPI (4 pages, MIT),
+  Pydantic concepts config/strict_mode/alias (MIT, commit 471fe56), Docker get-started
+  concepts, 5 pages (Apache-2.0, commit 95b8ec6); learning = Chain-of-Thought PDF (CC BY
+  4.0) + Wikipedia "Retrieval-augmented generation", "Word embedding", "Evaluation measures
+  (information retrieval)" (CC BY-SA 4.0, revisions 1381095247 / 1374850731 / 1375531235);
+  interview = the learner's `docs/interview/phase_0/2/3_interview.md` + phase 1 Word file.
+  Later interview files cover phases not built yet, so they are not indexed.
+- **Wikipedia:** plain-text extracts API (no wiki markup); headings `== X ==` -> `## X`;
+  each formula arrives as ~60 lines of loose symbols + one LaTeX line: only `$LaTeX$` kept
+  (evaluation-measures article 28 KB -> 13 KB). The API serves only the latest revision, so
+  the download stops if a pinned revision changed (snippets must be re-checked).
+- **TLS:** Python's default certificate store on this laptop rejected Wikipedia
+  ("certificate has expired") while the site's certificate is valid until 2027-01-02;
+  downloads use `certifi`'s CA bundle (already installed with requests; no new package).
+- **Cleaner (Docker/Hugo):** YAML front matter -> `# Title`; shortcodes removed, tab names
+  kept ("Using the CLI:"). FastAPI pages contain neither (checked), so earlier rows are not
+  affected. Pydantic MkDocs markers (`!!! note`, `=== "tab"`) kept: short and readable.
+- **Golden v1 (`evals/golden/VERSION`):** 65 items = 46 dev + 19 test; docs 41 (5
+  unanswerable), learning 12 (1), interview 12 (1). New field `domain` (where the answer
+  lives; must match the register entry of the evidence document); new types `concept` and
+  `interview`. 25 new questions; every snippet checked by code against the converted text.
+- **Correction:** q-003 ("status code on validation failure") was `not-in-docs`, but the
+  phase 1 Word notes (added in 2.7) say "422". Now answerable, domain interview. Missed in
+  2.7: adding documents must always re-check every unanswerable question.
+- **Imbalance seen:** with C4-200 the CoT PDF gives 364 of 733 chunks (its long appendix).

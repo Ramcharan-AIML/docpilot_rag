@@ -1,5 +1,9 @@
 """Remove HTML noise from Markdown before chunking (step 2.2). Code blocks stay exact.
 
+Step 2.8 (Docker docs, built with the Hugo site generator): the YAML "front matter" block
+at the top becomes a "# Title" line (the page has no other title), and Hugo shortcodes
+like {{< youtube-embed ... >}} are removed; a tab keeps its name ("Using the CLI:").
+
 Why: tags like <font color="#4E9A06"> mean nothing to a reader but still change the
 embedding of a chunk (failure-log Q7). What we found in the 4 FastAPI pages (2026-10-15):
 114 tags inside ```console blocks (a coloured terminal screenshot) and 30 in normal text
@@ -18,6 +22,34 @@ FENCE = "```"
 # Fences whose content is a rendered terminal picture, not code: cleaned like prose.
 # (The plan's version skipped ALL fences, which left 114 of the 144 tags in place.)
 TERMINAL_FENCES = {"console"}
+FRONT_MATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)  # only at the very start
+FRONT_MATTER_TITLE = re.compile(r"^title:\s*(.+?)\s*$", re.MULTILINE)
+SHORTCODE = re.compile(r"\{\{[<%]\s*(/?)([\w-]+)([^}]*?)[>%]\}\}")  # {{< name args >}}
+TAB_NAME = re.compile(r'name="([^"]+)"')
+
+
+def front_matter_to_title(text: str) -> str:
+    """A '---' block with 'title: What is a container?' at the top -> '# What is a container?'."""
+    match = FRONT_MATTER.match(text)
+    if match is None:
+        return text
+    title = FRONT_MATTER_TITLE.search(match.group(1))
+    if title is None:
+        return text[match.end() :]
+    quotes = "\"'"  # YAML titles may be quoted: title: "Docker Compose"
+    return f"# {title.group(1).strip(quotes)}\n" + text[match.end() :]
+
+
+def replace_shortcode(match: re.Match) -> str:
+    """Keep only what a reader sees: the name of an opening tab; everything else goes."""
+    closing, name, arguments = match.group(1), match.group(2), match.group(3)
+    if name == "tab" and not closing and (tab := TAB_NAME.search(arguments)):
+        return f"{tab.group(1)}:"
+    return ""
+
+
+def clean_prose(line: str) -> str:
+    return SHORTCODE.sub(replace_shortcode, HTML_TAG.sub("", line))
 
 
 def fence_language(line: str) -> str:
@@ -28,6 +60,7 @@ def fence_language(line: str) -> str:
 
 def clean_markdown(text: str) -> str:
     """Strip noise tags from prose and terminal blocks; leave every other code block exact."""
+    text = front_matter_to_title(text)
     cleaned_lines = []
     inside_code = False
     keep_exact = False  # True inside a real code block (python, JSON, TOML, plain ...)
@@ -44,6 +77,6 @@ def clean_markdown(text: str) -> str:
             # terminal picture: drop colour tags, turn &apos; back into '
             cleaned_lines.append(html.unescape(HTML_TAG.sub("", line)))
         else:
-            cleaned_lines.append(HTML_TAG.sub("", line))
+            cleaned_lines.append(clean_prose(line))
     # splitlines() drops the final newline; put it back so file endings do not change
     return "\n".join(cleaned_lines) + ("\n" if text.endswith("\n") else "")
