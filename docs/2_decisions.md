@@ -136,3 +136,25 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   group C). Learner chose both (2026-10-19). Download pinned by sha256.
 - **Golden v0.1:** +8 table questions (q-033 to q-040), snippets copied by code from the
   converted Markdown. `02_ingest.py --sources fastapi` rebuilds the v0 corpus exactly.
+
+## D-044: Chain-of-Thought paper replaces the RAGAS paper as the first PDF (2026-10-20)
+
+- **What:** `data/docs/cot/cot_2201.11903v6.pdf` (Wei et al., "Chain-of-Thought Prompting
+  Elicits Reasoning in Large Language Models", arXiv 2201.11903v6, 2023-01-10,
+  sha256 `7d9f878c...a72a12`) replaces the RAGAS paper. Source key `cot`, group B
+  (learning), public.
+- **Why (learner request):** the RAGAS *paper* in the corpus was confused with the RAGAS
+  *library* (a generation-eval tool we have not installed). The learner asked for a PDF on a
+  topic that is not a tool or doc of this project.
+- **Licences checked 2026-10-20 on arxiv.org:** Chain-of-Thought CC BY 4.0 (chosen);
+  LoRA, Attention Is All You Need, Dense Passage Retrieval: arXiv non-exclusive (would be
+  `local_only`).
+- **Docling on it:** 43 pages, 8 tables found, 182.4 s (about 4.2 s per page, CPU); Table 2
+  (GSM8K etc. by model size) and Table 4 (commonsense) come out as clean rows; each
+  "Table N:" caption sits right above its table. Table 1 has merged cells
+  ("Standard Chain of thought + ext. calc" in one column).
+- **Golden v0.2:** RAGAS questions q-033..q-036 removed; q-041..q-044 added (3 dev, 1
+  test) with snippets = one exact, unique table row. New ids, so results of v0.1 and v0.2
+  can never be mixed up. Notes DOCX questions q-037..q-040 unchanged.
+- **Alternative:** BEIR (CC BY-SA 4.0). **Why not:** retrieval benchmarks are close to what
+  this project does, so it could cause the same kind of confusion.

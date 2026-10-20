@@ -340,3 +340,24 @@ PDF goes through the same cleaner, chunkers and eval as a FastAPI page.
    v0.1 (40 items). Old v0 rows stay valid for the old exam only.
 
 **Commands:** rebuild the old corpus with `--sources fastapi`; the full corpus without it.
+
+---
+
+## 40. The PDF is now the Chain-of-Thought paper (2026-10-20)
+
+**Why the swap:** the RAGAS *paper* (a document on the shelf) was easy to confuse with the
+RAGAS *library* (a grading tool we have not installed). So the PDF is now a paper on a
+topic DocPilot does not use as a tool: **Chain-of-Thought prompting** (Google, 2022), the
+idea of asking an LLM to "think step by step". It is a classic interview topic.
+
+| Thing | Where it lives |
+|---|---|
+| The PDF | `data/docs/cot/cot_2201.11903v6.pdf` (not in git; `scripts/01_download_docs.py` re-downloads it and checks its fingerprint) |
+| Docling's Markdown of it | `data/processed/converted/cot/cot_2201.11903v6.pdf.md` |
+| Its register entry (licence, version) | `src/docpilot/ingestion/sources.py`, key `cot` |
+| Its 4 exam questions | `evals/golden/dev.jsonl` (q-041, q-042, q-043), `test.jsonl` (q-044) |
+
+**The 4 new questions** (each answer is one row of a table):
+q-041 LaMDA 420M on GSM8K with CoT (0.4%: CoT hurts tiny models); q-042 did CoT help
+GPT-3 on CSQA (no: 79.5 vs 73.5); q-043 PaLM 62B on GSM8K (9.6 vs 29.9); q-044 PaLM 540B
+on StrategyQA (68.6 to 77.8, hidden test question).

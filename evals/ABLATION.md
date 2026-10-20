@@ -134,3 +134,7 @@ Different days, so not a fair pair yet: a same-day `C0-recheck` run is still to 
 
 Rows above use golden v0 on the 4 FastAPI pages. Step 2.7 added the RAGAS PDF, the notes
 DOCX and 8 table questions (v0.1). New rows from here on; do not compare them with v0 rows.
+
+**Superseded:** `2026-10-19_C4-200-v0.1_dev_retrieval.json` was measured with the RAGAS PDF
+(golden v0.1). The RAGAS PDF was replaced on 2026-10-20 (D-044, golden v0.2), so that run
+is kept as history only.

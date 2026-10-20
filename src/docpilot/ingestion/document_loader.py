@@ -8,9 +8,9 @@ instead of a jumble of numbers.
 Settings (checked on docling 2.140.0, 2026-10-19):
 - OCR off: our files are digital (text inside the PDF), and OCR is slow and not installed;
 - table structure on: tables are why we use Docling (why not PyMuPDF: D-043).
-Speed on this laptop's CPU: RAGAS paper, 8 pages, 26 s warm (36 s cold). So every result
-is cached in data/processed/converted/, keyed by the file's sha256 and the Docling
-version: a re-ingest costs nothing unless the file or Docling changed.
+Speed on this laptop's CPU: Chain-of-Thought paper, 43 pages, 182 s (about 4 s per page).
+So every result is cached in data/processed/converted/, keyed by the file's sha256 and the
+Docling version: a re-ingest costs nothing unless the file or Docling changed.
 """
 
 import hashlib

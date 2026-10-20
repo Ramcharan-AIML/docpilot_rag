@@ -1,7 +1,7 @@
 """Tests for ingestion/document_loader.py (Docling) on a small Word file made in the test.
 
 DOCX needs no layout models, so this runs offline in CI. The PDF path was checked by hand
-on the RAGAS paper (8 pages, 4 tables, 26 s warm; docs/2_decisions.md D-043).
+on the Chain-of-Thought paper (43 pages, 8 tables, 182 s; docs/2_decisions.md D-044).
 """
 
 import pytest
@@ -65,7 +65,7 @@ def test_loader_reads_docx_next_to_markdown(tmp_path, monkeypatch):
     assert "MRR" in documents[1].text
 
 
-@pytest.mark.parametrize("name", ["ragas", "interview"])
+@pytest.mark.parametrize("name", ["cot", "interview"])
 def test_new_sources_have_licence_and_visibility(name):
     info = SOURCES[name]
     assert info.licence and info.visibility in ("public", "local_only")

@@ -17,8 +17,10 @@ from evals.validate_golden import GOLDEN_DIR, load_items, validate
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 # Bump when questions, evidence or the corpus change. v0 = 32 items, 4 FastAPI pages;
-# v0.1 = + 8 table questions on the RAGAS PDF and the notes DOCX (step 2.7); v1 in 2.8.
-GOLDEN_VERSION = "v0.1"
+# v0.1 = + 8 table questions on the RAGAS PDF and the notes DOCX (step 2.7);
+# v0.2 = RAGAS PDF replaced by the Chain-of-Thought PDF, q-033..q-036 -> q-041..q-044
+# (D-044); v1 in 2.8.
+GOLDEN_VERSION = "v0.2"
 
 
 def load_split(split: str) -> list[dict]:

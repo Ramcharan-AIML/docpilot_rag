@@ -26,13 +26,14 @@ SOURCES: dict[str, SourceInfo] = {
         licence="MIT",
         visibility="public",
     ),
-    # Step 2.7 (D-043): first PDF. Licence checked on arxiv.org/abs/2309.15217 on 2026-10-19.
-    "ragas": SourceInfo(
+    # Step 2.7 (D-044): first PDF, the Chain-of-Thought paper (replaced the RAGAS paper).
+    # Licence checked on arxiv.org/abs/2201.11903 on 2026-10-20.
+    "cot": SourceInfo(
         domain="learning",
         doc_type="paper",
         # scripts/01_download_docs.py downloads exactly this version and checks its sha256.
-        version="arXiv 2309.15217v2 (2025-04-28)",
-        licence="CC BY 4.0 (Es, James, Espinosa-Anke, Schockaert: Ragas, EACL 2024 demo)",
+        version="arXiv 2201.11903v6 (2023-01-10)",
+        licence="CC BY 4.0 (Wei et al.: Chain-of-Thought Prompting Elicits Reasoning in LLMs)",
         visibility="public",
     ),
     # Step 2.7 (D-043): first DOCX, built by scripts/make_notes_docx.py from the learner's

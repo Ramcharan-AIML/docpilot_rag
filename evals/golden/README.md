@@ -1,4 +1,8 @@
-# Golden dataset v0.1 (Phase 1 step 1c; extended in Phase 2 step 2.7)
+# Golden dataset v0.2 (Phase 1 step 1c; extended in Phase 2 step 2.7)
+
+**v0.2 (2026-10-20, D-044):** the RAGAS PDF was replaced by the Chain-of-Thought paper
+(`cot/cot_2201.11903v6.pdf`). q-033..q-036 removed; q-041..q-044 added (table rows of
+Tables 2 and 4). Still 40 items: dev 28 (3 unanswerable), test 12 (2).
 
 **v0.1 (2026-10-19):** v0 + 8 table questions (q-033 to q-040): 4 on the RAGAS paper PDF
 (`ragas/ragas_2309.15217v2.pdf`), 4 on the Word notes (`interview/phase_1_notes.docx`).

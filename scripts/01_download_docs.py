@@ -1,6 +1,6 @@
 """Download four FastAPI tutorial pages (raw Markdown) into data/docs/fastapi/, plus the
 code files they include with {* ... *} markers into data/code/fastapi/ (step 2.3), plus
-the RAGAS paper PDF into data/docs/ragas/ (step 2.7, CC BY 4.0, D-043).
+the Chain-of-Thought paper PDF into data/docs/cot/ (step 2.7, CC BY 4.0, D-044).
 
 Run: python scripts/01_download_docs.py
 
@@ -24,9 +24,9 @@ BASE_URL = f"{REPO_URL}/docs/en/docs/tutorial"
 PAGES = ["first-steps", "path-params", "query-params", "body"]
 
 # Step 2.7: one pinned arXiv version; the hash proves we got exactly the file we checked.
-RAGAS_URL = "https://arxiv.org/pdf/2309.15217v2"
-RAGAS_FILE = config.DOCS_DIR / "ragas" / "ragas_2309.15217v2.pdf"
-RAGAS_SHA256 = "6c24762a3f277fd120ed1adf34b01420ecf92f18ff6d1b5435fa0a09cb804ecb"
+PDF_URL = "https://arxiv.org/pdf/2201.11903v6"
+PDF_FILE = config.DOCS_DIR / "cot" / "cot_2201.11903v6.pdf"
+PDF_SHA256 = "7d9f878c23b460e4566aa4ec9201b1abfb3b8faefb2b1356e411cb90fef72a12"
 
 
 def download(url: str) -> bytes:
@@ -61,12 +61,12 @@ def main() -> None:
     shown = code_root.relative_to(config.PROJECT_ROOT).as_posix()
     print(f"done: {len(unique_paths)} included code files -> {shown}")
 
-    pdf = download(RAGAS_URL)
-    if hashlib.sha256(pdf).hexdigest() != RAGAS_SHA256:
+    pdf = download(PDF_URL)
+    if hashlib.sha256(pdf).hexdigest() != PDF_SHA256:
         # A different file would silently change chunks and golden snippets: stop.
-        raise RuntimeError(f"{RAGAS_URL} changed: sha256 differs from the pinned one")
-    save(RAGAS_FILE, pdf)
-    print(f"saved {RAGAS_FILE.relative_to(config.PROJECT_ROOT).as_posix()}  ({len(pdf)} bytes)")
+        raise RuntimeError(f"{PDF_URL} changed: sha256 differs from the pinned one")
+    save(PDF_FILE, pdf)
+    print(f"saved {PDF_FILE.relative_to(config.PROJECT_ROOT).as_posix()}  ({len(pdf)} bytes)")
     print("Word notes: run python scripts/make_notes_docx.py (built from docs/interview/)")
 
 

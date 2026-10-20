@@ -7,6 +7,24 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-20, session 23: PDF swapped to the Chain-of-Thought paper
+
+- Learner ran ingest for fixed800 + C4-200 on the full corpus and the C4-200 eval (v0.1,
+  `a727324`): n=25, R@1 0.600, R@5 0.800, MRR 0.688. Old 19 questions unchanged except
+  q-018 (9 -> 10); new: q-037, q-039 rank 1, q-035 rank 4, q-038 rank 9, q-033/q-034
+  missed (Table 1 chunk had no caption, headers abbreviated).
+- Found 3 problems: (A) the notes quote an include marker, resolver reports "missing 1";
+  (B) Docling pads table separator rows with up to 1150 dashes = 1150 tokens; fixed 800
+  made 3 chunks of pure dashes (over 510); (C) a table chunk without its caption ranks low.
+  Not fixed yet (waiting for the learner's word).
+- Learner was confused by RAGAS paper vs RAGAS library and asked for another PDF that is
+  not about this project's tools. Explained: RAGAS library not installed; generation
+  evals not started (Phase 3.9).
+- Swapped to Chain-of-Thought (2201.11903v6, CC BY 4.0, checked today; LoRA, Attention,
+  DPR are non-exclusive). Docling: 43 pages, 8 tables, 182.4 s. Golden v0.2: q-033..q-036
+  removed, q-041..q-044 added (unique table rows). RAGAS file and cache deleted; sources,
+  download script (sha256), test, docs updated (D-044). Validator OK; 132 tests pass.
+
 ### 2026-10-19, session 22: step 2.7 Docling (PDF + DOCX)
 
 - Learner committed `1de3d22` and ran C4-200 latency: p50 978 ms, p95 1230 ms, 9 retries
