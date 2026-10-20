@@ -404,3 +404,22 @@ Old and new exam scores are never compared.
 
 **How to read any run:** see `docs/teaching/big_picture_and_reading_runs.md` (the 6
 questions to ask after every run are in its part 10).
+
+## 43. Step 2.9: which way of cutting won? FT-200 (2026-10-20)
+
+We cut the library 11 different ways and sat the same 41-question practice exam with each.
+
+- **Five ways finished within 2 questions of each other:** parent-child (35 of 41),
+  recursive 400 (34), Q&A pairs (34), hierarchical 400 (33), fixed 200 tokens (33).
+  Two questions is noise, so that's a tie.
+- **Tie-breaker:** the simplest method that sends the LLM the least text. That's **FT-200**:
+  plain "scissors every 200 tokens" on cleaned text with the real code pasted in.
+- **Final exam (test, 17 questions, run once):** FT-200 found 15, C0 found 16. FT-200 put
+  the right card first 8 times, C0 6 times. So better **ranking**, not better **finding**.
+- **Biggest lesson:** cleaning the data mattered more than the clever cutting. Semantic
+  chunking was clearly the worst.
+- **Will it change?** Only at one planned check after the reranker in Phase 3, where the
+  top 3 are tested again, and only if one wins by 3 or more questions.
+
+The app now uses FT-200 (`docpilot_v1_ft200`). To rebuild it:
+`python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200 --overlap 25 --collection docpilot_v1_ft200`

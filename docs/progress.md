@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.8 built: register + 20-document corpus in 3 domains, golden v1 (65 items) (D-045), 143 tests |
-| Next step | fixes A/B/C + matrix done (dirty run, top 5 tied within 2 questions); learner: pick winner, commit, clean re-run, test split once, D-047 |
+| Current step | 2.9 done: FT-200 is the default chunking (D-047); test split run once |
+| Next step | learner commits 2.9; then 2.10 CI eval gate; then Phase 2 gate (interview notes, PR, tag) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 

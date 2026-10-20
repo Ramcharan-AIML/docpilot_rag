@@ -29,7 +29,7 @@ def main() -> None:
     client = get_client(config.QDRANT_PATH)
     try:
         if not client.collection_exists(config.COLLECTION_NAME):
-            sys.exit("No index found. Run scripts/02_ingest.py first.")
+            sys.exit(f"No index found. Build it first:\n  {config.INGEST_COMMAND}")
         result = ask(question, client, get_llm_client())
     finally:
         client.close()

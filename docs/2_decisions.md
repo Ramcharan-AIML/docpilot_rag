@@ -217,3 +217,29 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
 - **Alternative:** generate the whole ABLATION.md. **Why not:** loses the readings and the
   v0 history that explain the numbers.
 - No new dependency.
+
+## D-047: default chunking = FT-200 (fixed 200 tokens, overlap 25, cleaned, includes) (2026-10-20)
+
+- **What:** the app, `03_ask.py` and the evals use collection `docpilot_v1_ft200` by default
+  (`config.COLLECTION_NAME`; build command in `config.INGEST_COMMAND`). `02_ingest.py` now
+  requires `--collection`, so a bare run cannot overwrite the app's index with C0 chunks.
+- **Evidence (golden v1, dev, n=41, commit `f4a3a49`, clean; matrix of 11 configs):**
+  R@5 in questions: C3-128 35, C1-400 34, QA-400 34, C4-400 33, **FT-200 33**, C0 32.
+  The top five are within 2 questions = a tie (1 question = 0.024). Tie-breakers (teaching
+  note part 11): MRR also tied (C4-400 .729, C3 .717, C1-400 .705, FT-200 .701); context
+  sent to the LLM is smallest for FT-200 (4 x 200 tokens max, by construction); simplest.
+  The dirty run (`3778c0f+dirty`) gave identical numbers for every config.
+- **Test split, run once (n=17, `f4a3a49`):** FT-200 R@1 .471 (8), R@5 .882 (15), MRR .620;
+  C0 R@1 .353 (6), R@5 .941 (16), MRR .608. FT-200 does **not** beat C0 on recall.
+  Dev + test (58): R@5 48 vs 48; R@1 34 vs 28. Honest claim: **a ranking gain, not a
+  recall gain**; chunking strategies are mostly within noise at this golden-set size.
+  C2 semantic was clearly worst (MRR .574).
+- **Alternative:** C3-128 parent-child (best dev R@5 .854). **Why not:** inside the noise
+  band; sends whole parents (up to 800 tokens each, about 2-4x FT-200's context) into
+  Groq's 8000 tokens/minute; needs a parents file next to the index.
+- **Alternative:** keep C0. **Why not:** same recall, worse ranking, character sizes can
+  approach the 510-token limit (largest 434), raw text without the real code.
+- **Re-check, planned:** at the end of Phase 3 (hybrid + reranker), re-run FT-200, C3-128
+  and C4-400 through the final pipeline (`run_chunking_matrix.py --only ...` + the Phase 3
+  eval). Switch only if one beats FT-200 by 3 or more questions. Also re-check after a large
+  corpus change (golden v2) or an embedding-model change. Frozen from Phase 4 on.

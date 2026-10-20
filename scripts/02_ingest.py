@@ -1,6 +1,8 @@
 """Build the vector index: load -> (clean) -> (includes) -> chunk -> metadata -> embed -> store.
 
-Run: python scripts/02_ingest.py --sources fastapi   (C0: raw text, collection docpilot_naive)
+Run: python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200
+         --overlap 25 --collection docpilot_v1_ft200      (the app's index since D-047)
+     python scripts/02_ingest.py --sources fastapi --collection docpilot_naive   (C0, v0)
      python scripts/02_ingest.py --clean --includes --strategy recursive --size 400
          --collection docpilot_rec400                 (2.6: one collection per strategy+size)
      strategies: fixed (characters), fixed_tokens, recursive, semantic, parent_child,
@@ -77,7 +79,13 @@ def main() -> None:
     # (the 4 FastAPI pages every row before 2.7 was measured on).
     parser.add_argument("--sources", nargs="+", help="only these sources (default: all)")
     # A separate collection per variant keeps C0 intact, so both can be evaluated.
-    parser.add_argument("--collection", default=config.COLLECTION_NAME)
+    # Required since D-047: with a default, a bare run would refill the app's collection
+    # (FT-200) with fixed 800-character chunks without any warning.
+    parser.add_argument(
+        "--collection",
+        required=True,
+        help=f"e.g. the app's index: {config.COLLECTION_NAME} (full command in config.py)",
+    )
     args = parser.parse_args()
     started = time.perf_counter()
 

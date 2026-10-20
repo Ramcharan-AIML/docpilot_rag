@@ -4,7 +4,7 @@
   "collection": "docpilot_v1_hier400np",
   "split": "dev",
   "date": "2026-10-20",
-  "git_commit": "3778c0f+dirty",
+  "git_commit": "f4a3a49",
   "settings": {
     "golden_version": "v1",
     "chunk_strategy": "hierarchical_noprefix",
@@ -21,7 +21,7 @@
     "chunk_count": 551,
     "largest_chunk_tokens": 501,
     "chunks_over_limit": 0,
-    "ingest_seconds": 34.1,
+    "ingest_seconds": 37.6,
     "search_k": 10,
     "min_overlap": 0.7,
     "scored_on": "chunk"
@@ -150,7 +150,7 @@
   "search_latency_ms": {
     "n": 41,
     "p50": 2.6,
-    "p95": 3.0
+    "p95": 4.2
   },
   "per_question": [
     {"id": "q-001", "type": "how-to", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#2 0.818", "fastapi/query-params.md#5 0.795", "fastapi/query-params.md#1 0.774", "fastapi/query-params.md#6 0.764", "fastapi/query-params.md#0 0.727", "fastapi/query-params.md#3 0.688", "fastapi/body.md#2 0.685", "fastapi/query-params.md#4 0.672", "fastapi/body.md#9 0.667", "fastapi/body.md#3 0.657"]},

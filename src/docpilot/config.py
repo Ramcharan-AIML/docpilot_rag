@@ -60,7 +60,16 @@ CONTEXT_CACHE = PROJECT_ROOT / "data" / "processed" / "context_cache.jsonl"
 
 # --- retrieval ---
 TOP_K = 4
-COLLECTION_NAME = "docpilot_naive"
+# The collection the app, 03_ask.py and the evals use by default. Since D-047 (step 2.9):
+# FT-200 = fixed 200 tokens, overlap 25, cleaned, includes resolved. Build it with
+#   python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200
+#       --overlap 25 --collection docpilot_v1_ft200
+# (C0 = "docpilot_naive" / "docpilot_v1_c0" stays as the baseline row, not the app.)
+COLLECTION_NAME = "docpilot_v1_ft200"
+INGEST_COMMAND = (
+    "python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200 "
+    f"--overlap 25 --collection {COLLECTION_NAME}"
+)
 
 # --- LLM (D-004) ---
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")

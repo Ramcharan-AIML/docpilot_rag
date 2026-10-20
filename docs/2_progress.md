@@ -7,6 +7,16 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-20, session 28: clean matrix, test split, FT-200 chosen (D-047)
+
+- Learner committed fixes + tooling (`f4a3a49`) and chose FT-200 by the tie-break rule.
+- Clean matrix re-run (15.6 min): every number identical to the dirty run.
+- Test split once (n=17): FT-200 R@1 .471 / R@5 .882 / MRR .620; C0 .353 / .941 / .608.
+  FT-200 does not beat C0 on recall; ranking gain only (dev+test R@1 34 vs 28 of 58).
+- App switched: `config.COLLECTION_NAME = docpilot_v1_ft200`; `02_ingest.py --collection`
+  now required. Phase 3 plan gets a chunking re-check item (top 3 after the reranker).
+- Learner predictions: not given. Next: commit, then step 2.10 (CI eval gate).
+
 ### 2026-10-20, session 27: fixes A/B/C + first full chunking matrix (golden v1, dev)
 
 - Fix A: includes resolved only when the source has a code folder (missing 1 -> 0).

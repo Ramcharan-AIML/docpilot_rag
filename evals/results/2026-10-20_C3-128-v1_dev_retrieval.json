@@ -4,7 +4,7 @@
   "collection": "docpilot_v1_pc128",
   "split": "dev",
   "date": "2026-10-20",
-  "git_commit": "3778c0f+dirty",
+  "git_commit": "f4a3a49",
   "settings": {
     "golden_version": "v1",
     "chunk_strategy": "parent_child",
@@ -21,7 +21,7 @@
     "chunk_count": 853,
     "largest_chunk_tokens": 128,
     "chunks_over_limit": 0,
-    "ingest_seconds": 42.7,
+    "ingest_seconds": 58.2,
     "parent_max_tokens": 800,
     "parents_file": "C:\\Users\\rajes\\OneDrive\\Desktop\\1\\AIML\\9_DOCPILOT_RAG_BASED\\docpilot_rag\\data\\processed\\parents_docpilot_v1_pc128.json",
     "parent_count": 304,
@@ -154,8 +154,8 @@
   },
   "search_latency_ms": {
     "n": 41,
-    "p50": 6.0,
-    "p95": 6.6
+    "p50": 3.8,
+    "p95": 5.2
   },
   "per_question": [
     {"id": "q-001", "type": "how-to", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#5 0.827", "fastapi/query-params.md#13 0.781", "fastapi/query-params.md#3 0.779", "fastapi/query-params.md#0 0.743", "fastapi/body.md#22 0.720", "interview/phase_3_interview.md#14 0.715", "fastapi/body.md#6 0.706", "fastapi/query-params.md#7 0.685", "fastapi/query-params.md#11 0.672", "fastapi/body.md#8 0.669"]},

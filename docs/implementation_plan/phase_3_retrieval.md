@@ -298,3 +298,5 @@ Evals, agents, the API, and the MCP server all call this one function.
 - [ ] defaults chosen in `RetrievalSettings` with evidence in `decisions.md`
 - [ ] versions pinned: Docker image tag, fastembed, reranker model revision
 - [ ] interview notes; merged via PR (eval gate green); tag `phase-3` pushed
+- [ ] chunking re-check (D-047): FT-200 vs C3-128 vs C4-400 through the final hybrid +
+      reranker pipeline; switch only on a gap of 3+ questions, decision either way
