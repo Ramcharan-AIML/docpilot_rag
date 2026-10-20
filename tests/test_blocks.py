@@ -61,3 +61,17 @@ def test_every_block_knows_its_exact_position():
             assert text[block.start : block.end] == "# A"
         else:
             assert text[block.start : block.end] == block.text
+
+
+def test_table_caption_joins_its_table_fix_c():
+    text = "Intro.\n\nTable 1: Accuracy (%).\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\nAfter.\n"
+    blocks = parse_blocks(text)
+    assert [b.kind for b in blocks] == ["paragraph", "table", "paragraph"]
+    table = blocks[1]
+    assert table.text.startswith("Table 1: Accuracy") and "| 1 | 2 |" in table.text
+    assert text[table.start : table.end] == table.text  # still an exact slice
+
+
+def test_ordinary_paragraph_before_a_table_stays_separate():
+    blocks = parse_blocks("Some words.\n\n| a |\n|---|\n")
+    assert [b.kind for b in blocks] == ["paragraph", "table"]

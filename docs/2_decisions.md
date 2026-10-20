@@ -190,3 +190,30 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   phase 1 Word notes (added in 2.7) say "422". Now answerable, domain interview. Missed in
   2.7: adding documents must always re-check every unanswerable question.
 - **Imbalance seen:** with C4-200 the CoT PDF gives 364 of 733 chunks (its long appendix).
+
+## D-046: step 2.9 tooling: matrix runner, generated ablation block, fair control rows (2026-10-20)
+
+- **What:** `scripts/run_chunking_matrix.py` runs, per config, the same two commands a human
+  types (`02_ingest.py`, then `python -m evals.run_retrieval_eval --ablation`), skips configs
+  already scored on the current commit + golden version, refuses uncommitted code, and ends
+  with `python -m evals.make_ablation`. That script writes the main, per-type and per-domain
+  tables between `<!-- make_ablation:start/end -->` markers in `evals/ABLATION.md`.
+- **Matrix on golden v1 (dev):** C0-v1 (raw, frozen baseline), **FT-200-v1 and FT-400-v1**
+  (fixed-size tokens WITH clean + includes: the fair control, so C1-C4 differ from it in
+  chunking only), C1-200/400, C2-400, C3-128, C4-200/400, C4-400-noprefix, QA-400. C5
+  contextual only with `--with-llm` (1 LLM call per chunk; 733 chunks would use most of the
+  Groq free daily request limit of 1000, D-041).
+- **Plan fixes:** (1) the plan's `python evals/run_retrieval_eval.py` must be `python -m
+  evals.run_retrieval_eval` (D-036); (2) "ABLATION.md generated" = the tables block only:
+  the hand-written history (v0 rows, readings) stays, because it cannot be regenerated.
+- **Also changed:** `02_ingest.py` stores `ingest_seconds` in the manifest (plan's "ingest
+  minutes" column); MLflow de-duplication now keys on results file **and** git commit, so a
+  same-day re-run after a code change is a new run instead of being skipped silently.
+- **Numbers come from the JSON** each MLflow run points to (results_file tag), the committed
+  source of truth; MLflow selects which runs (ablation=true). Fallback without MLflow: all
+  result files of that golden version, and the output says so.
+- **Alternative:** one Python process that imports and loops. **Why not:** a second code
+  path that could disagree with the manual commands, and local Qdrant locks per process.
+- **Alternative:** generate the whole ABLATION.md. **Why not:** loses the readings and the
+  v0 history that explain the numbers.
+- No new dependency.

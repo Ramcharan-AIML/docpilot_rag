@@ -57,11 +57,17 @@ def get_experiment_id(name: str) -> str:
     return mlflow.create_experiment(name, artifact_location=config.MLFLOW_ARTIFACT_DIR.as_uri())
 
 
-def is_logged(experiment_id: str, results_file: str) -> bool:
-    """True if this result file already has a run, so re-logging never makes duplicates."""
+def is_logged(experiment_id: str, results_file: str, git_commit: str) -> bool:
+    """True if this result file was already logged from this commit (no duplicates).
+
+    The commit is part of the key: a config re-run on the same day after a code change
+    overwrites the same file name, and must become a new run, not be skipped (step 2.9).
+    """
     runs = mlflow.search_runs(
         experiment_ids=[experiment_id],
-        filter_string=f"tags.results_file = '{results_file}'",
+        filter_string=(
+            f"tags.results_file = '{results_file}' and tags.git_commit = '{git_commit}'"
+        ),
         output_format="list",
     )
     return bool(runs)
@@ -71,7 +77,7 @@ def log_record(record: dict, results_path: Path, ablation: bool = False) -> str 
     """Log one saved result file as one MLflow run. Returns the run id, or None if the file
     was logged before. `ablation=True` marks runs that belong in evals/ABLATION.md."""
     experiment_id = get_experiment_id(EXPERIMENT_PREFIX + record["kind"])
-    if is_logged(experiment_id, results_path.name):
+    if is_logged(experiment_id, results_path.name, record["git_commit"]):
         return None
     params, metrics = params_and_metrics(record)
     tags = {

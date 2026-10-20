@@ -7,6 +7,30 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-20, session 27: fixes A/B/C + first full chunking matrix (golden v1, dev)
+
+- Fix A: includes resolved only when the source has a code folder (missing 1 -> 0).
+  Fix B: cleaner shrinks table rows (dash runs -> ---, padding spaces). Fix C: a
+  "Table N:" caption paragraph is merged into the table block below it. +4 tests (155).
+- Matrix run on uncommitted fixes (`3778c0f+dirty`, 17.8 min, 11 configs); re-run after the
+  learner commits. C0-v1 unchanged (0.780): the raw path is deterministic.
+- R@5 (questions of 41): C3-128 .854 (35), C1-400 .829 (34), QA-400 .829 (34), C4-400 .805
+  (33, best R@1 .659 / MRR .729), FT-200 .805 (33), C0 .780 (32), C4-200 .780 (32,
+  was .756 before fixes; table-or-code .500 -> .625), FT-400 .780, C4-400-noprefix .756,
+  C1-200 .732, C2-400 .732 (worst MRR .574).
+- Top five are within 2 questions: a tie by our rule. Winner not chosen yet (learner).
+
+### 2026-10-20, session 26: step 2.9 tooling (matrix + generated ablation tables)
+
+- `scripts/run_chunking_matrix.py` (11 configs on golden v1 dev, C5 only with --with-llm),
+  `evals/make_ablation.py` (main / per-type / per-domain tables between markers in
+  ABLATION.md, numbers from the result JSONs of MLflow runs tagged ablation=true), D-046.
+- `02_ingest.py` records `ingest_seconds`; MLflow de-dup now keys on file + commit.
+- Plan bug fixed openly: `python evals/run_retrieval_eval.py` -> `python -m evals...`.
+- Generator checked on the two real v1 runs: numbers equal the JSON files.
+- Tests 151 passed (+8); ruff clean; file lengths OK. Matrix not run yet (needs a clean
+  commit; fixes A/B/C would change the rows, so the learner decides the order).
+
 ### 2026-10-20, session 25: golden v1 baselines + "big picture" teaching note
 
 - Learner committed 2.8 (`474161b`) and ran both v1 baselines (dev, n=41, no LLM):

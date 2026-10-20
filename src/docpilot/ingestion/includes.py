@@ -37,6 +37,10 @@ def resolve_includes(text: str, code_root: Path) -> tuple[str, int, list[str]]:
     """
     missing: list[str] = []
     resolved = 0
+    if not code_root.is_dir():
+        # Only sources with a code folder (FastAPI) have real includes. The learner's Word
+        # notes QUOTE a marker as an example; resolving it reported a false "missing" (fix A).
+        return text, resolved, missing
 
     def replace(match: re.Match) -> str:
         nonlocal resolved

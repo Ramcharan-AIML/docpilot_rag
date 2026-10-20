@@ -15,6 +15,7 @@ FENCE = "```"
 HEADING_ANCHOR = re.compile(r"\s*\{\s*#[^}]*\}\s*$")
 HEADING = re.compile(r"^(#{1,6})\s+(.*)$")  # "#hashtag" (no space) is not a heading
 LIST_ITEM = re.compile(r"^\s*(?:[*+-]|\d+[.)])\s")  # "* a", "- a", "1. a" (also indented)
+TABLE_CAPTION = re.compile(r"^Table \d+[:.]")  # "Table 1: ..." as Docling writes it
 
 
 @dataclass
@@ -101,4 +102,37 @@ def parse_blocks(text: str) -> list[Block]:
                 buffer_start = line_start
             buffer.append(line)
     flush()  # also keeps an unclosed code block at the end of the file
-    return blocks
+    return attach_table_captions(blocks, text)
+
+
+def attach_table_captions(blocks: list[Block], text: str) -> list[Block]:
+    """A 'Table 3: ...' paragraph right before a table becomes part of that table (fix C).
+
+    Docling puts the caption above the table with a blank line between, so they were two
+    blocks and could land in different chunks: the numbers lost their meaning ("Table 1"
+    ranked 19th in 2.7). Merged, a chunker keeps them together like any table.
+    """
+    merged: list[Block] = []
+    for block in blocks:
+        if block.kind == "table" and merged and is_caption_of(merged[-1], block, text):
+            previous = merged[-1]
+            merged[-1] = Block(
+                "table",
+                text[previous.start : block.end],  # still an exact slice of the document
+                block.heading_path,
+                previous.start,
+                block.end,
+            )
+        else:
+            merged.append(block)
+    return merged
+
+
+def is_caption_of(previous: Block, table: Block, text: str) -> bool:
+    """True if `previous` is a 'Table N:' paragraph with only blank lines before `table`."""
+    return (
+        previous.kind == "paragraph"
+        and TABLE_CAPTION.match(previous.text) is not None
+        and previous.heading_path == table.heading_path
+        and text[previous.end : table.start].strip() == ""
+    )

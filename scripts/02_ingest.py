@@ -147,6 +147,9 @@ def main() -> None:
         "chunk_count": len(chunks),
         "largest_chunk_tokens": max(token_counts),
         "chunks_over_limit": over_limit,
+        # Ingest cost is part of the result (plan 2.9 main table); stored up to here
+        # (everything but writing the manifest), on this laptop's CPU.
+        "ingest_seconds": round(time.perf_counter() - started, 1),
     }
     if base == "semantic":
         settings["semantic_percentile"] = config.SEMANTIC_PERCENTILE

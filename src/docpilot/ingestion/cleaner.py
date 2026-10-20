@@ -26,6 +26,8 @@ FRONT_MATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)  # only at the very
 FRONT_MATTER_TITLE = re.compile(r"^title:\s*(.+?)\s*$", re.MULTILINE)
 SHORTCODE = re.compile(r"\{\{[<%]\s*(/?)([\w-]+)([^}]*?)[>%]\}\}")  # {{< name args >}}
 TAB_NAME = re.compile(r'name="([^"]+)"')
+DASH_RUN = re.compile(r"-{4,}")  # Markdown needs only 3 dashes per separator cell
+SPACE_RUN = re.compile(r" {2,}")
 
 
 def front_matter_to_title(text: str) -> str:
@@ -48,7 +50,19 @@ def replace_shortcode(match: re.Match) -> str:
     return ""
 
 
+def shrink_table_row(line: str) -> str:
+    """'|-------------|  a    |' -> '|---| a |' (fix B, step 2.9).
+
+    Docling pads PDF tables to fixed column widths: separator rows with hundreds of dashes
+    (one dash = one token for bge-small) and cells full of spaces. Neither carries meaning,
+    but the dashes eat the 510-token budget and make table chunks look alike.
+    """
+    return SPACE_RUN.sub(" ", DASH_RUN.sub("---", line))
+
+
 def clean_prose(line: str) -> str:
+    if line.lstrip().startswith("|"):
+        line = shrink_table_row(line)
     return SHORTCODE.sub(replace_shortcode, HTML_TAG.sub("", line))
 
 

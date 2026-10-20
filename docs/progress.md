@@ -10,7 +10,7 @@ Update this file at the end of every session. Newest session log entry goes on t
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
 | Current step | 2.8 built: register + 20-document corpus in 3 domains, golden v1 (65 items) (D-045), 143 tests |
-| Next step | v1 baselines done (C0-v1 R@5 0.780, C4-200-v1 0.756: tie); read `teaching/big_picture_and_reading_runs.md`; then fixes A/B/C and 2.9 matrix |
+| Next step | fixes A/B/C + matrix done (dirty run, top 5 tied within 2 questions); learner: pick winner, commit, clean re-run, test split once, D-047 |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 

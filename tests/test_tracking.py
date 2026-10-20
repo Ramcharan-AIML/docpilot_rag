@@ -67,3 +67,15 @@ def test_log_record_copies_numbers_exactly_and_never_twice(temp_mlflow):
     assert run.data.tags["results_file"] == path.name
 
     assert log_record(record, path) is None  # second time: skipped, no duplicate run
+
+
+def test_same_file_from_a_new_commit_is_a_new_run(temp_mlflow):
+    path = temp_mlflow / "2026-10-15_T0_dev_retrieval.json"
+    record = retrieval_record()
+    path.write_text(json.dumps(record), encoding="utf-8")
+    first = log_record(record, path)
+
+    rerun = {**retrieval_record(), "git_commit": "def5678"}  # same day, code changed
+    path.write_text(json.dumps(rerun), encoding="utf-8")
+    second = log_record(rerun, path)
+    assert second is not None and second != first

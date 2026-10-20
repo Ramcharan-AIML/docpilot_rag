@@ -44,3 +44,9 @@ def test_missing_file_is_reported_and_marker_kept(tmp_path):
 def test_text_without_markers_is_unchanged(tmp_path):
     text = "No markers here, only `{code}` and *stars*.\n"
     assert resolve_includes(text, tmp_path) == (text, 0, [])
+
+
+def test_source_without_code_folder_is_left_alone_fix_a(tmp_path):
+    # The Word notes quote a marker as an example: no code folder, so nothing is "missing".
+    notes = 'They write "{* ../../docs_src/x.py *}" instead of code.\n'
+    assert resolve_includes(notes, tmp_path / "interview") == (notes, 0, [])

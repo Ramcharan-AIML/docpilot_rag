@@ -63,3 +63,10 @@ def test_shortcodes_removed_but_tab_names_kept_and_code_untouched():
     assert "youtube" not in cleaned and "{{< /tab" not in cleaned
     assert "Using the CLI:\nRun it." in cleaned
     assert '"{{< not-a-shortcode-in-code >}}"' in cleaned  # code stays exact
+
+
+def test_table_padding_and_long_dashes_shrink_fix_b():
+    text = "|   a     |  bb  |\n|-----------|:------:|\n```\n|-----------|\n```\n"
+    cleaned = clean_markdown(text)
+    assert cleaned.startswith("| a | bb |\n|---|:---:|\n")
+    assert "```\n|-----------|\n```" in cleaned  # code stays exact
