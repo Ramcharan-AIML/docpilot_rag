@@ -386,3 +386,21 @@ a strategy is good for docs but bad for interview notes.
 answerable. q-003 ("which status code on validation failure?") was "not in the docs", but
 your Word notes say "422". Now it is a normal question. Rule: after adding documents,
 re-check every unanswerable question.
+
+## 42. First scores on the bigger exam (2026-10-20)
+
+You ran C0 (naive) and C4-200 (hierarchical) on golden v1 (dev, n=41, commit `474161b`).
+
+| | Recall@1 | Recall@5 | MRR |
+|---|---|---|---|
+| C0-v1 | 0.537 | 0.780 | 0.650 |
+| C4-200-v1 | 0.585 | 0.756 | 0.669 |
+
+**What it means:** a tie. One question is worth 0.024, and the gaps are 1 to 2 questions.
+C4-200 puts the right card first more often, but it lost 3 how-to questions because the
+answer sat in a different small piece of the right page. Both miss tables and code most.
+C0 dropped from 0.842 (v0) to 0.780 because **the exam got harder**, not the system.
+Old and new exam scores are never compared.
+
+**How to read any run:** see `docs/teaching/big_picture_and_reading_runs.md` (the 6
+questions to ask after every run are in its part 10).

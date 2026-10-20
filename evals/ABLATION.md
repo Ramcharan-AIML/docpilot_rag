@@ -141,5 +141,18 @@ is kept as history only.
 
 ## From step 2.8: golden v1 (65 items, 3 domains) on corpus v1 (20 documents)
 
-No rows yet. Re-run C0 and C4-200 on golden v1 first (plan 2.8 step 4); rows of v0, v0.1,
-v0.2 and v1 must never be compared with each other.
+Rows of v0, v0.1, v0.2 and v1 must never be compared with each other. Dev, n=41 answerable
+(5 unanswerable items are scored by the abstention check, not here). Search latency is the
+Qdrant search only, warm, n=41, learner's laptop (CPU).
+
+| Config | Strategy | cleaned / includes | Chunks | Recall@1 | Recall@3 | Recall@5 | strict R@5 | MRR | nDCG@5 | search p50 / p95 | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| C0-v1 | fixed 800/100 characters | no / no | 441 | 0.537 | 0.756 | 0.780 | 0.752 | 0.650 | 0.659 | 2.2 / 3.2 ms | `2026-10-20_C0-v1_dev_retrieval.json` (`474161b`) |
+| C4-200-v1 | hierarchical 200 tokens + heading prefix | yes / yes | 733 | 0.585 | 0.732 | 0.756 | 0.728 | 0.669 | 0.659 | 3.1 / 3.4 ms | `2026-10-20_C4-200-v1_dev_retrieval.json` (`474161b`) |
+
+Reading: a tie (1 question = 0.024; R@5 differs by 1 question, R@1 by 2). C4-200 fixed
+q-015, q-017 and lifted 5 answers to rank 1; it lost q-045, q-047, q-049 (right document,
+wrong 200-token piece; how-to 0.8 -> 0.4, n=5). Both miss 7, of which 4 are table-or-code
+(R@5 0.5 in both: fixes B/C). CoT chunks (half the index) take 3 of 165 top-5 slots of
+non-learning questions in C0 and 0 of 165 in C4-200. Not a pure chunking comparison (C0 is
+raw): 2.9 adds a fixed-size control row with cleaning + includes.

@@ -7,6 +7,20 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-20, session 25: golden v1 baselines + "big picture" teaching note
+
+- Learner committed 2.8 (`474161b`) and ran both v1 baselines (dev, n=41, no LLM):
+  C0-v1 R@1 0.537, R@5 0.780, MRR 0.650 (441 chunks); C4-200-v1 R@1 0.585, R@5 0.756,
+  MRR 0.669 (733 chunks). Search p50 2.2 / 3.1 ms. Tie within noise (1 question = 0.024).
+  Rows + per-question reading in `evals/ABLATION.md` (v1 section).
+- C4-200 losses q-045/q-047/q-049 = right document, wrong small piece; 4 of 7 shared misses
+  are table-or-code (fixes B/C). CoT PDF does not crowd other domains (3 / 0 of 165 slots).
+- Learner was confused about how to read the outputs and the project flow: wrote
+  `docs/teaching/big_picture_and_reading_runs.md` (pipeline order, phases, golden set,
+  ablation, every output line, latency, 6 end-of-run questions, decision rule).
+- Prediction: not given. Next: fixes A/B/C, then 2.9 matrix (with a clean+includes fixed
+  control row).
+
 ### 2026-10-20, session 24: step 2.8 corpus register + golden v1
 
 - Learner committed the CoT swap (`178bd5f`) and asked for 2.8.
