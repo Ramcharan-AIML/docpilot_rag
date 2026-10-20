@@ -1,0 +1,86 @@
+{
+  "kind": "latency",
+  "config_id": "C4-200",
+  "collection": "docpilot_hier200",
+  "split": "dev",
+  "date": "2026-10-19",
+  "git_commit": "1de3d22",
+  "settings": {
+    "golden_version": "v0",
+    "chunk_strategy": "hierarchical",
+    "chunk_size": 200,
+    "chunk_overlap": 0,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "embedding_revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "answer_top_k": 4,
+    "settings_source": "manifest",
+    "chunk_unit": "tokens",
+    "cleaned": true,
+    "includes": true,
+    "chunk_count": 95,
+    "largest_chunk_tokens": 230,
+    "chunks_over_limit": 0,
+    "hardware": "laptop CPU (Windows 11, no GPU used)",
+    "llm_provider": "groq",
+    "llm_model": "openai/gpt-oss-120b",
+    "warm_up_calls": 1,
+    "sleep_between_calls_s": 2.0
+  },
+  "per_stage_ms": {
+    "embed_query": {
+      "n": 22,
+      "p50": 36.3,
+      "p95": 54.7,
+      "max": 57.6
+    },
+    "search": {
+      "n": 22,
+      "p50": 1.7,
+      "p95": 2.0,
+      "max": 2.1
+    },
+    "llm": {
+      "n": 22,
+      "p50": 944.6,
+      "p95": 1210.1,
+      "max": 1341.7
+    },
+    "total": {
+      "n": 22,
+      "p50": 978.1,
+      "p95": 1230.0,
+      "max": 1360.0
+    },
+    "wall_with_retries": {
+      "n": 22,
+      "p50": 1052.4,
+      "p95": 4206.3,
+      "max": 5373.5
+    }
+  },
+  "retries_429_total": 9,
+  "per_question": [
+    {"id": "q-001", "embed_query": 57.6, "search": 2.1, "llm": 767.4, "total": 827.2, "retries_429": 0, "wall_ms": 827.3},
+    {"id": "q-002", "embed_query": 43.6, "search": 1.9, "llm": 657.4, "total": 703.0, "retries_429": 0, "wall_ms": 703.0},
+    {"id": "q-003", "embed_query": 49.2, "search": 1.8, "llm": 869.3, "total": 920.6, "retries_429": 0, "wall_ms": 920.6},
+    {"id": "q-004", "embed_query": 33.7, "search": 1.3, "llm": 1017.4, "total": 1052.4, "retries_429": 0, "wall_ms": 1052.4},
+    {"id": "q-005", "embed_query": 51.3, "search": 1.8, "llm": 1152.4, "total": 1205.5, "retries_429": 0, "wall_ms": 1205.5},
+    {"id": "q-006", "embed_query": 18.4, "search": 1.5, "llm": 1210.1, "total": 1230.0, "retries_429": 0, "wall_ms": 1230.0},
+    {"id": "q-007", "embed_query": 14.2, "search": 1.0, "llm": 780.2, "total": 795.5, "retries_429": 0, "wall_ms": 795.5},
+    {"id": "q-008", "embed_query": 17.1, "search": 1.2, "llm": 1341.7, "total": 1360.0, "retries_429": 0, "wall_ms": 1360.0},
+    {"id": "q-009", "embed_query": 15.0, "search": 1.1, "llm": 1023.5, "total": 1039.6, "retries_429": 0, "wall_ms": 1039.7},
+    {"id": "q-010", "embed_query": 14.3, "search": 1.3, "llm": 660.1, "total": 675.7, "retries_429": 0, "wall_ms": 675.7},
+    {"id": "q-011", "embed_query": 36.3, "search": 1.7, "llm": 987.0, "total": 1025.0, "retries_429": 0, "wall_ms": 1025.0},
+    {"id": "q-012", "embed_query": 35.6, "search": 1.6, "llm": 947.2, "total": 984.5, "retries_429": 0, "wall_ms": 984.5},
+    {"id": "q-013", "embed_query": 43.8, "search": 1.8, "llm": 945.7, "total": 991.5, "retries_429": 0, "wall_ms": 991.5},
+    {"id": "q-015", "embed_query": 35.7, "search": 1.9, "llm": 510.7, "total": 548.3, "retries_429": 0, "wall_ms": 548.3},
+    {"id": "q-016", "embed_query": 37.7, "search": 1.6, "llm": 831.8, "total": 871.2, "retries_429": 1, "wall_ms": 2990.4},
+    {"id": "q-017", "embed_query": 31.8, "search": 1.7, "llm": 944.6, "total": 978.1, "retries_429": 1, "wall_ms": 4136.1},
+    {"id": "q-018", "embed_query": 54.7, "search": 1.7, "llm": 964.5, "total": 1021.0, "retries_429": 1, "wall_ms": 4160.2},
+    {"id": "q-019", "embed_query": 36.3, "search": 2.0, "llm": 635.6, "total": 673.9, "retries_429": 1, "wall_ms": 3817.2},
+    {"id": "q-020", "embed_query": 43.0, "search": 2.0, "llm": 1056.7, "total": 1101.7, "retries_429": 2, "wall_ms": 5373.5},
+    {"id": "q-023", "embed_query": 37.4, "search": 1.9, "llm": 624.3, "total": 663.6, "retries_429": 1, "wall_ms": 3783.8},
+    {"id": "q-026", "embed_query": 37.5, "search": 1.6, "llm": 1037.5, "total": 1076.7, "retries_429": 1, "wall_ms": 4206.3},
+    {"id": "q-030", "embed_query": 33.6, "search": 1.6, "llm": 322.5, "total": 357.7, "retries_429": 1, "wall_ms": 3492.1}
+  ]
+}

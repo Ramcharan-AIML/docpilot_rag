@@ -20,9 +20,10 @@ jobs:
           cache: pip # reuse downloaded packages between runs
 
       # CPU-only torch first: the default Linux wheel pulls several GB of GPU (CUDA)
-      # libraries we never use. Same version as requirements-lock.txt.
+      # libraries we never use. Same version as requirements-lock.txt. torchvision (needed
+      # by Docling, D-043) must come from the SAME index, or it pulls CUDA torch back in.
       - name: Install CPU-only torch
-        run: pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+        run: pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install project
         run: pip install -r requirements-dev.txt && pip install -e .
@@ -37,3 +38,31 @@ jobs:
 
       - name: File length rule (500 lines)
         run: python scripts/check_file_lengths.py
+
+  # Step 2.10 (D-011, D-048): the retrieval eval gate. It runs next to `test`, in parallel,
+  # on its own fresh machine. It builds a tiny index from our own fixture pages with the
+  # app's chunking recipe, sits an 18-question exam (no LLM, no secrets) and fails the
+  # check (red cross) if Recall@5 or MRR fell below evals/baseline_ci.json - tolerance.
+  # Same command as on the laptop: python scripts/ci_gate.py
+  eval-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      # Same install as the `test` job: each job starts on an empty machine.
+      - name: Install CPU-only torch
+        run: pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install project
+        run: pip install -r requirements-dev.txt && pip install -e .
+
+      - name: Retrieval eval gate (fixture corpus, ci.jsonl)
+        env:
+          MLFLOW_DISABLE_AGENT_HINT: "1"
+        run: python scripts/ci_gate.py

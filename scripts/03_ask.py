@@ -8,9 +8,9 @@ import argparse
 import sys
 
 from docpilot import config
-from docpilot.llm import get_llm_client
+from docpilot.llm.client import get_llm_client
 from docpilot.rag import ask
-from docpilot.vector_store import get_client
+from docpilot.store.qdrant_store import get_client
 
 PREVIEW_CHARS = 200
 
@@ -29,7 +29,7 @@ def main() -> None:
     client = get_client(config.QDRANT_PATH)
     try:
         if not client.collection_exists(config.COLLECTION_NAME):
-            sys.exit("No index found. Run scripts/02_ingest.py first.")
+            sys.exit(f"No index found. Build it first:\n  {config.INGEST_COMMAND}")
         result = ask(question, client, get_llm_client())
     finally:
         client.close()

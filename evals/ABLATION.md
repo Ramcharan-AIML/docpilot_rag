@@ -18,7 +18,7 @@ question moves Recall by about 5 points; differences that small are ties.
 | C2 | Semantic chunking | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C3 | Parent-child | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C4 | Hierarchical | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| C5 | Contextual | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| C5 | Contextual (skipped, D-049: ~720 LLM calls per ingest) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C6 | Best chunking + hybrid (RRF) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C7 | + reranker | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C8 | + best query transform | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
@@ -27,6 +27,32 @@ question moves Recall by about 5 points; differences that small are ties.
 | C11 | + guardrails (report safety table too) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 
 Faithfulness and answer relevancy need an LLM judge: Phase 3.9. Until then `n/a`.
+
+## Data-quality rows (Phase 2, steps 2.2 and 2.3; fixed 800/100 chunks, dev, n=19)
+
+Same chunker as C0; only the input text changes. Retrieval only (no LLM), so the other
+columns stay `n/a`. One question = 0.053.
+
+| Config | What changed | Recall@1 | Recall@3 | Recall@5 | strict R@5 | MRR | nDCG@5 | chunks | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| C0 | raw text | 0.526 | 0.842 | 0.842 | 0.781 | 0.667 | 0.670 | 51 | `2026-10-14_C0_dev_retrieval.json` (`06891f1`) |
+| C0+clean | HTML noise removed | 0.526 | 0.737 | 0.947 | 0.904 | 0.665 | 0.703 | 51 | `2026-10-17_C0+clean_dev_retrieval.json` (`d8a3608`) |
+| C0+clean+incl | + real code pasted in | 0.474 | 0.842 | 0.895 | 0.833 | 0.643 | 0.656 | 57 | `2026-10-17_C0+clean+incl_dev_retrieval.json` (`d8a3608`*) |
+
+\* labelled `d8a3608+dirty` only because the C0+clean result file was still uncommitted;
+no code had changed. Fixed in `evals/common.py` (result files no longer count).
+
+Reading (flipped questions, from the result files):
+- **clean vs C0:** top 5 gained q-017 and q-023 (misses -> rank 5 and 4); q-018 is still
+  missed. Rank 1 is a swap (+q-001, q-006, q-011; -q-008, q-013, q-026), so Recall@1 and
+  MRR do not move. Recall@3 fell because q-010 and q-015 slid from rank 3 to 5.
+- **clean+incl vs clean:** code questions rose to rank 1 (q-015, q-023, q-026); prose
+  questions fell (q-001, q-004, q-011: 1 -> 3; q-005: 1 -> 4; q-020: 3 -> 8, out of the
+  top 5). Pasted code makes more and longer code chunks that compete with prose chunks.
+- **Decision (D-039):** keep both for every chunker in 2.6. Cleaning has no clear
+  downside; the includes cost about 1 question at fixed size, but without them the LLM
+  can never show the real code. The structure-aware chunkers (2.6) are meant to fix
+  exactly this code-versus-prose mixing.
 
 **C0 on the test split (run once, Phase 1 gate, 2026-10-15, commit `ccd45ec`, n=8):**
 Recall@1 0.375, Recall@3 0.875, Recall@5 1.000, strict Recall@5 0.938, MRR 0.635,
@@ -41,3 +67,154 @@ chunk is found (8 of 8 in the top 5) but first for only 3 of 8. With n=8, one qu
 | Recall@5, MRR, nDCG@5 | `results/2026-10-14_C0_dev_retrieval.json` (dev, n=19) | 2026-10-14 | `06891f1` (clean) |
 | Abstention acc. (dev, n=22: 0/3 false answers, 2/19 false refusals) | `results/2026-10-14_C0_dev_abstention.json` | 2026-10-14 | `b061d62` (clean) |
 | p50 / p95 total (warm, n=22, excl. 429 waits; 15 retries) | `results/2026-10-14_C0_dev_latency.json` | 2026-10-14 | `8295859` (clean) |
+
+## Chunking rows (Phase 2, step 2.6; clean + includes text; golden v0, dev, n=19)
+
+Re-run on golden v1 in step 2.9 (rows in one table must share the golden version).
+
+| Config | Strategy | Size / overlap (tokens) | Chunks | Recall@1 | Recall@3 | Recall@5 | MRR | nDCG@5 | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| fixed_tokens-400 | fixed, in tokens (control row) | 400 / 50 | 36 | 0.474 | 0.684 | 0.684 | 0.626 | 0.607 | `2026-10-19_fixed_tokens-400_dev_retrieval.json` (`524f200`) |
+| fixed_tokens-200 | fixed, in tokens (control row) | 200 / 25 | 68 | 0.579 | 0.737 | 0.789 | 0.684 | 0.699 | `2026-10-19_fixed_tokens-200_dev_retrieval.json` (`509d687`) |
+| C1-400 | recursive | 400 / 50 | 37 | 0.526 | 0.789 | 0.895 | 0.679 | 0.665 | `2026-10-19_C1-400_dev_retrieval.json` (`509d687`) |
+| C1-200 | recursive | 200 / 25 | 73 | 0.579 | 0.684 | 0.789 | 0.657 | 0.666 | `2026-10-19_C1-200_dev_retrieval.json` (`509d687`) |
+| C2-400 | semantic (percentile 10) | max 400 | 64 | 0.316 | 0.737 | 0.789 | 0.537 | 0.562 | `2026-10-19_C2-400_dev_retrieval.json` (`509d687`) |
+| C3-128 | parent-child (scored on parents) | child 128, parent max 800 | 131 (62 parents) | 0.579 | 0.789 | 0.895 | 0.696 | 0.718 | `2026-10-19_C3-128_dev_retrieval.json` (`509d687`) |
+| C4-400 | hierarchical + heading prefix | 400 | 65 | 0.737 | 0.842 | 0.842 | 0.795 | 0.768 | `2026-10-19_C4-400_dev_retrieval.json` (`509d687`) |
+| C4-200 | hierarchical + heading prefix | 200 | 95 | 0.684 | 0.842 | 0.895 | 0.782 | 0.758 | `2026-10-19_C4-200_dev_retrieval.json` (`509d687`) |
+| C4-400-noprefix | hierarchical, no prefix | 400 | 65 | 0.684 | 0.789 | 0.842 | 0.744 | 0.729 | `2026-10-19_C4-400-noprefix_dev_retrieval.json` (`509d687`) |
+
+Reading fixed_tokens-400 vs C0+clean+incl (800 characters, about 250 tokens, 57 chunks):
+13 questions changed rank. 7 went up (q-001, q-011, q-013 to rank 1), but 5 fell out of
+the top 5 (q-006 1 -> 8, q-009 1 -> 6, q-010 3 -> 6, q-017 3 -> 9, q-023 1 -> 6) and only
+q-020 came back in (8 -> 2). Bigger chunks hold more topics, so their vector is a blurrier
+average: good matches get sharper ranks, mixed ones sink. Recall@5 0.895 -> 0.684 is
+4 questions: size alone matters a lot; 200-token rows are needed.
+
+C5 (contextual) not run: learner skipped it (about 65 LLM calls). C0+clean+incl for
+comparison: R@1 0.474, R@5 0.895, MRR 0.643, nDCG@5 0.656 (57 chunks).
+
+**Context sent to the LLM** (top 4 chunks, the real `ask()` input; dev questions, n=22,
+tokens of the chunk texts, measured 2026-10-19; search itself is about 2 ms for all):
+
+| Collection | p50 tokens | p95 tokens |
+|---|---|---|
+| C0 (docpilot_naive) | 1013 | 1118 |
+| C0+clean+incl | 953 | 1026 |
+| C1-400 | 1372 | 1445 |
+| C3-128 (4 parents) | 1211 | 1570 |
+| C4-400 | 1011 | 1158 |
+| C4-200 | 575 | 725 |
+
+Reading (golden v0, n=19, one question = 0.053):
+- **C4 (hierarchical) leads on ranking:** best Recall@1 (C4-400 0.737 = 14/19 vs C0
+  10/19), MRR and nDCG. C4-400 and C4-200 are within 1 question on every metric: a tie.
+- **Tie broken by latency (plan: simplicity and cost):** C4-200 sends 575 tokens to the
+  LLM (p50) vs 1011 for C4-400 and 1013 for C0, about 43% less. Provisional leader:
+  **C4-200** (D-042); final choice in 2.9 on golden v1 + test split + latency/abstention.
+- **Recall@5 cannot pick the winner:** four configs tie at 0.895 (C0+clean+incl, C1-400,
+  C3-128, C4-200). Learner predicted recursive: tied for best Recall@5, but mid on
+  Recall@1/MRR.
+- **Heading prefix helps a little, consistently:** C4-400 vs no prefix: q-017 rank 5 -> 2,
+  q-020 3 -> 1, q-010 7 -> 8; R@1 +1 question, MRR +0.051.
+- **Semantic is worst** (R@1 0.316): many tiny chunks of a few sentences.
+- **q-023 is missed by every block-based config** (C3, C4): the answer sentence sits in
+  sub-heading "### Create an Enum class", now its own chunk; the top hit is the parent
+  section's intro. Fixed 800-character chunks kept both together by luck. Idea for later
+  (not tuned now, to avoid fitting dev): let a short section keep its sub-sections.
+- **q-018 (bullet list):** the list now stays whole, but code chunks of the same page
+  still outrank it (rank 7-9): a ranking problem for Phase 3 (hybrid, reranker).
+
+**End-to-end latency, C4-200** (`2026-10-19_C4-200_dev_latency.json`, commit `1de3d22`,
+warm, n=22, Groq gpt-oss-120b, laptop CPU): total p50 978 ms, p95 1230 ms; LLM p50 945 ms;
+9 retries after 429. C0 (2026-10-14): p50 1107 ms, p95 1764 ms, LLM p50 1060 ms, 15 retries.
+Different days, so not a fair pair yet: a same-day `C0-recheck` run is still to do.
+
+## From step 2.7: golden v0.1 (40 items) on 6 documents
+
+Rows above use golden v0 on the 4 FastAPI pages. Step 2.7 added the RAGAS PDF, the notes
+DOCX and 8 table questions (v0.1). New rows from here on; do not compare them with v0 rows.
+
+**Superseded:** `2026-10-19_C4-200-v0.1_dev_retrieval.json` was measured with the RAGAS PDF
+(golden v0.1). The RAGAS PDF was replaced on 2026-10-20 (D-044, golden v0.2), so that run
+is kept as history only.
+
+## From step 2.8: golden v1 (65 items, 3 domains) on corpus v1 (20 documents)
+
+Rows of v0, v0.1, v0.2 and v1 must never be compared with each other. Dev, n=41 answerable
+(5 unanswerable items are scored by the abstention check, not here). Search latency is the
+Qdrant search only, warm, n=41, learner's laptop (CPU).
+
+Step 2.9 matrix: `python scripts/run_chunking_matrix.py` (configs listed in that file).
+
+<!-- make_ablation:start -->
+Generated by `python -m evals.make_ablation` from the MLflow runs tagged ablation=true. Golden v1, dev, n=41 answerable questions: 1 question = 0.024, so gaps of 1-2 questions are ties. **Bold** = best in the column. Do not edit by hand.
+
+**Main table**
+
+| Config | Strategy | Size / overlap | Clean / incl. | Chunks | Ingest s | R@1 | R@3 | R@5 | strict R@5 | MRR | nDCG@5 | Search p50 / p95 ms | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C0-v1 | fixed | 800/100 characters | no / no | 441 | 66.7 | 0.537 | 0.756 | 0.780 | 0.752 | 0.650 | 0.659 | 3.3 / 3.5 | `2026-10-20_C0-v1_dev_retrieval.json` (`f4a3a49`) |
+| C1-200-v1 | recursive | 200/25 tokens | yes / yes | 496 | 29.6 | 0.610 | 0.659 | 0.732 | 0.715 | 0.659 | 0.661 | 2.5 / 3.7 | `2026-10-20_C1-200-v1_dev_retrieval.json` (`f4a3a49`) |
+| C1-400-v1 | recursive | 400/50 tokens | yes / yes | 247 | 36.9 | 0.610 | 0.780 | 0.829 | 0.789 | 0.705 | 0.701 | 1.5 / 2.0 | `2026-10-20_C1-400-v1_dev_retrieval.json` (`f4a3a49`) |
+| C2-400-v1 | semantic | 400/0 tokens | yes / yes | 608 | 82.6 | 0.415 | 0.707 | 0.732 | 0.707 | 0.574 | 0.590 | 2.9 / 3.4 | `2026-10-20_C2-400-v1_dev_retrieval.json` (`f4a3a49`) |
+| C3-128-v1 | parent_child | 128/0 tokens, parents <= 800 | yes / yes | 853 | 58.2 | 0.610 | **0.805** | **0.854** | **0.825** | 0.717 | **0.733** | 3.8 / 5.2 | `2026-10-20_C3-128-v1_dev_retrieval.json` (`f4a3a49`) |
+| C4-200-v1 | hierarchical | 200/0 tokens | yes / yes | 723 | 42.0 | 0.561 | 0.756 | 0.780 | 0.752 | 0.665 | 0.663 | 2.9 / 3.3 | `2026-10-20_C4-200-v1_dev_retrieval.json` (`f4a3a49`) |
+| C4-400-noprefix-v1 | hierarchical_noprefix | 400/0 tokens | yes / yes | 551 | 37.6 | 0.585 | 0.732 | 0.756 | 0.740 | 0.673 | 0.668 | 2.6 / 4.2 | `2026-10-20_C4-400-noprefix-v1_dev_retrieval.json` (`f4a3a49`) |
+| C4-400-v1 | hierarchical | 400/0 tokens | yes / yes | 565 | 40.0 | **0.659** | 0.780 | 0.805 | 0.789 | **0.729** | 0.726 | 3.8 / 4.4 | `2026-10-20_C4-400-v1_dev_retrieval.json` (`f4a3a49`) |
+| FT-200-v1 | fixed_tokens | 200/25 tokens | yes / yes | 453 | 46.7 | 0.634 | 0.732 | 0.805 | 0.805 | 0.701 | 0.722 | 3.7 / 4.0 | `2026-10-20_FT-200-v1_dev_retrieval.json` (`f4a3a49`) |
+| FT-400-v1 | fixed_tokens | 400/50 tokens | yes / yes | 230 | 34.2 | 0.537 | 0.732 | 0.780 | 0.780 | 0.652 | 0.667 | 1.5 / 1.7 | `2026-10-20_FT-400-v1_dev_retrieval.json` (`f4a3a49`) |
+| QA-400-v1 | qa_pairs | 400/0 tokens | yes / yes | 272 | 31.0 | 0.537 | 0.707 | 0.829 | 0.801 | 0.656 | 0.675 | 1.9 / 2.7 | `2026-10-20_QA-400-v1_dev_retrieval.json` (`f4a3a49`) |
+
+**Recall@5 per question type** (small n: read as a list of questions to open)
+
+| Config | comparison (n=4) | concept (n=3) | exact-identifier (n=4) | factual (n=9) | how-to (n=5) | interview (n=4) | multi-hop (n=1) | paraphrase (n=3) | table-or-code (n=8) |
+|---|---|---|---|---|---|---|---|---|---|
+| C0-v1 | 0.750 | 1.000 | 0.750 | 0.889 | 0.800 | 1.000 | 1.000 | 0.667 | 0.500 |
+| C1-200-v1 | 0.750 | 1.000 | 1.000 | 0.889 | 0.600 | 1.000 | 0.000 | 0.333 | 0.500 |
+| C1-400-v1 | 0.750 | 1.000 | 1.000 | 0.667 | 1.000 | 1.000 | 1.000 | 0.667 | 0.750 |
+| C2-400-v1 | 0.500 | 1.000 | 0.750 | 0.778 | 1.000 | 1.000 | 1.000 | 0.333 | 0.500 |
+| C3-128-v1 | 1.000 | 1.000 | 1.000 | 0.889 | 0.800 | 1.000 | 1.000 | 1.000 | 0.500 |
+| C4-200-v1 | 0.750 | 1.000 | 0.750 | 0.889 | 0.400 | 1.000 | 1.000 | 1.000 | 0.625 |
+| C4-400-noprefix-v1 | 0.750 | 1.000 | 0.750 | 0.778 | 0.600 | 1.000 | 0.000 | 1.000 | 0.625 |
+| C4-400-v1 | 0.750 | 1.000 | 1.000 | 0.889 | 0.600 | 1.000 | 0.000 | 1.000 | 0.625 |
+| FT-200-v1 | 0.500 | 1.000 | 1.000 | 0.889 | 1.000 | 1.000 | 0.000 | 0.667 | 0.625 |
+| FT-400-v1 | 0.500 | 1.000 | 1.000 | 0.889 | 0.800 | 1.000 | 0.000 | 0.667 | 0.625 |
+| QA-400-v1 | 0.750 | 1.000 | 1.000 | 0.889 | 0.800 | 1.000 | 0.000 | 0.667 | 0.750 |
+
+**Recall@5 / MRR per domain**
+
+| Config | docs (n=25) R@5 / MRR | learning (n=8) R@5 / MRR | interview (n=8) R@5 / MRR |
+|---|---|---|---|
+| C0-v1 | 0.840 / 0.692 | 0.625 / 0.518 | 0.750 / 0.650 |
+| C1-200-v1 | 0.800 / 0.672 | 0.625 / 0.637 | 0.625 / 0.637 |
+| C1-400-v1 | 0.880 / 0.703 | 0.625 / 0.542 | 0.875 / 0.875 |
+| C2-400-v1 | 0.800 / 0.591 | 0.625 / 0.500 | 0.625 / 0.596 |
+| C3-128-v1 | 0.880 / 0.735 | 0.750 / 0.542 | 0.875 / 0.833 |
+| C4-200-v1 | 0.800 / 0.700 | 0.625 / 0.492 | 0.875 / 0.729 |
+| C4-400-noprefix-v1 | 0.760 / 0.679 | 0.625 / 0.500 | 0.875 / 0.826 |
+| C4-400-v1 | 0.840 / 0.758 | 0.625 / 0.492 | 0.875 / 0.875 |
+| FT-200-v1 | 0.800 / 0.689 | 0.625 / 0.542 | 1.000 / 0.900 |
+| FT-400-v1 | 0.760 / 0.684 | 0.625 / 0.472 | 1.000 / 0.733 |
+| QA-400-v1 | 0.880 / 0.635 | 0.625 / 0.542 | 0.875 / 0.833 |
+<!-- make_ablation:end -->
+
+
+**Winner (D-047): FT-200** (fixed 200 tokens, overlap 25, cleaned, includes). The top five
+dev rows are within 2 questions (a tie); FT-200 wins the tie-breakers (smallest LLM context,
+simplest). Test split, run once (n=17, commit `f4a3a49`):
+
+| Config | Recall@1 | Recall@3 | Recall@5 | strict R@5 | MRR | nDCG@5 | Result file (commit) |
+|---|---|---|---|---|---|---|---|
+| C0-v1 | 0.353 | 0.824 | 0.941 | 0.912 | 0.608 | 0.674 | `2026-10-20_C0-v1_test_retrieval.json` (`f4a3a49`) |
+| FT-200-v1 | 0.471 | 0.706 | 0.882 | 0.853 | 0.620 | 0.657 | `2026-10-20_FT-200-v1_test_retrieval.json` (`f4a3a49`) |
+
+FT-200 does not beat C0 on test recall (15 vs 16 of 17); it ranks better (R@1 8 vs 6).
+Dev + test: R@5 48 vs 48 of 58, R@1 34 vs 28. A ranking gain, not a recall gain.
+
+First reading (2026-10-20, C0-v1 vs C4-200-v1 only, commit `474161b`): a tie (1 question = 0.024; R@5 differs by 1 question, R@1 by 2). C4-200 fixed
+q-015, q-017 and lifted 5 answers to rank 1; it lost q-045, q-047, q-049 (right document,
+wrong 200-token piece; how-to 0.8 -> 0.4, n=5). Both miss 7, of which 4 are table-or-code
+(R@5 0.5 in both: fixes B/C). CoT chunks (half the index) take 3 of 165 top-5 slots of
+non-learning questions in C0 and 0 of 165 in C4-200. Not a pure chunking comparison (C0 is
+raw): 2.9 adds a fixed-size control row with cleaning + includes.

@@ -70,3 +70,14 @@ def test_ask_times_every_stage(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_system_prompt_contains_the_exact_not_found_phrase() -> None:
     # Evals count abstentions by this phrase, so prompt and config must never drift apart.
     assert config.NOT_FOUND_PHRASE in rag.SYSTEM_PROMPT
+
+
+def test_ask_searches_the_collection_it_is_given(monkeypatch: pytest.MonkeyPatch) -> None:
+    searched = []
+    monkeypatch.setattr(rag, "embed_query", lambda question: [0.0] * config.EMBEDDING_DIM)
+    monkeypatch.setattr(rag, "search", lambda client, name, v, k: searched.append(name) or [])
+
+    rag.ask("q", None, None)  # default: the API's collection from config.py
+    rag.ask("q", None, None, collection="docpilot_hier200")  # an eval testing a strategy
+
+    assert searched == [config.COLLECTION_NAME, "docpilot_hier200"]

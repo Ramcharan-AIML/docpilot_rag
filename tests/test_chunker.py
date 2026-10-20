@@ -5,7 +5,7 @@ from itertools import pairwise
 
 import pytest
 
-from docpilot.chunker import fixed_size_chunks
+from docpilot.ingestion.chunkers.fixed import fixed_size_chunks
 
 # 26 letters + 10 digits = 36 different characters, so every position is easy to spot
 SAMPLE = string.ascii_lowercase + string.digits

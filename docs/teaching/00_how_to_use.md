@@ -33,6 +33,8 @@ The implementation plan tells you **what** to build. These notes tell you **why 
 | `phase_6_guardrails.md` | Guardrails primer, threat model, prompt injection (direct and indirect), PII, output checks, red-teaming, measuring safety |
 | `phase_7_production.md` (+ `2_`) | Async APIs, streaming, auth, rate limits, caching, gateways, observability, Docker images, Compose, CI/CD, cloud deploy, HTTPS, load tests |
 | `phase_8_stretch.md` | GraphRAG, DSPy, ColBERT, ColPali, trajectory evals |
+| `big_picture_and_reading_runs.md` | The whole project flow (pipeline, phases, where evals fit) and how to read every ingest/eval/latency output and conclude a run |
+| `primer_ci_eval_gate.md` | GitHub Actions from zero (workflow, job, runner, step, exit code) and the CI eval gate: fixture exam, baseline, tolerance, testing the test, the red-check demo |
 
 ## From-zero primers (read before the phase that uses them)
 

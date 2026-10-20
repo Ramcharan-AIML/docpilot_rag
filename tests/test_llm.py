@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from docpilot import config
-from docpilot.llm import chat, get_llm_client
+from docpilot.llm.client import chat, get_llm_client
 
 
 class FakeClient:

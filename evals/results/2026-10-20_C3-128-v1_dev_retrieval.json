@@ -1,0 +1,203 @@
+{
+  "kind": "retrieval",
+  "config_id": "C3-128-v1",
+  "collection": "docpilot_v1_pc128",
+  "split": "dev",
+  "date": "2026-10-20",
+  "git_commit": "f4a3a49",
+  "settings": {
+    "golden_version": "v1",
+    "chunk_strategy": "parent_child",
+    "chunk_size": 128,
+    "chunk_overlap": 0,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "embedding_revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "answer_top_k": 4,
+    "settings_source": "manifest",
+    "chunk_unit": "tokens",
+    "cleaned": true,
+    "includes": true,
+    "sources": "all",
+    "chunk_count": 853,
+    "largest_chunk_tokens": 128,
+    "chunks_over_limit": 0,
+    "ingest_seconds": 58.2,
+    "parent_max_tokens": 800,
+    "parents_file": "C:\\Users\\rajes\\OneDrive\\Desktop\\1\\AIML\\9_DOCPILOT_RAG_BASED\\docpilot_rag\\data\\processed\\parents_docpilot_v1_pc128.json",
+    "parent_count": 304,
+    "largest_parent_tokens": 1075,
+    "median_parent_tokens": 186,
+    "search_k": 10,
+    "min_overlap": 0.7,
+    "scored_on": "parent"
+  },
+  "overall": {
+    "n": 41,
+    "recall@1": 0.61,
+    "recall@3": 0.805,
+    "recall@5": 0.854,
+    "strict_recall@5": 0.825,
+    "mrr": 0.717,
+    "ndcg@5": 0.733
+  },
+  "per_type": {
+    "comparison": {
+      "n": 4,
+      "recall@1": 0.75,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.833,
+      "mrr": 0.833,
+      "ndcg@5": 0.809
+    },
+    "concept": {
+      "n": 3,
+      "recall@1": 0.333,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.667,
+      "ndcg@5": 0.754
+    },
+    "exact-identifier": {
+      "n": 4,
+      "recall@1": 0.75,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.833,
+      "ndcg@5": 0.875
+    },
+    "factual": {
+      "n": 9,
+      "recall@1": 0.667,
+      "recall@3": 0.889,
+      "recall@5": 0.889,
+      "strict_recall@5": 0.889,
+      "mrr": 0.778,
+      "ndcg@5": 0.792
+    },
+    "how-to": {
+      "n": 5,
+      "recall@1": 0.6,
+      "recall@3": 0.6,
+      "recall@5": 0.8,
+      "strict_recall@5": 0.8,
+      "mrr": 0.64,
+      "ndcg@5": 0.677
+    },
+    "interview": {
+      "n": 4,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@5": 1.0
+    },
+    "multi-hop": {
+      "n": 1,
+      "recall@1": 0.0,
+      "recall@3": 0.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.5,
+      "mrr": 0.25,
+      "ndcg@5": 0.264
+    },
+    "paraphrase": {
+      "n": 3,
+      "recall@1": 0.333,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.667,
+      "ndcg@5": 0.754
+    },
+    "table-or-code": {
+      "n": 8,
+      "recall@1": 0.5,
+      "recall@3": 0.5,
+      "recall@5": 0.5,
+      "strict_recall@5": 0.5,
+      "mrr": 0.533,
+      "ndcg@5": 0.5
+    }
+  },
+  "per_domain": {
+    "docs": {
+      "n": 25,
+      "recall@1": 0.64,
+      "recall@3": 0.8,
+      "recall@5": 0.88,
+      "strict_recall@5": 0.833,
+      "mrr": 0.735,
+      "ndcg@5": 0.746
+    },
+    "interview": {
+      "n": 8,
+      "recall@1": 0.75,
+      "recall@3": 0.875,
+      "recall@5": 0.875,
+      "strict_recall@5": 0.875,
+      "mrr": 0.833,
+      "ndcg@5": 0.829
+    },
+    "learning": {
+      "n": 8,
+      "recall@1": 0.375,
+      "recall@3": 0.75,
+      "recall@5": 0.75,
+      "strict_recall@5": 0.75,
+      "mrr": 0.542,
+      "ndcg@5": 0.595
+    }
+  },
+  "search_latency_ms": {
+    "n": 41,
+    "p50": 3.8,
+    "p95": 5.2
+  },
+  "per_question": [
+    {"id": "q-001", "type": "how-to", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#5 0.827", "fastapi/query-params.md#13 0.781", "fastapi/query-params.md#3 0.779", "fastapi/query-params.md#0 0.743", "fastapi/body.md#22 0.720", "interview/phase_3_interview.md#14 0.715", "fastapi/body.md#6 0.706", "fastapi/query-params.md#7 0.685", "fastapi/query-params.md#11 0.672", "fastapi/body.md#8 0.669"]},
+    {"id": "q-003", "type": "factual", "domain": "interview", "relevance": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.16666666666666666, "ndcg@5": 0.0, "retrieved": ["fastapi/path-params.md#8 0.770", "fastapi/body.md#10 0.729", "interview/phase_1_notes.docx#20 0.713", "fastapi/path-params.md#5 0.710", "fastapi/path-params.md#12 0.709", "interview/phase_1_notes.docx#17 0.698", "fastapi/body.md#23 0.692", "interview/phase_1_notes.docx#19 0.692", "fastapi/path-params.md#41 0.683", "fastapi/first-steps.md#23 0.682"]},
+    {"id": "q-004", "type": "exact-identifier", "domain": "docs", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.3333333333333333, "ndcg@5": 0.5, "retrieved": ["fastapi/path-params.md#36 0.775", "fastapi/first-steps.md#27 0.754", "fastapi/path-params.md#39 0.713", "fastapi/first-steps.md#31 0.711", "fastapi/first-steps.md#35 0.706", "fastapi/path-params.md#0 0.695", "fastapi/path-params.md#16 0.691", "fastapi/path-params.md#26 0.683", "pydantic/alias.md#3 0.681", "fastapi/path-params.md#25 0.675"]},
+    {"id": "q-005", "type": "paraphrase", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/path-params.md#16 0.726", "fastapi/first-steps.md#31 0.629", "fastapi/query-params.md#11 0.617", "pydantic/alias.md#5 0.612", "fastapi/first-steps.md#35 0.600", "fastapi/first-steps.md#27 0.597", "docker/what-is-a-container.md#21 0.596", "fastapi/query-params.md#17 0.595", "fastapi/query-params.md#6 0.593", "pydantic/alias.md#12 0.585"]},
+    {"id": "q-006", "type": "comparison", "domain": "docs", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 0.3333333333333333, "rr": 0.3333333333333333, "ndcg@5": 0.23463936301137822, "retrieved": ["fastapi/body.md#18 0.860", "fastapi/query-params.md#0 0.846", "fastapi/body.md#20 0.838", "fastapi/query-params.md#6 0.834", "fastapi/query-params.md#11 0.816", "fastapi/path-params.md#0 0.795", "fastapi/path-params.md#2 0.782", "fastapi/path-params.md#5 0.782", "fastapi/first-steps.md#35 0.780", "fastapi/first-steps.md#31 0.777"]},
+    {"id": "q-007", "type": "table-or-code", "domain": "docs", "relevance": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.16666666666666666, "ndcg@5": 0.0, "retrieved": ["fastapi/path-params.md#12 0.739", "interview/phase_1_notes.docx#20 0.731", "fastapi/path-params.md#5 0.709", "fastapi/first-steps.md#25 0.701", "fastapi/first-steps.md#26 0.698", "fastapi/first-steps.md#1 0.697", "fastapi/path-params.md#41 0.695", "fastapi/first-steps.md#44 0.692", "fastapi/first-steps.md#41 0.691", "fastapi/first-steps.md#17 0.688"]},
+    {"id": "q-008", "type": "table-or-code", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#7 0.765", "fastapi/query-params.md#2 0.763", "fastapi/query-params.md#3 0.752", "interview/phase_3_interview.md#14 0.743", "fastapi/body.md#20 0.727", "fastapi/query-params.md#5 0.717", "fastapi/query-params.md#13 0.715", "fastapi/body.md#8 0.701", "fastapi/body.md#6 0.685", "pydantic/alias.md#39 0.684"]},
+    {"id": "q-009", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#6 0.861", "fastapi/path-params.md#10 0.794", "fastapi/first-steps.md#8 0.793", "fastapi/body.md#12 0.774", "pydantic/strict_mode.md#0 0.735", "fastapi/first-steps.md#17 0.718", "fastapi/first-steps.md#15 0.709", "fastapi/path-params.md#25 0.704", "fastapi/path-params.md#12 0.693", "fastapi/first-steps.md#12 0.679"]},
+    {"id": "q-010", "type": "multi-hop", "domain": "docs", "relevance": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 1.0, "strict_recall@5": 0.5, "rr": 0.25, "ndcg@5": 0.2640681225725909, "retrieved": ["fastapi/query-params.md#3 0.813", "fastapi/query-params.md#2 0.798", "fastapi/query-params.md#6 0.785", "fastapi/query-params.md#13 0.776", "fastapi/body.md#22 0.768", "interview/phase_3_interview.md#14 0.766", "fastapi/query-params.md#11 0.766", "fastapi/path-params.md#36 0.747", "fastapi/path-params.md#18 0.746", "fastapi/body.md#8 0.740"]},
+    {"id": "q-011", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#3 0.878", "fastapi/query-params.md#2 0.856", "fastapi/query-params.md#18 0.787", "fastapi/query-params.md#5 0.772", "fastapi/body.md#20 0.716", "interview/phase_1_notes.docx#21 0.711", "interview/phase_1_notes.docx#25 0.698", "fastapi/query-params.md#10 0.695", "interview/phase_3_interview.md#14 0.695", "fastapi/body.md#6 0.694"]},
+    {"id": "q-012", "type": "how-to", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#13 0.819", "fastapi/query-params.md#5 0.782", "fastapi/query-params.md#0 0.769", "fastapi/query-params.md#3 0.755", "fastapi/body.md#22 0.743", "interview/phase_3_interview.md#14 0.728", "fastapi/body.md#6 0.725", "fastapi/body.md#8 0.725", "fastapi/query-params.md#7 0.722", "fastapi/query-params.md#11 0.709"]},
+    {"id": "q-013", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#13 0.781", "interview/phase_3_interview.md#14 0.736", "fastapi/query-params.md#0 0.734", "fastapi/query-params.md#6 0.724", "fastapi/body.md#23 0.706", "fastapi/query-params.md#3 0.705", "pydantic/strict_mode.md#5 0.686", "pydantic/config.md#2 0.683", "fastapi/path-params.md#7 0.680", "fastapi/body.md#6 0.669"]},
+    {"id": "q-015", "type": "exact-identifier", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#5 0.766", "pydantic/alias.md#12 0.713", "fastapi/body.md#20 0.713", "pydantic/config.md#21 0.702", "pydantic/config.md#15 0.698", "fastapi/path-params.md#20 0.695", "pydantic/alias.md#19 0.694", "fastapi/query-params.md#15 0.693", "pydantic/alias.md#45 0.693", "fastapi/body.md#3 0.693"]},
+    {"id": "q-016", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#0 0.790", "fastapi/first-steps.md#30 0.735", "fastapi/body.md#20 0.711", "fastapi/first-steps.md#33 0.683", "fastapi/body.md#18 0.682", "fastapi/path-params.md#6 0.666", "fastapi/body.md#10 0.664", "fastapi/query-params.md#16 0.651", "fastapi/body.md#8 0.643", "fastapi/path-params.md#5 0.642"]},
+    {"id": "q-017", "type": "paraphrase", "domain": "docs", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["fastapi/path-params.md#1 0.729", "fastapi/body.md#2 0.725", "fastapi/query-params.md#16 0.722", "fastapi/body.md#7 0.714", "fastapi/first-steps.md#16 0.713", "fastapi/body.md#10 0.703", "fastapi/first-steps.md#39 0.701", "fastapi/first-steps.md#33 0.688", "fastapi/path-params.md#7 0.685", "fastapi/path-params.md#4 0.685"]},
+    {"id": "q-018", "type": "table-or-code", "domain": "docs", "relevance": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.1, "ndcg@5": 0.0, "retrieved": ["interview/phase_1_notes.docx#17 0.885", "fastapi/body.md#18 0.864", "fastapi/body.md#20 0.822", "fastapi/body.md#1 0.819", "fastapi/path-params.md#5 0.782", "fastapi/body.md#3 0.770", "fastapi/body.md#5 0.765", "fastapi/body.md#8 0.756", "fastapi/body.md#16 0.750", "fastapi/body.md#10 0.747"]},
+    {"id": "q-019", "type": "comparison", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#0 0.860", "fastapi/body.md#18 0.689", "fastapi/body.md#20 0.689", "fastapi/path-params.md#1 0.669", "fastapi/body.md#10 0.645", "fastapi/path-params.md#5 0.644", "fastapi/first-steps.md#30 0.626", "interview/phase_1_notes.docx#17 0.618", "fastapi/first-steps.md#16 0.617", "fastapi/query-params.md#9 0.613"]},
+    {"id": "q-020", "type": "factual", "domain": "docs", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["fastapi/query-params.md#6 0.780", "fastapi/path-params.md#7 0.775", "fastapi/query-params.md#12 0.763", "fastapi/path-params.md#1 0.753", "fastapi/path-params.md#2 0.752", "fastapi/query-params.md#8 0.747", "fastapi/query-params.md#16 0.737", "fastapi/body.md#21 0.735", "fastapi/body.md#10 0.733", "fastapi/path-params.md#16 0.724"]},
+    {"id": "q-023", "type": "how-to", "domain": "docs", "relevance": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.0, "ndcg@5": 0.0, "retrieved": ["fastapi/query-params.md#18 0.760", "fastapi/path-params.md#18 0.757", "fastapi/query-params.md#2 0.748", "fastapi/query-params.md#3 0.742", "fastapi/path-params.md#36 0.729", "fastapi/path-params.md#0 0.728", "fastapi/query-params.md#6 0.720", "fastapi/path-params.md#26 0.713", "fastapi/query-params.md#11 0.709", "fastapi/body.md#8 0.707"]},
+    {"id": "q-026", "type": "exact-identifier", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#31 0.820", "fastapi/first-steps.md#36 0.790", "fastapi/path-params.md#16 0.735", "fastapi/first-steps.md#44 0.716", "fastapi/query-params.md#2 0.699", "fastapi/body.md#20 0.692", "fastapi/query-params.md#6 0.691", "fastapi/path-params.md#0 0.686", "fastapi/body.md#2 0.686", "fastapi/first-steps.md#38 0.683"]},
+    {"id": "q-037", "type": "table-or-code", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_1_notes.docx#27 0.775", "interview/phase_2_interview.md#18 0.702", "interview/phase_2_interview.md#16 0.693", "interview/phase_1_notes.docx#9 0.686", "interview/phase_2_interview.md#2 0.681", "interview/phase_1_notes.docx#4 0.672", "interview/phase_2_interview.md#10 0.667", "interview/phase_1_notes.docx#23 0.662", "interview/phase_1_notes.docx#24 0.652", "interview/phase_1_notes.docx#21 0.640"]},
+    {"id": "q-038", "type": "table-or-code", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_1_notes.docx#27 0.704", "cot/cot_2201.11903v6.pdf#41 0.670", "cot/cot_2201.11903v6.pdf#36 0.667", "cot/cot_2201.11903v6.pdf#146 0.647", "cot/cot_2201.11903v6.pdf#208 0.642", "interview/phase_3_interview.md#13 0.641", "cot/cot_2201.11903v6.pdf#202 0.637", "interview/phase_3_interview.md#8 0.636", "interview/phase_2_interview.md#18 0.632", "wikipedia/evaluation-measures-information-retrieval.md#15 0.632"]},
+    {"id": "q-039", "type": "paraphrase", "domain": "interview", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["interview/phase_1_notes.docx#24 0.717", "interview/phase_1_notes.docx#28 0.687", "interview/phase_3_interview.md#17 0.673", "interview/phase_1_notes.docx#0 0.666", "interview/phase_0_interview.md#0 0.663", "interview/phase_3_interview.md#6 0.649", "interview/phase_2_interview.md#18 0.643", "cot/cot_2201.11903v6.pdf#158 0.638", "interview/phase_3_interview.md#12 0.627", "interview/phase_1_notes.docx#23 0.624"]},
+    {"id": "q-041", "type": "table-or-code", "domain": "learning", "relevance": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.0, "ndcg@5": 0.0, "retrieved": ["cot/cot_2201.11903v6.pdf#43 0.769", "cot/cot_2201.11903v6.pdf#225 0.769", "cot/cot_2201.11903v6.pdf#240 0.757", "cot/cot_2201.11903v6.pdf#154 0.743", "cot/cot_2201.11903v6.pdf#31 0.738", "cot/cot_2201.11903v6.pdf#38 0.733", "cot/cot_2201.11903v6.pdf#2 0.727", "cot/cot_2201.11903v6.pdf#257 0.723", "cot/cot_2201.11903v6.pdf#7 0.722", "cot/cot_2201.11903v6.pdf#59 0.722"]},
+    {"id": "q-042", "type": "comparison", "domain": "learning", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["cot/cot_2201.11903v6.pdf#183 0.821", "cot/cot_2201.11903v6.pdf#153 0.812", "cot/cot_2201.11903v6.pdf#52 0.811", "cot/cot_2201.11903v6.pdf#32 0.809", "cot/cot_2201.11903v6.pdf#2 0.803", "cot/cot_2201.11903v6.pdf#210 0.803", "cot/cot_2201.11903v6.pdf#61 0.802", "cot/cot_2201.11903v6.pdf#11 0.801", "cot/cot_2201.11903v6.pdf#10 0.799", "cot/cot_2201.11903v6.pdf#168 0.798"]},
+    {"id": "q-043", "type": "table-or-code", "domain": "learning", "relevance": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.0, "ndcg@5": 0.0, "retrieved": ["cot/cot_2201.11903v6.pdf#154 0.810", "cot/cot_2201.11903v6.pdf#7 0.765", "cot/cot_2201.11903v6.pdf#32 0.763", "cot/cot_2201.11903v6.pdf#52 0.745", "cot/cot_2201.11903v6.pdf#11 0.717", "cot/cot_2201.11903v6.pdf#59 0.710", "cot/cot_2201.11903v6.pdf#167 0.709", "cot/cot_2201.11903v6.pdf#200 0.708", "cot/cot_2201.11903v6.pdf#43 0.707", "cot/cot_2201.11903v6.pdf#135 0.706"]},
+    {"id": "q-045", "type": "how-to", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["pydantic/strict_mode.md#1 0.842", "pydantic/config.md#10 0.774", "fastapi/path-params.md#13 0.763", "pydantic/alias.md#42 0.747", "pydantic/alias.md#8 0.747", "pydantic/alias.md#31 0.746", "fastapi/path-params.md#8 0.732", "interview/phase_1_notes.docx#17 0.727", "fastapi/body.md#13 0.723", "pydantic/alias.md#16 0.719"]},
+    {"id": "q-046", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["pydantic/strict_mode.md#1 0.851", "fastapi/path-params.md#13 0.756", "pydantic/config.md#10 0.747", "pydantic/alias.md#4 0.745", "interview/phase_1_notes.docx#17 0.743", "pydantic/alias.md#41 0.741", "pydantic/alias.md#35 0.734", "pydantic/alias.md#31 0.734", "fastapi/body.md#13 0.729", "pydantic/alias.md#22 0.726"]},
+    {"id": "q-047", "type": "exact-identifier", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["pydantic/alias.md#3 0.825", "pydantic/alias.md#15 0.802", "pydantic/alias.md#18 0.771", "pydantic/alias.md#40 0.770", "pydantic/alias.md#28 0.762", "pydantic/alias.md#0 0.755", "pydantic/alias.md#46 0.753", "pydantic/alias.md#11 0.743", "pydantic/alias.md#22 0.738", "fastapi/body.md#24 0.718"]},
+    {"id": "q-048", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["docker/what-is-an-image.md#2 0.745", "docker/what-is-an-image.md#7 0.736", "docker/what-is-a-container.md#6 0.734", "docker/writing-a-dockerfile.md#15 0.724", "docker/what-is-an-image.md#12 0.723", "docker/what-is-a-container.md#23 0.719", "docker/writing-a-dockerfile.md#12 0.718", "docker/what-is-an-image.md#19 0.716", "docker/writing-a-dockerfile.md#6 0.710", "docker/what-is-an-image.md#18 0.709"]},
+    {"id": "q-049", "type": "how-to", "domain": "docs", "relevance": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.2, "ndcg@5": 0.38685280723454163, "retrieved": ["docker/persisting-container-data.md#0 0.826", "docker/persisting-container-data.md#5 0.758", "docker/persisting-container-data.md#9 0.738", "docker/persisting-container-data.md#14 0.716", "docker/persisting-container-data.md#2 0.714", "docker/persisting-container-data.md#17 0.708", "docker/what-is-a-container.md#21 0.708", "docker/persisting-container-data.md#13 0.704", "docker/persisting-container-data.md#4 0.700", "docker/what-is-a-container.md#2 0.683"]},
+    {"id": "q-050", "type": "table-or-code", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["docker/writing-a-dockerfile.md#0 0.829", "docker/writing-a-dockerfile.md#14 0.759", "docker/writing-a-dockerfile.md#7 0.757", "docker/writing-a-dockerfile.md#5 0.753", "docker/publishing-ports.md#14 0.729", "docker/what-is-an-image.md#7 0.715", "docker/writing-a-dockerfile.md#2 0.702", "docker/writing-a-dockerfile.md#15 0.700", "docker/publishing-ports.md#10 0.696", "docker/what-is-a-container.md#5 0.691"]},
+    {"id": "q-055", "type": "concept", "domain": "learning", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["wikipedia/retrieval-augmented-generation.md#11 0.864", "wikipedia/retrieval-augmented-generation.md#0 0.851", "wikipedia/retrieval-augmented-generation.md#7 0.847", "wikipedia/retrieval-augmented-generation.md#9 0.762", "wikipedia/retrieval-augmented-generation.md#16 0.736", "wikipedia/word-embedding.md#3 0.731", "wikipedia/retrieval-augmented-generation.md#14 0.706", "wikipedia/retrieval-augmented-generation.md#20 0.703", "wikipedia/evaluation-measures-information-retrieval.md#39 0.678", "interview/phase_3_interview.md#18 0.675"]},
+    {"id": "q-056", "type": "factual", "domain": "learning", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.3333333333333333, "ndcg@5": 0.5, "retrieved": ["wikipedia/retrieval-augmented-generation.md#11 0.821", "wikipedia/retrieval-augmented-generation.md#7 0.802", "wikipedia/retrieval-augmented-generation.md#0 0.800", "wikipedia/evaluation-measures-information-retrieval.md#3 0.742", "wikipedia/retrieval-augmented-generation.md#9 0.739", "wikipedia/word-embedding.md#3 0.709", "wikipedia/retrieval-augmented-generation.md#16 0.698", "wikipedia/retrieval-augmented-generation.md#14 0.685", "cot/cot_2201.11903v6.pdf#108 0.669", "wikipedia/retrieval-augmented-generation.md#20 0.666"]},
+    {"id": "q-057", "type": "concept", "domain": "learning", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["wikipedia/word-embedding.md#0 0.930", "wikipedia/word-embedding.md#13 0.771", "wikipedia/word-embedding.md#18 0.760", "wikipedia/word-embedding.md#7 0.753", "interview/phase_0_interview.md#1 0.751", "wikipedia/word-embedding.md#17 0.732", "wikipedia/word-embedding.md#20 0.711", "wikipedia/word-embedding.md#16 0.708", "wikipedia/retrieval-augmented-generation.md#13 0.692", "wikipedia/word-embedding.md#14 0.678"]},
+    {"id": "q-058", "type": "comparison", "domain": "learning", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["wikipedia/word-embedding.md#13 0.874", "wikipedia/word-embedding.md#18 0.765", "wikipedia/word-embedding.md#17 0.735", "wikipedia/word-embedding.md#0 0.714", "wikipedia/word-embedding.md#7 0.703", "wikipedia/word-embedding.md#21 0.681", "interview/phase_0_interview.md#1 0.660", "wikipedia/retrieval-augmented-generation.md#13 0.660", "wikipedia/word-embedding.md#16 0.658", "wikipedia/retrieval-augmented-generation.md#8 0.654"]},
+    {"id": "q-059", "type": "concept", "domain": "learning", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["wikipedia/evaluation-measures-information-retrieval.md#30 0.840", "wikipedia/evaluation-measures-information-retrieval.md#15 0.828", "wikipedia/evaluation-measures-information-retrieval.md#24 0.788", "wikipedia/evaluation-measures-information-retrieval.md#0 0.769", "wikipedia/evaluation-measures-information-retrieval.md#32 0.755", "wikipedia/evaluation-measures-information-retrieval.md#40 0.749", "wikipedia/evaluation-measures-information-retrieval.md#34 0.744", "wikipedia/evaluation-measures-information-retrieval.md#13 0.740", "wikipedia/evaluation-measures-information-retrieval.md#38 0.729", "wikipedia/retrieval-augmented-generation.md#14 0.713"]},
+    {"id": "q-063", "type": "interview", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_0_interview.md#4 0.905", "wikipedia/word-embedding.md#13 0.736", "wikipedia/retrieval-augmented-generation.md#13 0.726", "wikipedia/word-embedding.md#5 0.719", "interview/phase_0_interview.md#12 0.715", "wikipedia/word-embedding.md#17 0.695", "interview/phase_3_interview.md#4 0.689", "wikipedia/word-embedding.md#21 0.687", "wikipedia/word-embedding.md#1 0.681", "interview/phase_0_interview.md#1 0.679"]},
+    {"id": "q-064", "type": "interview", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_0_interview.md#9 0.841", "interview/phase_3_interview.md#14 0.704", "interview/phase_1_notes.docx#0 0.701", "interview/phase_1_notes.docx#25 0.692", "interview/phase_3_interview.md#18 0.684", "fastapi/query-params.md#13 0.678", "wikipedia/retrieval-augmented-generation.md#9 0.672", "fastapi/query-params.md#3 0.670", "wikipedia/evaluation-measures-information-retrieval.md#30 0.670", "fastapi/query-params.md#2 0.667"]},
+    {"id": "q-065", "type": "interview", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_2_interview.md#3 0.853", "interview/phase_2_interview.md#1 0.765", "wikipedia/retrieval-augmented-generation.md#19 0.726", "interview/phase_2_interview.md#5 0.723", "interview/phase_2_interview.md#11 0.712", "interview/phase_1_notes.docx#4 0.703", "interview/phase_1_notes.docx#13 0.686", "interview/phase_2_interview.md#13 0.681", "interview/phase_1_notes.docx#9 0.672", "interview/phase_2_interview.md#14 0.671"]},
+    {"id": "q-066", "type": "interview", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_3_interview.md#2 0.853", "wikipedia/evaluation-measures-information-retrieval.md#38 0.730", "interview/phase_1_notes.docx#27 0.692", "interview/phase_2_interview.md#14 0.689", "interview/phase_2_interview.md#1 0.680", "interview/phase_2_interview.md#5 0.667", "interview/phase_1_notes.docx#9 0.664", "interview/phase_3_interview.md#6 0.663", "wikipedia/evaluation-measures-information-retrieval.md#37 0.660", "cot/cot_2201.11903v6.pdf#146 0.655"]}
+  ]
+}

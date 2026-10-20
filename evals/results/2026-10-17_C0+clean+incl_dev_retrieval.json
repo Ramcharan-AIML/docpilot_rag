@@ -1,0 +1,119 @@
+{
+  "kind": "retrieval",
+  "config_id": "C0+clean+incl",
+  "collection": "docpilot_clean_incl",
+  "split": "dev",
+  "date": "2026-10-17",
+  "git_commit": "d8a3608+dirty",
+  "settings": {
+    "golden_version": "v0",
+    "chunk_strategy": "fixed",
+    "chunk_size": 800,
+    "chunk_overlap": 100,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "embedding_revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "answer_top_k": 4,
+    "search_k": 10,
+    "min_overlap": 0.7
+  },
+  "overall": {
+    "n": 19,
+    "recall@1": 0.474,
+    "recall@3": 0.842,
+    "recall@5": 0.895,
+    "strict_recall@5": 0.833,
+    "mrr": 0.643,
+    "ndcg@5": 0.656
+  },
+  "per_type": {
+    "comparison": {
+      "n": 2,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.667,
+      "mrr": 1.0,
+      "ndcg@5": 0.735
+    },
+    "exact-identifier": {
+      "n": 3,
+      "recall@1": 0.667,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.778,
+      "ndcg@5": 0.833
+    },
+    "factual": {
+      "n": 5,
+      "recall@1": 0.4,
+      "recall@3": 0.8,
+      "recall@5": 0.8,
+      "strict_recall@5": 0.8,
+      "mrr": 0.592,
+      "ndcg@5": 0.626
+    },
+    "how-to": {
+      "n": 3,
+      "recall@1": 0.667,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.778,
+      "ndcg@5": 0.833
+    },
+    "multi-hop": {
+      "n": 1,
+      "recall@1": 0.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.5,
+      "mrr": 0.333,
+      "ndcg@5": 0.307
+    },
+    "paraphrase": {
+      "n": 2,
+      "recall@1": 0.0,
+      "recall@3": 0.5,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.292,
+      "ndcg@5": 0.465
+    },
+    "table-or-code": {
+      "n": 3,
+      "recall@1": 0.333,
+      "recall@3": 0.667,
+      "recall@5": 0.667,
+      "strict_recall@5": 0.667,
+      "mrr": 0.556,
+      "ndcg@5": 0.544
+    }
+  },
+  "search_latency_ms": {
+    "n": 19,
+    "p50": 1.1,
+    "p95": 1.6
+  },
+  "per_question": [
+    {"id": "q-001", "type": "how-to", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.3333333333333333, "ndcg@5": 0.5, "retrieved": ["fastapi/query-params.md#6 0.784", "fastapi/query-params.md#8 0.767", "fastapi/query-params.md#2 0.750", "fastapi/query-params.md#1 0.735", "fastapi/query-params.md#7 0.723", "fastapi/query-params.md#0 0.722", "fastapi/body.md#3 0.718", "fastapi/query-params.md#5 0.700", "fastapi/body.md#10 0.699", "fastapi/query-params.md#4 0.688"]},
+    {"id": "q-004", "type": "exact-identifier", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.3333333333333333, "ndcg@5": 0.5, "retrieved": ["fastapi/path-params.md#14 0.723", "fastapi/path-params.md#0 0.700", "fastapi/path-params.md#15 0.690", "fastapi/first-steps.md#13 0.690", "fastapi/first-steps.md#14 0.663", "fastapi/first-steps.md#11 0.663", "fastapi/first-steps.md#18 0.662", "fastapi/path-params.md#10 0.659", "fastapi/body.md#10 0.656", "fastapi/first-steps.md#12 0.642"]},
+    {"id": "q-005", "type": "paraphrase", "relevance": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.25, "ndcg@5": 0.43067655807339306, "retrieved": ["fastapi/path-params.md#6 0.678", "fastapi/query-params.md#5 0.625", "fastapi/first-steps.md#13 0.613", "fastapi/path-params.md#5 0.606", "fastapi/first-steps.md#11 0.605", "fastapi/first-steps.md#14 0.604", "fastapi/first-steps.md#12 0.597", "fastapi/path-params.md#3 0.575", "fastapi/body.md#10 0.572", "fastapi/path-params.md#0 0.563"]},
+    {"id": "q-006", "type": "comparison", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 0.3333333333333333, "rr": 1.0, "ndcg@5": 0.46927872602275644, "retrieved": ["fastapi/body.md#10 0.845", "fastapi/query-params.md#0 0.828", "fastapi/path-params.md#0 0.808", "fastapi/query-params.md#3 0.806", "fastapi/query-params.md#4 0.804", "fastapi/path-params.md#2 0.782", "fastapi/first-steps.md#13 0.779", "fastapi/body.md#8 0.776", "fastapi/first-steps.md#14 0.774", "fastapi/first-steps.md#12 0.771"]},
+    {"id": "q-007", "type": "table-or-code", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#0 0.719", "fastapi/first-steps.md#6 0.719", "fastapi/first-steps.md#10 0.703", "fastapi/first-steps.md#9 0.684", "fastapi/first-steps.md#8 0.680", "fastapi/path-params.md#16 0.678", "fastapi/path-params.md#4 0.677", "fastapi/first-steps.md#17 0.662", "fastapi/first-steps.md#18 0.659", "fastapi/first-steps.md#1 0.659"]},
+    {"id": "q-008", "type": "table-or-code", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["fastapi/query-params.md#1 0.779", "fastapi/query-params.md#4 0.769", "fastapi/query-params.md#0 0.769", "fastapi/query-params.md#3 0.746", "fastapi/body.md#10 0.728", "fastapi/query-params.md#2 0.712", "fastapi/query-params.md#6 0.703", "fastapi/query-params.md#8 0.699", "fastapi/body.md#3 0.698", "fastapi/body.md#2 0.671"]},
+    {"id": "q-009", "type": "factual", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#3 0.819", "fastapi/first-steps.md#6 0.717", "fastapi/body.md#5 0.707", "fastapi/path-params.md#4 0.667", "fastapi/first-steps.md#16 0.666", "fastapi/first-steps.md#5 0.654", "fastapi/first-steps.md#11 0.651", "fastapi/first-steps.md#4 0.650", "fastapi/path-params.md#3 0.645", "fastapi/path-params.md#1 0.642"]},
+    {"id": "q-010", "type": "multi-hop", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 1, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 0.5, "rr": 0.3333333333333333, "ndcg@5": 0.3065735963827292, "retrieved": ["fastapi/query-params.md#1 0.805", "fastapi/query-params.md#0 0.769", "fastapi/query-params.md#8 0.758", "fastapi/query-params.md#4 0.756", "fastapi/body.md#10 0.752", "fastapi/query-params.md#6 0.750", "fastapi/query-params.md#2 0.741", "fastapi/query-params.md#3 0.740", "fastapi/path-params.md#7 0.736", "fastapi/query-params.md#5 0.730"]},
+    {"id": "q-011", "type": "factual", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.3333333333333333, "ndcg@5": 0.5, "retrieved": ["fastapi/query-params.md#2 0.845", "fastapi/query-params.md#8 0.837", "fastapi/query-params.md#1 0.827", "fastapi/query-params.md#0 0.788", "fastapi/query-params.md#6 0.771", "fastapi/query-params.md#4 0.727", "fastapi/body.md#10 0.717", "fastapi/body.md#3 0.713", "fastapi/query-params.md#5 0.709", "fastapi/query-params.md#7 0.698"]},
+    {"id": "q-012", "type": "how-to", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/query-params.md#6 0.802", "fastapi/query-params.md#8 0.759", "fastapi/query-params.md#0 0.758", "fastapi/query-params.md#7 0.756", "fastapi/query-params.md#1 0.746", "fastapi/body.md#10 0.733", "fastapi/query-params.md#2 0.725", "fastapi/query-params.md#5 0.722", "fastapi/query-params.md#4 0.699", "fastapi/body.md#2 0.695"]},
+    {"id": "q-013", "type": "factual", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["fastapi/query-params.md#6 0.765", "fastapi/query-params.md#7 0.740", "fastapi/body.md#10 0.716", "fastapi/query-params.md#8 0.712", "fastapi/query-params.md#0 0.711", "fastapi/query-params.md#1 0.696", "fastapi/query-params.md#2 0.694", "fastapi/query-params.md#5 0.685", "fastapi/body.md#11 0.684", "fastapi/query-params.md#4 0.672"]},
+    {"id": "q-015", "type": "exact-identifier", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#2 0.750", "fastapi/path-params.md#13 0.699", "fastapi/path-params.md#9 0.697", "fastapi/body.md#10 0.694", "fastapi/path-params.md#8 0.686", "fastapi/query-params.md#7 0.685", "fastapi/path-params.md#12 0.682", "fastapi/body.md#1 0.681", "fastapi/body.md#11 0.679", "fastapi/body.md#3 0.677"]},
+    {"id": "q-016", "type": "factual", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#0 0.779", "fastapi/first-steps.md#11 0.729", "fastapi/first-steps.md#12 0.725", "fastapi/body.md#1 0.708", "fastapi/path-params.md#2 0.669", "fastapi/first-steps.md#14 0.665", "fastapi/body.md#8 0.658", "fastapi/query-params.md#7 0.654", "fastapi/first-steps.md#16 0.649", "fastapi/path-params.md#3 0.647"]},
+    {"id": "q-017", "type": "paraphrase", "relevance": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.3333333333333333, "ndcg@5": 0.5, "retrieved": ["fastapi/body.md#3 0.710", "fastapi/query-params.md#7 0.707", "fastapi/body.md#1 0.706", "fastapi/body.md#4 0.699", "fastapi/first-steps.md#16 0.693", "fastapi/first-steps.md#13 0.678", "fastapi/path-params.md#2 0.677", "fastapi/query-params.md#6 0.676", "fastapi/first-steps.md#14 0.674", "fastapi/first-steps.md#12 0.670"]},
+    {"id": "q-018", "type": "table-or-code", "relevance": [0, 0, 0, 0, 0, 1, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.16666666666666666, "ndcg@5": 0.0, "retrieved": ["fastapi/body.md#0 0.815", "fastapi/body.md#1 0.813", "fastapi/body.md#10 0.788", "fastapi/body.md#8 0.782", "fastapi/body.md#9 0.768", "fastapi/body.md#4 0.740", "fastapi/first-steps.md#16 0.732", "fastapi/first-steps.md#14 0.730", "fastapi/body.md#7 0.727", "fastapi/path-params.md#2 0.725"]},
+    {"id": "q-019", "type": "comparison", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/body.md#0 0.826", "fastapi/body.md#1 0.673", "fastapi/body.md#8 0.642", "fastapi/path-params.md#2 0.623", "fastapi/body.md#9 0.618", "fastapi/body.md#4 0.615", "fastapi/body.md#10 0.609", "fastapi/first-steps.md#11 0.608", "fastapi/body.md#3 0.605", "fastapi/path-params.md#13 0.604"]},
+    {"id": "q-020", "type": "factual", "relevance": [0, 0, 0, 0, 0, 0, 0, 1, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.125, "ndcg@5": 0.0, "retrieved": ["fastapi/query-params.md#5 0.776", "fastapi/query-params.md#3 0.770", "fastapi/path-params.md#1 0.769", "fastapi/path-params.md#0 0.756", "fastapi/body.md#10 0.750", "fastapi/query-params.md#4 0.746", "fastapi/query-params.md#2 0.744", "fastapi/path-params.md#2 0.740", "fastapi/query-params.md#8 0.738", "fastapi/body.md#9 0.730"]},
+    {"id": "q-023", "type": "how-to", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/path-params.md#7 0.751", "fastapi/query-params.md#8 0.751", "fastapi/query-params.md#1 0.729", "fastapi/path-params.md#0 0.722", "fastapi/query-params.md#2 0.718", "fastapi/query-params.md#4 0.714", "fastapi/body.md#8 0.708", "fastapi/path-params.md#14 0.705", "fastapi/query-params.md#5 0.703", "fastapi/query-params.md#3 0.695"]},
+    {"id": "q-026", "type": "exact-identifier", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#13 0.838", "fastapi/first-steps.md#14 0.753", "fastapi/first-steps.md#18 0.752", "fastapi/first-steps.md#15 0.727", "fastapi/body.md#1 0.723", "fastapi/first-steps.md#12 0.708", "fastapi/path-params.md#0 0.704", "fastapi/path-params.md#5 0.698", "fastapi/query-params.md#2 0.689", "fastapi/body.md#10 0.686"]}
+  ]
+}

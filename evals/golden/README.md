@@ -1,4 +1,19 @@
-# Golden dataset v0 (Phase 1, step 1c)
+# Golden dataset v1 (Phase 1 step 1c; extended in Phase 2 steps 2.7 and 2.8)
+
+**v1 (2026-10-20, D-045):** 65 items, dev 46 + test 19, three domains: docs 41 (5
+unanswerable), learning 12 (1), interview 12 (1). Every item has a `domain` (where the
+answer lives; checked against `ingestion/sources.py`). New types `concept`, `interview`.
+q-003 is answerable now (the Word notes say 422). Version is in `evals/golden/VERSION`.
+
+**v0.2 (2026-10-20, D-044):** the RAGAS PDF was replaced by the Chain-of-Thought paper
+(`cot/cot_2201.11903v6.pdf`). q-033..q-036 removed; q-041..q-044 added (table rows of
+Tables 2 and 4). Still 40 items: dev 28 (3 unanswerable), test 12 (2).
+
+**v0.1 (2026-10-19):** v0 + 8 table questions (q-033 to q-040): 4 on the RAGAS paper PDF
+(`ragas/ragas_2309.15217v2.pdf`), 4 on the Word notes (`interview/phase_1_notes.docx`).
+Snippets for PDF/DOCX are copied from the Docling Markdown (`data/processed/converted/`),
+which is what the validator checks. Now 40 items: dev 28 (3 unanswerable), test 12 (2).
+Rows measured on v0 (32 items, FastAPI only) are not comparable with v0.1 rows.
 
 The answer key for DocPilot. Without it "better" is an opinion; with it, it is a number.
 Decision: D-032 (design), D-010 (labels are document + verbatim snippet).

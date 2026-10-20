@@ -2,7 +2,13 @@
 
 import json
 
-from evals.validate_golden import validate
+from evals.validate_golden import validate as validate_golden
+
+
+def validate(golden_dir, docs_dir, min_per_domain=0):
+    """Tiny made-up sets cannot have 10 items per domain; that rule has its own test."""
+    return validate_golden(golden_dir, docs_dir, min_per_domain)
+
 
 DOC_TEXT = "Set the default to `None` to make it optional.\nAnother line.\n"
 
@@ -18,6 +24,7 @@ def make_item(item_id="q-001", split="dev", **changes):
         "evidence": [{"doc": "demo/page.md", "snippet": "Set the default to `None`"}],
         "difficulty": "easy",
         "split": split,
+        "domain": "docs",
         "notes": "",
     }
     item.update(changes)
@@ -79,3 +86,19 @@ def test_broken_json_line_is_reported_not_crashing(tmp_path):
         file.write("{not json\n")
     _, errors = validate(golden_dir, docs_dir)
     assert any("not valid JSON" in error for error in errors)
+
+
+def test_domain_must_match_the_register_entry_of_its_document(tmp_path):
+    # "fastapi" is a docs source in ingestion/sources.py, so domain "learning" is wrong.
+    bad = make_item(domain="learning", evidence=[{"doc": "fastapi/page.md", "snippet": "Another"}])
+    golden_dir, docs_dir = write_golden(tmp_path, [bad])
+    (docs_dir / "fastapi").mkdir()
+    (docs_dir / "fastapi" / "page.md").write_text(DOC_TEXT, encoding="utf-8")
+    _, errors = validate(golden_dir, docs_dir)
+    assert any("but fastapi/page.md is 'docs'" in error for error in errors)
+
+
+def test_too_few_items_in_a_domain_is_caught(tmp_path):
+    golden_dir, docs_dir = write_golden(tmp_path, [make_item()])
+    _, errors = validate_golden(golden_dir, docs_dir)  # the real rule: 10 per domain
+    assert any("domain 'learning' has 0 items; needs at least 10" in error for error in errors)

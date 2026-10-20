@@ -5,11 +5,12 @@ this file only; the rest of the code sees plain lists and dicts.
 """
 
 import uuid
+from dataclasses import asdict
 from pathlib import Path
 
 from qdrant_client import QdrantClient, models  # API checked on 1.19.1 (D-027)
 
-from docpilot.chunker import Chunk
+from docpilot.ingestion.chunkers.base import Chunk
 
 
 def get_client(path: Path) -> QdrantClient:
@@ -57,7 +58,8 @@ def add_chunks(
         return
     points = []
     for chunk, vector in zip(chunks, vectors, strict=True):  # strict: lengths must match
-        payload = {"text": chunk.text, "source": chunk.source, "chunk_number": chunk.chunk_number}
+        # Every Chunk field becomes payload (step 2.5): filter and cite by metadata later.
+        payload = asdict(chunk)
         points.append(models.PointStruct(id=make_point_id(chunk), vector=vector, payload=payload))
     # upsert = insert, or overwrite a point with the same id (so a re-run never duplicates)
     client.upsert(collection_name=name, points=points)

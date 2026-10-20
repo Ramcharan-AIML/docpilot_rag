@@ -38,7 +38,8 @@ notebook", and `evals/ABLATION.md` is generated from it. Teaching: `teaching/pri
    `collection`, `strategy`, `chunk_size`, `overlap`, `embedding_model`, `model_revision`,
    `top_k`, `min_overlap`, `golden_version`, `split`. Tags: `config_id`, `git_commit`,
    `ablation` (`true` for runs that belong in the table).
-5. **Re-log C0:** `scripts/relog_results_to_mlflow.py` reads `evals/results/*C0*.json` and
+5. **Re-log C0:** `python -m evals.relog_results_to_mlflow` (in `evals/`, not `scripts/`,
+   because it imports the `evals` package; D-036) reads `evals/results/*C0*.json` and
    logs it, so the baseline sits in the same notebook. Values are copied, never retyped.
 6. Run `mlflow ui` and open `http://localhost:5000`. Sort runs by `recall_at_5`.
 
@@ -296,15 +297,18 @@ the **parent** text (the text the LLM will actually see), as the doc requires (s
 
 ---
 
-## Step 2.7: Docling for PDF/HTML (`ingestion/pdf_loader.py`)
+## Step 2.7: Docling for PDF, Word (DOCX) and HTML (`ingestion/document_loader.py`)
 
-**Goal:** learn layout-aware parsing on at least one PDF or HTML source with tables.
+**Goal:** DocPilot reads **PDF and Word documents** as well as Markdown (learner request,
+D-037), with layout-aware parsing that keeps tables. At least one PDF and one DOCX source
+with a table, each with golden questions.
 
 - VERIFY Docling's current API, its CPU speed, and its install size (it downloads layout
   models) before adding it. Decision log entry with "why not PyMuPDF" (faster, weaker on
   tables).
 - Convert to Markdown, then feed the same `blocks.py` pipeline. One pipeline, many inputs.
-- Add 3-5 golden questions that need that table.
+- Add 3-5 golden questions that need that table, per format (PDF and DOCX).
+- Corpus files only (owner adds them); user uploads stay stretch 8.6 (D-030).
 
 ---
 

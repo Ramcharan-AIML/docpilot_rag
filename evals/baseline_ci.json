@@ -1,0 +1,19 @@
+{
+  "golden_file": "evals/golden/ci.jsonl",
+  "metrics": {
+    "recall@5": 1.0,
+    "mrr": 0.87
+  },
+  "n": 18,
+  "tolerance": {
+    "recall@5": 0.06,
+    "mrr": 0.05
+  },
+  "why_tolerance": "about one question of wobble (cross-platform float near-ties); measured breaks drop Recall@5 by 0.17-0.33 and MRR by 0.37-0.39 (D-048)",
+  "made_from": {
+    "git_commit": "cfd01a5+dirty",
+    "date": "2026-10-20",
+    "chunking": "fixed_tokens 200"
+  },
+  "reason": "first baseline, step 2.10: app recipe FT-200 on the 7-page Lumen fixture"
+}

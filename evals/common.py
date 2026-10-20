@@ -11,10 +11,14 @@ from openai import OpenAI, RateLimitError
 from qdrant_client import QdrantClient
 
 from docpilot import config
+from docpilot.ingestion.manifest import load_manifest
 from docpilot.rag import ask, elapsed_ms
-from evals.validate_golden import GOLDEN_DIR, load_items, validate
+from evals.validate_golden import GOLDEN_DIR, check_item, check_snippets, load_items, validate
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
+# Bump evals/golden/VERSION when questions, evidence or the corpus change (history in
+# evals/golden/README.md: v0 = 32 items on 4 FastAPI pages ... v1 = 65 items, 3 domains).
+GOLDEN_VERSION = (GOLDEN_DIR / "VERSION").read_text(encoding="utf-8").strip()
 
 
 def load_split(split: str) -> list[dict]:
@@ -30,30 +34,60 @@ def load_split(split: str) -> list[dict]:
     return items
 
 
+def load_golden_file(path: Path) -> list[dict]:
+    """A golden file outside dev/test (the CI gate's ci.jsonl), checked with the same rules.
+
+    Its snippets are checked against config.DOCS_DIR, which the gate points at the fixture
+    corpus. An invalid file stops the run, like load_split.
+    """
+    items, errors = load_items(path)
+    split = path.stem  # ci.jsonl -> every item must say "split": "ci"
+    for item in items:
+        item_errors = check_item(item, split)
+        errors += item_errors or check_snippets(item, config.DOCS_DIR)
+    if errors:
+        sys.exit(f"{path.name} invalid:\n  " + "\n  ".join(errors))
+    return items
+
+
 def git_commit() -> str:
     """Short commit id, plus '+dirty' if there are uncommitted changes.
 
     '+dirty' warns that the code that produced a number is not exactly any commit.
+    New result files in evals/results/ are ignored: they are outputs, not code, and
+    counting them made the second of two back-to-back runs "+dirty" (2026-10-17).
     """
     commit = subprocess.run(
         ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, check=True
     ).stdout.strip()
     changes = subprocess.run(
-        ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+        ["git", "status", "--porcelain", "--", ".", ":(exclude)evals/results"],
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
     return commit + ("+dirty" if changes else "")
 
 
-def base_record(config_id: str, split: str, kind: str) -> dict:
-    """The labels every result file carries, so a number can always be traced back."""
-    return {
+def base_record(
+    config_id: str, split: str, kind: str, collection: str = config.COLLECTION_NAME
+) -> dict:
+    """The labels every result file carries, so a number can always be traced back.
+
+    Chunk settings come from the collection's manifest (written by 02_ingest.py), because
+    each collection can be built differently. Collections built before manifests existed
+    fall back to config.py, and the record says so.
+    """
+    record = {
         "kind": kind,  # "retrieval", "latency" or "abstention"
         "config_id": config_id,
-        "collection": config.COLLECTION_NAME,
+        "collection": collection,
         "split": split,
         "date": date.today().isoformat(),
         "git_commit": git_commit(),
         "settings": {
+            "golden_version": GOLDEN_VERSION,  # scores are comparable only on the same set
+            "chunk_strategy": config.CHUNK_STRATEGY,
             "chunk_size": config.CHUNK_SIZE,
             "chunk_overlap": config.CHUNK_OVERLAP,
             "embedding_model": config.EMBEDDING_MODEL,
@@ -61,6 +95,11 @@ def base_record(config_id: str, split: str, kind: str) -> dict:
             "answer_top_k": config.TOP_K,  # chunks given to the LLM in ask()
         },
     }
+    manifest = load_manifest(collection)
+    record["settings"]["settings_source"] = "manifest" if manifest else "config.py"
+    if manifest:
+        record["settings"].update(manifest)
+    return record
 
 
 def to_json(record: dict) -> str:
@@ -88,7 +127,11 @@ def save_result(record: dict) -> Path:
 
 
 def ask_with_retries(
-    question: str, qdrant_client: QdrantClient, llm_client: OpenAI, max_attempts: int = 4
+    question: str,
+    qdrant_client: QdrantClient,
+    llm_client: OpenAI,
+    max_attempts: int = 4,
+    collection: str = config.COLLECTION_NAME,
 ) -> dict:
     """Run ask() and count rate-limit (429) retries ourselves.
 
@@ -100,7 +143,7 @@ def ask_with_retries(
     start = time.perf_counter()
     for attempt in range(1, max_attempts + 1):
         try:
-            result = ask(question, qdrant_client, counted_client)
+            result = ask(question, qdrant_client, counted_client, collection)
             return {**result, "retries_429": attempt - 1, "wall_ms": elapsed_ms(start)}
         except RateLimitError as error:
             if attempt == max_attempts:
