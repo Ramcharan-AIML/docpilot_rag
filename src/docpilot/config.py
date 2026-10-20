@@ -17,14 +17,20 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(PROJECT_ROOT / ".env")
 
 # --- paths ---
-DOCS_DIR = PROJECT_ROOT / "data" / "docs"
+# DOCS_DIR, QDRANT_PATH and MANIFEST_DIR can be moved with environment variables: the CI
+# eval gate (step 2.10) points them at the fixture corpus and a temporary folder, so it runs
+# the real ingest and eval code without touching the laptop's index.
+DOCS_DIR = Path(os.getenv("DOCPILOT_DOCS_DIR", PROJECT_ROOT / "data" / "docs"))
 # Code files the docs include with {* ... *} markers (step 2.3), one folder per technology:
 # data/code/fastapi/docs_src/... Kept apart from DOCS_DIR so the loader never reads them.
 CODE_DIR = PROJECT_ROOT / "data" / "code"
-QDRANT_PATH = PROJECT_ROOT / "qdrant_local"  # local-mode Qdrant saves its files here (gitignored)
+# local-mode Qdrant saves its files here (gitignored)
+QDRANT_PATH = Path(os.getenv("DOCPILOT_QDRANT_PATH", PROJECT_ROOT / "qdrant_local"))
 # How each collection was built (strategy, size, clean, includes), one JSON per collection,
 # so an eval records the real settings of the index it tested (gitignored, rebuilt by ingest).
-MANIFEST_DIR = PROJECT_ROOT / "data" / "processed" / "collections"
+MANIFEST_DIR = Path(
+    os.getenv("DOCPILOT_MANIFEST_DIR", PROJECT_ROOT / "data" / "processed" / "collections")
+)
 # PDF/DOCX converted to Markdown by Docling (step 2.7), cached: about 3 s per PDF page on CPU.
 CONVERTED_DIR = PROJECT_ROOT / "data" / "processed" / "converted"
 
@@ -66,9 +72,12 @@ TOP_K = 4
 #       --overlap 25 --collection docpilot_v1_ft200
 # (C0 = "docpilot_naive" / "docpilot_v1_c0" stays as the baseline row, not the app.)
 COLLECTION_NAME = "docpilot_v1_ft200"
+# The app's ingest recipe in one place; the CI eval gate builds its index with it too, so
+# the gate always tests the chunking the app really uses.
+INGEST_ARGS = ["--clean", "--includes", "--strategy", "fixed_tokens", "--size", "200"]
+INGEST_ARGS += ["--overlap", "25"]
 INGEST_COMMAND = (
-    "python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200 "
-    f"--overlap 25 --collection {COLLECTION_NAME}"
+    f"python scripts/02_ingest.py {' '.join(INGEST_ARGS)} --collection {COLLECTION_NAME}"
 )
 
 # --- LLM (D-004) ---

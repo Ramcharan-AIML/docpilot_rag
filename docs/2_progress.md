@@ -7,6 +7,18 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-20, session 29: step 2.10 CI eval gate (D-048)
+
+- Learner committed 2.9 (`cfd01a5`). Built: fixture corpus (7 own Lumen pages,
+  register `ci_fixture`), `evals/golden/ci.jsonl` (18 + 1), `--golden/--output` in the
+  retrieval eval, `evals/check_gate.py`, `scripts/ci_gate.py`, job `eval-gate` in ci.yml,
+  env path overrides in config.py, ruff excludes tests/fixtures, primer_ci_eval_gate.md.
+- Baseline R@5 1.000, MRR 0.870 (14 chunks); tolerance 0.06 / 0.05.
+- Tested the test: units bug MRR 0.495, size 50 0.494, size 30 0.480 -> fail; query
+  prefix removed -> unchanged (not caught). Real dev without prefix: R@1 .585 vs .634,
+  MRR .681 vs .701, R@5 same. Plan's demo break changed to the units bug.
+- Tests 160 passed (+5); ruff clean; lengths OK. Learner: commit, then the red-PR demo.
+
 ### 2026-10-20, session 28: clean matrix, test split, FT-200 chosen (D-047)
 
 - Learner committed fixes + tooling (`f4a3a49`) and chose FT-200 by the tie-break rule.

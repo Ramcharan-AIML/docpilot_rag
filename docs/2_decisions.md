@@ -243,3 +243,32 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   and C4-400 through the final pipeline (`run_chunking_matrix.py --only ...` + the Phase 3
   eval). Switch only if one beats FT-200 by 3 or more questions. Also re-check after a large
   corpus change (golden v2) or an embedding-model change. Frozen from Phase 4 on.
+
+## D-048: CI retrieval eval gate (step 2.10) (2026-10-20)
+
+- **What:** job `eval-gate` in `.github/workflows/ci.yml` runs `python scripts/ci_gate.py`:
+  ingest `tests/fixtures/corpus/` (7 own pages about a made-up library, register entry
+  `ci_fixture`) with the app's recipe `config.INGEST_ARGS` into a temporary Qdrant folder,
+  score `evals/golden/ci.jsonl` (18 answerable + 1 not-in-docs) with
+  `run_retrieval_eval --golden ... --output ...` (no MLflow), then `evals/check_gate.py`
+  fails (exit 1) if Recall@5 or MRR < `evals/baseline_ci.json` - tolerance.
+- **Plumbing:** `DOCPILOT_DOCS_DIR`, `DOCPILOT_QDRANT_PATH`, `DOCPILOT_MANIFEST_DIR` env
+  overrides in `config.py` (child processes only); ruff excludes `tests/fixtures` (it had
+  reformatted the Python example inside a fixture page, which changes the scores).
+- **Baseline (laptop, `cfd01a5` + 2.10 files):** Recall@5 1.000, MRR 0.870, 14 chunks.
+  **Tolerance:** Recall@5 0.06 (1 question = 0.056), MRR 0.05 (rank 1 -> 2 for one
+  question = 0.028): forgives cross-platform near-tie flips, not breaks.
+- **Tested by breaking it (laptop):** units bug (`fixed` = characters) R@5 0.778, MRR
+  0.495 -> fail; size 50 -> 0.833 / 0.494 fail; size 30 -> 0.667 / 0.480 fail; **query
+  prefix removed -> 1.000 / 0.870, NOT caught.** Real dev without the prefix: R@5 0.805
+  (same), R@1 0.585 vs 0.634, MRR 0.681 vs 0.701: the prefix helps ranking slightly. The
+  gate is for big regressions; small ranking changes need the full dev eval.
+- **Plan fixes:** (1) demo break = the units bug, not the prefix (the prefix is not caught,
+  measured above); (2) "required check / branch protection" is impossible while the repo is
+  private (D-035): rule "never merge on red" until the repo is public.
+- **Alternative:** gate on the real corpus in CI. **Why not:** needs the downloaded docs and
+  Docling conversion in CI (minutes, licences, network). **Alternative:** a much larger
+  fixture for more sensitivity. **Why not now:** slower, more to write; revisit in Phase 3.
+- **Alternative:** GitHub artifact upload of the result JSON. **Why not:** the log already
+  prints the table; one less action version to pin and verify.
+- No new dependency.

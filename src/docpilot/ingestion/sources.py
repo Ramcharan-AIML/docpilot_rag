@@ -98,4 +98,16 @@ SOURCES: dict[str, SourceInfo] = {
         checked="2026-10-20",
         visibility="public",
     ),
+    # --- CI only: the eval gate's fixture corpus (step 2.10), never in the real index ---
+    "ci_fixture": SourceInfo(
+        domain="docs",
+        topic="Lumen, a made-up task-queue library: 7 short pages for the CI eval gate",
+        doc_type="guide",
+        url="tests/fixtures/corpus/ci_fixture/ (this repository)",
+        version="git history of tests/fixtures/corpus/ is the version",
+        licence="own work (written for DocPilot, so licensing is never an issue)",
+        licence_url="tests/fixtures/README.md",
+        checked="2026-10-20",
+        visibility="public",
+    ),
 }

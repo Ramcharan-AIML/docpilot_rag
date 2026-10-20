@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.9 done: FT-200 is the default chunking (D-047); test split run once |
-| Next step | learner commits 2.9; then 2.10 CI eval gate; then Phase 2 gate (interview notes, PR, tag) |
+| Current step | 2.10 built: CI eval gate (D-048); local gate passes (R@5 1.000, MRR 0.870) |
+| Next step | learner: commit 2.10, red-PR demo (primer_ci_eval_gate.md part 10), then Phase 2 gate (interview notes, PR to main, tag) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
 

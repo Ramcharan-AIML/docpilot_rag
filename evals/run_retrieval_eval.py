@@ -7,6 +7,7 @@ Saves evals/results/<date>_<config>_<split>_retrieval.json and prints a small ta
 import argparse
 import time
 from collections import defaultdict
+from pathlib import Path
 
 from docpilot import config
 from docpilot.embedding.dense import embed_query
@@ -14,7 +15,7 @@ from docpilot.ingestion.chunkers.parent_child import lift_to_parents, load_paren
 from docpilot.ingestion.manifest import load_manifest
 from docpilot.rag import elapsed_ms
 from docpilot.store.qdrant_store import get_client, search
-from evals.common import base_record, load_split, save_result
+from evals.common import base_record, load_golden_file, load_split, save_result, to_json
 from evals.matching import MIN_OVERLAP, relevance_list
 from evals.metrics import (
     mean,
@@ -81,11 +82,17 @@ def main() -> None:
     parser.add_argument(
         "--ablation", action="store_true", help="mark this run for evals/ABLATION.md"
     )
+    # Step 2.10, CI eval gate: another exam (evals/golden/ci.jsonl on the fixture corpus),
+    # saved to a chosen file and NOT logged to MLflow (a gate run is a check, not a result).
+    parser.add_argument("--golden", type=Path, help="score this golden file, not --split")
+    parser.add_argument("--output", type=Path, help="save the result here; skip MLflow")
     args = parser.parse_args()
 
+    golden = load_golden_file(args.golden) if args.golden else load_split(args.split)
+    split = args.golden.stem if args.golden else args.split
     # Unanswerable items have no evidence, so retrieval cannot be scored for them;
     # they are tested by the abstention check instead.
-    items = [item for item in load_split(args.split) if item["should_answer"]]
+    items = [item for item in golden if item["should_answer"]]
     embed_query("warm-up")  # load the model now, so the first question is not a cold number
 
     # Parent-child (plan 2.6.3): score the PARENT text, the text the LLM will read. Found
@@ -114,7 +121,9 @@ def main() -> None:
         by_type[row["type"]].append(row)
         by_domain[row["domain"]].append(row)  # plan 2.9: per-domain table (D-030)
 
-    record = base_record(args.config_id, args.split, "retrieval", args.collection)
+    record = base_record(args.config_id, split, "retrieval", args.collection)
+    if args.golden:
+        record["settings"]["golden_version"] = f"file {args.golden.name}"
     record["settings"].update(
         {
             "search_k": SEARCH_K,
@@ -131,9 +140,14 @@ def main() -> None:
         "p95": percentile(search_times, 95),
     }
     record["per_question"] = rows
+    print_table(record)
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(to_json(record), encoding="utf-8")
+        print(f"saved {args.output}")
+        return
     path = save_result(record)
     run_id = log_record(record, path, ablation=args.ablation)  # MLflow (D-036)
-    print_table(record)
     print(f"saved {path}")
     print(f"logged to MLflow: run {run_id} (open with: mlflow ui)")
 

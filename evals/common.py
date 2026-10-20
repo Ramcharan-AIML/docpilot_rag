@@ -13,7 +13,7 @@ from qdrant_client import QdrantClient
 from docpilot import config
 from docpilot.ingestion.manifest import load_manifest
 from docpilot.rag import ask, elapsed_ms
-from evals.validate_golden import GOLDEN_DIR, load_items, validate
+from evals.validate_golden import GOLDEN_DIR, check_item, check_snippets, load_items, validate
 
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 # Bump evals/golden/VERSION when questions, evidence or the corpus change (history in
@@ -31,6 +31,22 @@ def load_split(split: str) -> list[dict]:
     if errors:
         sys.exit("Golden set invalid; run: python evals/validate_golden.py")
     items, _ = load_items(GOLDEN_DIR / f"{split}.jsonl")
+    return items
+
+
+def load_golden_file(path: Path) -> list[dict]:
+    """A golden file outside dev/test (the CI gate's ci.jsonl), checked with the same rules.
+
+    Its snippets are checked against config.DOCS_DIR, which the gate points at the fixture
+    corpus. An invalid file stops the run, like load_split.
+    """
+    items, errors = load_items(path)
+    split = path.stem  # ci.jsonl -> every item must say "split": "ci"
+    for item in items:
+        item_errors = check_item(item, split)
+        errors += item_errors or check_snippets(item, config.DOCS_DIR)
+    if errors:
+        sys.exit(f"{path.name} invalid:\n  " + "\n  ".join(errors))
     return items
 
 

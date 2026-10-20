@@ -423,3 +423,18 @@ We cut the library 11 different ways and sat the same 41-question practice exam 
 
 The app now uses FT-200 (`docpilot_v1_ft200`). To rebuild it:
 `python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200 --overlap 25 --collection docpilot_v1_ft200`
+
+## 44. Step 2.10: a quality alarm on every pull request (2026-10-20)
+
+GitHub now runs a second check, `ci / eval-gate`, next to `ci / test` on every pull request.
+It builds a tiny library (7 pages about a made-up tool called Lumen) with the app's own
+chunking, sits an 18-question exam with no LLM, and goes **red** if Recall@5 or MRR drops
+below the saved score (1.000 / 0.870) minus a small allowance.
+
+- **Run it yourself:** `python scripts/ci_gate.py` (about 50 s; your real index is untouched).
+- **We tested the alarm:** a units bug (characters instead of tokens) dropped MRR to 0.495
+  and the alarm rang. Removing the query prefix didn't ring it, because on the real exam the
+  prefix only moves 2 questions at rank 1. The alarm is for big breaks; the full dev eval
+  catches small ones.
+- **Rule:** never merge on red. Private repos can't block the merge button, so it's on us.
+- **Learn it:** `docs/teaching/primer_ci_eval_gate.md`. Part 10 is the red-PR demo.
