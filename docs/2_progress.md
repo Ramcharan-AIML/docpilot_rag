@@ -7,6 +7,14 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-20, session 30: red-PR demo done, Phase 2 gate prep
+
+- Learner committed 2.10 (`f60ab50`) and ran the demo: PR #2 (units bug) -> `eval-gate`
+  fail (1m51s), `test` pass; PR closed, branch deleted (never merged).
+- Learner chose to skip C5 contextual (D-049). Phase 2 interview answers drafted by the
+  mentor in `interview_notes.md` (learner request; to be rewritten in own words).
+- Next: PR phase-2-chunking -> main, merge on green, tag `phase-2`.
+
 ### 2026-10-20, session 29: step 2.10 CI eval gate (D-048)
 
 - Learner committed 2.9 (`cfd01a5`). Built: fixture corpus (7 own Lumen pages,

@@ -79,7 +79,47 @@ margin on the paraphrase was small (0.659 vs 0.578).
    is in its page, because one typo would silently turn a hit into a miss.
 
 ## Phase 2
-1. Which chunking strategy won, by how much, and on which question types?
+
+> **Mentor draft (2026-10-20)**, written at the learner's request, like Phase 0/1. Read it,
+> close the file, say it aloud, then rewrite it here in your own words.
+
+1. **Which chunking strategy won, by how much, and on which question types?**
+   No strategy won clearly. On golden v1 (dev, 41 questions) the top five were within
+   2 questions on Recall@5: parent-child 35, recursive-400 34, Q&A pairs 34,
+   hierarchical-400 33, fixed-200-tokens 33. C0 got 32. With 1 question = 0.024, that's a
+   tie. I picked **FT-200** (fixed 200 tokens, overlap 25, cleaned, includes) by my rule:
+   inside the noise band, pick the one that sends the LLM the least text (4 x 200 tokens
+   max) and is simplest. On the test split, run once, FT-200 found 15 of 17 and C0 16 of 17,
+   but FT-200 ranked the answer first 8 times vs 6. So it's a **ranking gain, not a recall
+   gain**. Per type: tables/code stayed weakest (0.625 R@5 for FT-200); semantic chunking
+   was clearly worst (MRR 0.574).
+
+2. **What helped more, cleaning the data or clever chunking?**
+   Cleaning. Removing HTML noise, pasting the real code in for include markers, and fixing
+   Docling's dash-padded tables gave the fair "dumb scissors" control (FT) the same scores
+   as the clever chunkers. I only saw that because I added a control row: fixed-size
+   chunks *with* cleaning. Without it, I'd have credited the chunker for what cleaning did.
+
+3. **Why measure chunk size in tokens, not characters?**
+   The embedding model reads at most 512 tokens (510 for text). Anything longer is cut off
+   silently: stored, but never searchable. Characters per token vary (code is denser), so
+   only the model's own tokenizer can guarantee the limit. My ingest prints "over the
+   510-token limit: 0" on every run.
+
+4. **How do you stop a regression from reaching main?**
+   A CI eval gate. On every PR, GitHub builds a tiny index from 7 fixture pages I wrote,
+   using the app's own chunking recipe. It asks 18 questions (no LLM, no secrets) and fails
+   if Recall@5 or MRR drops below the baseline (1.000 / 0.870) minus a tolerance worth about
+   one question. I tested it by breaking things: a characters-vs-tokens units bug dropped
+   MRR to 0.495 and the check went red. Removing the BGE query prefix did **not** trip it.
+   On the real dev set the prefix only moves 2 questions at rank 1, below the tolerance.
+   So the gate catches big breaks, and the full dev eval catches small ones.
+
+5. **Will you ever change the chunking strategy?**
+   Once, on purpose: after the reranker in Phase 3 I re-test the top 3 (FT-200,
+   parent-child, hierarchical-400), because a reranker values self-contained chunks and
+   recall@20 more than rank 1. I switch only on a gap of 3+ questions. After that it's
+   frozen, and the CI gate guards it.
 
 ## Phase 3
 1. What did hybrid search and the reranker each add, and what did the reranker cost in latency?

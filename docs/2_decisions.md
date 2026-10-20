@@ -272,3 +272,17 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
 - **Alternative:** GitHub artifact upload of the result JSON. **Why not:** the log already
   prints the table; one less action version to pin and verify.
 - No new dependency.
+
+## D-049: C5 contextual chunking skipped in Phase 2 (2026-10-20)
+
+- **What:** the C5 row stays `n/a`; the plan's gate item "contextual chunking cost recorded"
+  is closed as a documented skip, not as a measurement. The code (`chunkers/contextual.py`,
+  with cache, D-041) stays and can run later with `run_chunking_matrix.py --with-llm`.
+- **Why (learner's choice, 2026-10-19 and again 2026-10-20):** one LLM call per chunk. The
+  corpus has about 720 chunks at 200 tokens (FT-200: 453; hierarchical-200: 723), against
+  Groq's free limits of 1000 requests per day and 8000 tokens per minute (D-041): most of a
+  day's requests and hours of waiting, for every re-ingest that changes chunk text. The
+  other strategies already tie within 2 questions, so C5 is unlikely to change the decision.
+- **Not measured:** C5's quality and its real cost (calls, minutes). No number is claimed.
+- **Revisit:** if Phase 3's re-check (D-047) shows ranking still weak on tables/code, or a
+  larger free quota becomes available; then run it on the winner only.

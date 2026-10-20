@@ -8,11 +8,11 @@ Update this file at the end of every session. Newest session log entry goes on t
 
 | Item | Value |
 |---|---|
-| Current phase | Phase 2 (Phase 0 and Phase 1 gates closed 2026-10-15; see 2_progress.md) |
-| Current step | 2.10 built: CI eval gate (D-048); local gate passes (R@5 1.000, MRR 0.870) |
-| Next step | learner: commit 2.10, red-PR demo (primer_ci_eval_gate.md part 10), then Phase 2 gate (interview notes, PR to main, tag) |
+| Current phase | Phase 2 gate (all steps done; PR to main + tag `phase-2` pending) |
+| Current step | Phase 2 gate: C5 skipped (D-049); interview notes drafted (mentor) |
+| Next step | learner: commit, PR phase-2-chunking -> main (both checks green), merge, tag `phase-2`; then Phase 3 (read teaching/phase_3_retrieval.md) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
-| Homework | Rewrite the mentor-drafted Phase 0/1 answers in `interview_notes.md` and the failure-log summary in your own words; practise them aloud |
+| Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
 ---
 
@@ -58,10 +58,10 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.5 | Metadata (source, heading path, doc type, version, technology) | built 2026-10-17 (payload only; text unchanged) |
 | 2.6 | Six chunking strategies | done 2026-10-19: rows C1-C4 + controls (v0, dev); C5 skipped by learner; leader C4-200 (D-042) |
 | 2.7 | Docling for PDF, Word (DOCX), HTML (D-037) | built 2026-10-19 (D-043); PDF swapped to Chain-of-Thought 2026-10-20 (D-044, 43 pages/8 tables); notes DOCX; golden v0.2; HTML not needed |
-| 2.8 | More corpora + golden set v1 | built 2026-10-20 (D-045): Pydantic, Docker, Wikipedia x3, interview notes; golden v1 = 65 items; C0 on v1 pending |
-| 2.9 | Index per strategy, run evals, per-type breakdown | not started |
-| 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | not started |
-| Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | not started |
+| 2.8 | More corpora + golden set v1 | done 2026-10-20 (D-045): Pydantic, Docker, Wikipedia x3, interview notes; golden v1 = 65 items; C0-v1 dev R@5 0.780 |
+| 2.9 | Index per strategy, run evals, per-type breakdown | done 2026-10-20: fixes A/B/C, 11-config matrix (D-046), winner FT-200 (D-047): dev R@5 0.805 / MRR 0.701; test R@5 0.882 vs C0 0.941 (ranking gain only) |
+| 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | done 2026-10-20 (D-048): baseline R@5 1.000 / MRR 0.870; red-PR demo #2 (units bug) failed as expected; "required" impossible while private (D-035) |
+| Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | in progress 2026-10-20: C1-C4 + controls done, C5 skipped (D-049), FT-200 chosen, interview notes drafted (mentor); learner: PR to main + tag |
 
 ### Phase 3: Retrieval upgrade
 | Step | What | Status |

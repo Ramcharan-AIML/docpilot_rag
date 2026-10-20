@@ -18,7 +18,7 @@ question moves Recall by about 5 points; differences that small are ties.
 | C2 | Semantic chunking | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C3 | Parent-child | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C4 | Hierarchical | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
-| C5 | Contextual | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
+| C5 | Contextual (skipped, D-049: ~720 LLM calls per ingest) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C6 | Best chunking + hybrid (RRF) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C7 | + reranker | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
 | C8 | + best query transform | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a |
