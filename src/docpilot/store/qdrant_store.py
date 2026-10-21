@@ -24,7 +24,8 @@ def get_client(path: Path | None = None) -> QdrantClient:
     second one raises RuntimeError (D-003). Tests and CI use local mode: no Docker there.
     """
     if path is None and config.QDRANT_URL:
-        return QdrantClient(url=config.QDRANT_URL)
+        # 60 s, not the default 5 s: snapshot create/restore of a big index takes longer.
+        return QdrantClient(url=config.QDRANT_URL, timeout=60)
     return QdrantClient(path=str(path or config.QDRANT_PATH))
 
 

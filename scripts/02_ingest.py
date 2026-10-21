@@ -39,6 +39,7 @@ from docpilot.ingestion.includes import resolve_includes
 from docpilot.ingestion.loader import load_documents
 from docpilot.ingestion.manifest import save_manifest
 from docpilot.ingestion.metadata import add_metadata, technology_of
+from docpilot.storage.object_store import download_prefix, get_s3_client
 from docpilot.store.qdrant_store import add_chunks, create_fresh_collection, get_client
 
 TOKENS = config.CHUNK_TOKENS
@@ -78,6 +79,10 @@ def main() -> None:
     # Step 2.7 added PDF/DOCX sources; "--sources fastapi" rebuilds the golden-v0 corpus
     # (the 4 FastAPI pages every row before 2.7 was measured on).
     parser.add_argument("--sources", nargs="+", help="only these sources (default: all)")
+    # Step 3.1b: a fresh machine restores the corpus from object storage first (D-051).
+    parser.add_argument(
+        "--from-s3", action="store_true", help="restore data/docs + data/code from the bucket"
+    )
     # A separate collection per variant keeps C0 intact, so both can be evaluated.
     # Required since D-047: with a default, a bare run would refill the app's collection
     # (FT-200) with fixed 800-character chunks without any warning.
@@ -98,6 +103,11 @@ def main() -> None:
         chunk_function = partial(parent_child_chunks, parents=parents)
     writer = ContextWriter() if args.strategy == "contextual" else None
 
+    if args.from_s3:
+        s3 = get_s3_client()
+        for prefix, folder in (("docs/", config.DOCS_DIR), ("code/", config.CODE_DIR)):
+            count = download_prefix(s3, config.RAW_DOCS_BUCKET, prefix, folder)
+            print(f"restored {count} files from s3://{config.RAW_DOCS_BUCKET}/{prefix}")
     documents = load_documents(config.DOCS_DIR)
     if args.sources:
         documents = [doc for doc in documents if technology_of(doc.source) in args.sources]

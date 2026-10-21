@@ -7,6 +7,17 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-21, session 32: step 3.1b object storage + MLflow server (D-051)
+
+- Learner committed 3.1 (`d064d6f`). Built SeaweedFS 4.48 + MLflow 3.17.1 server (own
+  Dockerfile adds boto3) in Compose; object_store.py, 04_sync_docs.py, ingest --from-s3,
+  snapshots.py + snapshot_index.py; boto3 1.43.116, moto 5.2.4 (+4 moto tests, 165 total).
+- Done checks: 39 files byte-identical after round trip; index from the S3 copy and from
+  a restored snapshot both give R@1 0.634 / R@5 0.805 / MRR 0.701; MLflow server holds 32
+  re-logged runs, artifacts in SeaweedFS, ABLATION.md regenerated identical.
+- Found: bind mounts in OneDrive made a 453-point collection 593 MB and a snapshot take
+  91 s (621 MB); named volumes: 2 MB in 0.3 s. Also fixed a too-long comment from 3.1.
+
 ### 2026-10-21, session 31: Phase 2 merged; step 3.1 Qdrant in Docker (D-050)
 
 - Phase 2 gate closed: PR #3 merged (test + eval-gate green), tag `phase-2`.

@@ -6,4 +6,5 @@
 pytest==9.1.1                  # test runner
 ruff==0.16.10                  # linter + formatter
 httpx==0.28.1                  # needed by FastAPI's TestClient (D-034, checked 2026-10-14)
+moto==5.2.4                    # fakes AWS S3 in memory for tests, dev only (D-051, checked 2026-10-21)
 mlflow==3.17.1                 # experiment tracking + UI, dev only (D-036, checked 2026-10-15)

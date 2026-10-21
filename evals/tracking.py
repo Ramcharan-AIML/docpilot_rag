@@ -49,11 +49,17 @@ def params_and_metrics(record: dict) -> tuple[dict, dict]:
 
 
 def get_experiment_id(name: str) -> str:
-    """Find the experiment, or create it with our artifact folder (not MLflow's default)."""
+    """Find the experiment, or create it.
+
+    Local file database: artifacts go to our own folder (not MLflow's default). MLflow
+    server (step 3.1b): the SERVER decides, and stores them in the SeaweedFS / S3 bucket.
+    """
     mlflow.set_tracking_uri(config.MLFLOW_TRACKING_URI)
     experiment = mlflow.get_experiment_by_name(name)
     if experiment is not None:
         return experiment.experiment_id
+    if config.MLFLOW_TRACKING_URI.startswith("http"):
+        return mlflow.create_experiment(name)
     return mlflow.create_experiment(name, artifact_location=config.MLFLOW_ARTIFACT_DIR.as_uri())
 
 

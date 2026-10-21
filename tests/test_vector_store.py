@@ -90,7 +90,7 @@ def test_get_client_server_mode_only_without_a_path(monkeypatch, tmp_path):
     monkeypatch.setattr(config, "QDRANT_URL", "")
     get_client()
     assert opened == [
-        {"url": "http://localhost:6333"},
+        {"url": "http://localhost:6333", "timeout": 60},
         {"path": str(tmp_path)},
         {"path": str(config.QDRANT_PATH)},
     ]

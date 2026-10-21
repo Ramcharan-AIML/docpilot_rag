@@ -452,3 +452,21 @@ API, evals and scripts can use it at the same time. No more "stop uvicorn first"
 - **Daily use:** start Docker Desktop, then `docker compose up -d`. Dashboard:
   http://127.0.0.1:6333/dashboard. Stop with `docker compose down` (the data stays in
   `qdrant_storage/`).
+
+## 46. Step 3.1b: a local "Amazon S3" and the MLflow server (2026-10-21)
+
+`docker compose up -d` now starts three services: **Qdrant** (the index), **SeaweedFS** (S3
+buckets for files) and **MLflow** (your lab notebook, now a server at http://127.0.0.1:5000).
+
+- **Buckets:** `docpilot-raw-docs` (the corpus), `docpilot-snapshots` (index backups),
+  `docpilot-mlflow` (MLflow's files). The same Python code will use real Amazon S3 in Phase 7
+  by leaving `S3_ENDPOINT_URL` empty.
+- **New commands:** `python scripts/04_sync_docs.py` (upload the corpus),
+  `python scripts/02_ingest.py --from-s3 ...` (fresh machine), `python scripts/snapshot_index.py
+  --backup` / `--restore --target <name>` (back up / restore the index in about 3 s instead of
+  re-embedding for about 50 s).
+- **All checked:** files come back byte-identical, and an index built from the bucket or
+  restored from a snapshot scores exactly the same.
+- **Lesson:** Docker data in a OneDrive folder was huge and slow (a 621 MB snapshot taking
+  91 s). In Docker's own named volumes it's 2 MB in 0.3 s. Data survives
+  `docker compose down`; only `docker compose down -v` deletes it.

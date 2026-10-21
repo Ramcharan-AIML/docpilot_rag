@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
-| Current step | 3.1 done: Qdrant in Docker, numbers match local mode (D-050) |
-| Next step | learner: commit 3.1; then 3.1b (SeaweedFS + boto3 + MLflow server) |
+| Current step | 3.1b done: SeaweedFS + boto3 + MLflow server (D-051) |
+| Next step | learner: commit 3.1b; then 3.2 sparse (BM25) vectors: raw BM25 lab first |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -67,7 +67,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | Step | What | Status |
 |---|---|---|
 | 3.1 | Docker primer; Qdrant in Docker | done 2026-10-21 (D-050): qdrant v1.19.1 (amd64+arm64), scores identical to local; search p50 7.6 ms via 127.0.0.1 (localhost = 2 s IPv6 trap) |
-| 3.1b | SeaweedFS + boto3 object storage; MLflow server | not started |
+| 3.1b | SeaweedFS + boto3 object storage; MLflow server | done 2026-10-21 (D-051): docs round-trip byte-identical, index from S3 copy + snapshot restore give identical scores, 32 runs + artifacts on the MLflow server; named volumes (OneDrive folder: 621 MB / 91 s snapshot -> 2 MB / 0.3 s) |
 | 3.2 | Sparse (BM25) vectors | not started |
 | 3.3 | Manual RRF | not started |
 | 3.4 | Qdrant server-side fusion | not started |
