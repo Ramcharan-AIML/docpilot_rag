@@ -11,10 +11,11 @@ from pathlib import Path
 
 from docpilot import config
 from docpilot.embedding.dense import embed_query
+from docpilot.embedding.sparse import embed_sparse_query
 from docpilot.ingestion.chunkers.parent_child import lift_to_parents, load_parents
 from docpilot.ingestion.manifest import load_manifest
 from docpilot.rag import elapsed_ms
-from docpilot.store.qdrant_store import get_client, search
+from docpilot.store.qdrant_store import get_client, search, search_sparse
 from evals.common import base_record, load_golden_file, load_split, save_result, to_json
 from evals.matching import MIN_OVERLAP, relevance_list
 from evals.metrics import (
@@ -84,6 +85,8 @@ def main() -> None:
     )
     # Step 2.10, CI eval gate: another exam (evals/golden/ci.jsonl on the fixture corpus),
     # saved to a chosen file and NOT logged to MLflow (a gate run is a check, not a result).
+    # Step 3.2: which search answers. dense = meaning (BGE); sparse = keywords (BM25).
+    parser.add_argument("--retriever", default="dense", choices=["dense", "sparse"])
     parser.add_argument("--golden", type=Path, help="score this golden file, not --split")
     parser.add_argument("--output", type=Path, help="save the result here; skip MLflow")
     args = parser.parse_args()
@@ -93,7 +96,9 @@ def main() -> None:
     # Unanswerable items have no evidence, so retrieval cannot be scored for them;
     # they are tested by the abstention check instead.
     items = [item for item in golden if item["should_answer"]]
-    embed_query("warm-up")  # load the model now, so the first question is not a cold number
+    # Load the models now, so the first question is not a cold number.
+    embed_query("warm-up")
+    embed_sparse_query("warm-up")
 
     # Parent-child (plan 2.6.3): score the PARENT text, the text the LLM will read. Found
     # in the collection's manifest, so it cannot be forgotten on the command line.
@@ -106,9 +111,14 @@ def main() -> None:
     rows, search_times = [], []
     try:
         for item in items:
-            vector = embed_query(item["question"])
-            start = time.perf_counter()
-            hits = search(client, args.collection, vector, fetch_k)
+            if args.retriever == "sparse":
+                sparse_query = embed_sparse_query(item["question"])
+                start = time.perf_counter()
+                hits = search_sparse(client, args.collection, sparse_query, fetch_k)
+            else:
+                vector = embed_query(item["question"])
+                start = time.perf_counter()
+                hits = search(client, args.collection, vector, fetch_k)
             if parents:
                 hits = lift_to_parents(hits, parents, SEARCH_K)
             search_times.append(elapsed_ms(start))
@@ -129,6 +139,7 @@ def main() -> None:
             "search_k": SEARCH_K,
             "min_overlap": MIN_OVERLAP,
             "scored_on": "parent" if parents else "chunk",
+            "retriever": args.retriever,
         }
     )
     record["overall"] = aggregate(rows)

@@ -7,6 +7,16 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-21, session 33: step 3.2 BM25 (lab by hand, then FastEmbed) (D-052)
+
+- Learner committed 3.1b (`95342ef`). Explained SeaweedFS, boto3, BM25 (learner asked).
+- Lab 3 (learner ran it): IDF "the" 0.288 vs rare words 1.386; "max_length" -> sentence 1
+  only (1.551, others 0); "query parameter" -> short sentence 1 beat long sentence 5 (length
+  penalty); "validate" did not match "validated" (no stemming); tf 10 -> 1.966 vs tf 1 ->
+  1.005 (ceiling 2.2). Learner did not predict (new topic); explanation given after.
+- FastEmbed 0.8.1 BM25 + named vectors dense/sparse + IDF modifier; avg_len 78.6 measured.
+  +5 tests (170). Try run: dense unchanged; sparse R@5 0.805, MRR 0.658; best of both 36/41.
+
 ### 2026-10-21, session 32: step 3.1b object storage + MLflow server (D-051)
 
 - Learner committed 3.1 (`d064d6f`). Built SeaweedFS 4.48 + MLflow 3.17.1 server (own

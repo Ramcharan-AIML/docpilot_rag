@@ -346,3 +346,29 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
 - **Alternative:** `moto` vs a SeaweedFS container in CI. **Chosen moto:** no Docker in CI,
   tests in milliseconds; the real SeaweedFS path is checked by the done checks above.
 - **Alternative:** MinIO. **Why not:** community edition archived 2026 (D-019).
+
+## D-052: BM25 sparse vectors with FastEmbed, named vectors in Qdrant (step 3.2, 2026-10-21)
+
+- **What:** `fastembed==0.8.1`, model `Qdrant/bm25` (90 KB of stop-word lists, cached in
+  `.cache/fastembed`), k1 1.2, b 0.75, `avg_len` measured on the corpus at ingest (FT-200:
+  **78.6** BM25 words; FastEmbed's default is 256) and stored in the manifest. Every point now
+  has named vectors `dense` (BGE) and `sparse` (BM25, collection `modifier=IDF`: Qdrant
+  computes the rarity half). `search_sparse()`, `run_retrieval_eval --retriever sparse`.
+- **Why 0.8.1 and not 0.9.0 (newest, 2026-10-07):** `qdrant-client==1.19.1` declares
+  `fastembed>=0.8,<0.9` for its integration. 0.8.1 (2026-09-22) adds 7 packages
+  (onnxruntime 1.31.0, loguru, mmh3, py_rust_stemmers, flatbuffers, win32_setctime), changes
+  none, `pip check` clean.
+- **Checked behaviour (source + tests):** same formula as `labs/lab3_bm25.py`; punctuation
+  becomes spaces but `_` stays (`max_length` is one word; `LMN-303` -> `lmn`, `303`); English
+  stop words dropped; Snowball stemming (`validate`/`validated` -> `valid`, which the lab's
+  exact-word version missed). `bm25_length()` uses two private FastEmbed steps, pinned by
+  the version and guarded by `tests/test_sparse.py`.
+- **First numbers (dev n=41, FT-200 in Docker, `95342ef+dirty`, try run):** dense unchanged
+  (R@1 0.634, R@5 0.805, MRR 0.701). Sparse: R@1 0.537, R@5 0.805, MRR 0.658; docs R@5 0.88
+  vs 0.80, learning 0.50 vs 0.625. Dense-only hits 3 (q-003, q-007, q-059), sparse-only 3
+  (q-010, q-018, q-048; q-018 was missed by every Phase 2 chunker), neither 5. Best of both
+  = 36/41 = **0.878**: the ceiling hybrid search (3.3) aims at. Clean row after commit.
+- **Alternative:** `rank_bm25` in Python. **Why not:** in-memory, one process, no fusion in
+  the database. **Alternative:** SPLADE / BM42 / miniCOIL (learned sparse, also in
+  FastEmbed). **Why not now:** raw BM25 first (Rule 8); a learned sparse model is a later
+  experiment with its own row.

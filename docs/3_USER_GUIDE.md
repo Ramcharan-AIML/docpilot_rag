@@ -470,3 +470,17 @@ buckets for files) and **MLflow** (your lab notebook, now a server at http://127
 - **Lesson:** Docker data in a OneDrive folder was huge and slow (a 621 MB snapshot taking
   91 s). In Docker's own named volumes it's 2 MB in 0.3 s. Data survives
   `docker compose down`; only `docker compose down -v` deletes it.
+
+## 47. Step 3.2: keyword search (BM25) next to meaning search (2026-10-21)
+
+**What BM25 is:** smart word matching. Rare words count more ("max_length" beats "the"),
+repeating a word helps less each time, and short focused chunks beat long ones. You wrote
+it by hand in `labs/lab3_bm25.py`, then we used FastEmbed's version inside Qdrant.
+
+- Every chunk now has **two vectors**: `dense` (meaning) and `sparse` (keywords).
+- **BM25 alone** found the answer in the top 5 for 33 of 41 questions, the same count as
+  meaning search, but **not the same questions**: 3 found only by meaning, 3 only by
+  keywords (including q-018, which every Phase 2 chunker missed).
+- **Best of both = 36 of 41.** Merging the two lists well is step 3.3, hybrid search.
+- FastEmbed's BM25 also handles word forms ("validate" = "validated"), which your hand-made
+  lab version did not.

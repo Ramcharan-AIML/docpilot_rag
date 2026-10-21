@@ -18,6 +18,7 @@ from docpilot.store.qdrant_store import (
     get_client,
     make_point_id,
     search,
+    search_sparse,
 )
 
 NAME = "test_collection"
@@ -94,3 +95,24 @@ def test_get_client_server_mode_only_without_a_path(monkeypatch, tmp_path):
         {"path": str(tmp_path)},
         {"path": str(config.QDRANT_PATH)},
     ]
+
+
+def test_sparse_search_finds_the_rare_word(client: QdrantClient) -> None:
+    # Step 3.2: made-up BM25 word ids. Word 7 is rare (one chunk); word 1 is in every chunk,
+    # so Qdrant's IDF makes it nearly worthless.
+    chunks, vectors = three_chunks()
+    sparse = [
+        {"indices": [1, 2], "values": [1.0, 1.0]},
+        {"indices": [1, 7], "values": [1.0, 1.0]},
+        {"indices": [1, 3], "values": [1.0, 1.0]},
+    ]
+    add_chunks(client, NAME, chunks, vectors, sparse)
+    hits = search_sparse(client, NAME, {"indices": [1, 7], "values": [1.0, 1.0]}, top_k=3)
+    assert hits[0]["chunk_number"] == 1  # the chunk with the rare word wins
+    assert search(client, NAME, [1.0, 0.0, 0.0, 0.0], top_k=1)[0]["chunk_number"] == 0
+
+
+def test_sparse_vectors_must_match_chunks(client: QdrantClient) -> None:
+    chunks, vectors = three_chunks()
+    with pytest.raises(ValueError):
+        add_chunks(client, NAME, chunks, vectors, [{"indices": [1], "values": [1.0]}])
