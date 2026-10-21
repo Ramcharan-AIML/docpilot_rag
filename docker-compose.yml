@@ -1,0 +1,17 @@
+# DocPilot services for the laptop (Phase 3). Start: docker compose up -d   Stop: docker compose down
+# Step 3.1: only Qdrant. SeaweedFS (object storage) and the MLflow server join in step 3.1b.
+services:
+  qdrant:
+    # Exact tag, never "latest": same version as qdrant-client 1.19.1 (requirements.txt).
+    # Checked on Docker Hub 2026-10-21: v1.19.1 has amd64 AND arm64 builds (AWS x86, Oracle
+    # ARM, D-050).
+    image: qdrant/qdrant:v1.19.1
+    ports:
+      # host:container. REST API + web dashboard: http://localhost:6333/dashboard
+      # 127.0.0.1 = reachable from this laptop only, not from other machines on the Wi-Fi.
+      - "127.0.0.1:6333:6333"
+    volumes:
+      # The index lives in this folder on the laptop (gitignored), so it survives
+      # "docker compose down" and container restarts. Delete the folder to start empty.
+      - ./qdrant_storage:/qdrant/storage
+    restart: unless-stopped

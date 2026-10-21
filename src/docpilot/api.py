@@ -9,7 +9,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from docpilot import config
 from docpilot.llm.client import get_llm_client
 from docpilot.rag import ask
 from docpilot.store.qdrant_store import get_client
@@ -41,10 +40,10 @@ async def lifespan(app: FastAPI):
     Opening them per request would re-open the database folder and a new HTTPS
     connection every time; once at startup is what makes later requests "warm".
     """
-    app.state.qdrant = get_client(config.QDRANT_PATH)
+    app.state.qdrant = get_client()
     app.state.llm = get_llm_client()
     yield  # the app serves requests while we are paused here
-    app.state.qdrant.close()  # runs once at shutdown: releases the folder lock
+    app.state.qdrant.close()  # runs once at shutdown (local mode: releases the folder lock)
 
 
 app = FastAPI(title="DocPilot", lifespan=lifespan)

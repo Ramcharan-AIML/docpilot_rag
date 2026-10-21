@@ -8,9 +8,9 @@ Update this file at the end of every session. Newest session log entry goes on t
 
 | Item | Value |
 |---|---|
-| Current phase | Phase 2 gate (all steps done; PR to main + tag `phase-2` pending) |
-| Current step | Phase 2 gate: C5 skipped (D-049); interview notes drafted (mentor) |
-| Next step | learner: commit, PR phase-2-chunking -> main (both checks green), merge, tag `phase-2`; then Phase 3 (read teaching/phase_3_retrieval.md) |
+| Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
+| Current step | 3.1 done: Qdrant in Docker, numbers match local mode (D-050) |
+| Next step | learner: commit 3.1; then 3.1b (SeaweedFS + boto3 + MLflow server) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -61,12 +61,12 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.8 | More corpora + golden set v1 | done 2026-10-20 (D-045): Pydantic, Docker, Wikipedia x3, interview notes; golden v1 = 65 items; C0-v1 dev R@5 0.780 |
 | 2.9 | Index per strategy, run evals, per-type breakdown | done 2026-10-20: fixes A/B/C, 11-config matrix (D-046), winner FT-200 (D-047): dev R@5 0.805 / MRR 0.701; test R@5 0.882 vs C0 0.941 (ranking gain only) |
 | 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | done 2026-10-20 (D-048): baseline R@5 1.000 / MRR 0.870; red-PR demo #2 (units bug) failed as expected; "required" impossible while private (D-035) |
-| Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | in progress 2026-10-20: C1-C4 + controls done, C5 skipped (D-049), FT-200 chosen, interview notes drafted (mentor); learner: PR to main + tag |
+| Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | done 2026-10-20: PR #3 merged to main (test, eval-gate green), tag `phase-2` pushed; C5 skipped (D-049); interview answers = mentor drafts (homework: rewrite) |
 
 ### Phase 3: Retrieval upgrade
 | Step | What | Status |
 |---|---|---|
-| 3.1 | Docker primer; Qdrant in Docker | not started |
+| 3.1 | Docker primer; Qdrant in Docker | done 2026-10-21 (D-050): qdrant v1.19.1 (amd64+arm64), scores identical to local; search p50 7.6 ms via 127.0.0.1 (localhost = 2 s IPv6 trap) |
 | 3.1b | SeaweedFS + boto3 object storage; MLflow server | not started |
 | 3.2 | Sparse (BM25) vectors | not started |
 | 3.3 | Manual RRF | not started |

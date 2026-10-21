@@ -102,7 +102,7 @@ def main() -> None:
     # Several children can share a parent: fetch more, so 10 different parents remain.
     fetch_k = SEARCH_K * 3 if parents else SEARCH_K
 
-    client = get_client(config.QDRANT_PATH)
+    client = get_client()
     rows, search_times = [], []
     try:
         for item in items:

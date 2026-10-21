@@ -10,16 +10,22 @@ from pathlib import Path
 
 from qdrant_client import QdrantClient, models  # API checked on 1.19.1 (D-027)
 
+from docpilot import config
 from docpilot.ingestion.chunkers.base import Chunk
 
 
-def get_client(path: Path) -> QdrantClient:
-    """Local mode: Qdrant runs inside this Python process and saves to a folder.
+def get_client(path: Path | None = None) -> QdrantClient:
+    """Open Qdrant. Call client.close() when done.
 
-    Only ONE client can open the folder at a time; a second one raises RuntimeError
-    (D-003). Qdrant in Docker removes this limit in Phase 3. Call client.close() when done.
+    No path + config.QDRANT_URL set: server mode, Qdrant in Docker (step 3.1). Many
+    processes can use it at once (API, evals, scripts).
+    Otherwise local mode: Qdrant runs inside this Python process and saves to a folder
+    (`path`, or config.QDRANT_PATH). Only ONE client can open the folder at a time; a
+    second one raises RuntimeError (D-003). Tests and CI use local mode: no Docker there.
     """
-    return QdrantClient(path=str(path))
+    if path is None and config.QDRANT_URL:
+        return QdrantClient(url=config.QDRANT_URL)
+    return QdrantClient(path=str(path or config.QDRANT_PATH))
 
 
 def create_fresh_collection(client: QdrantClient, name: str, dimension: int) -> None:

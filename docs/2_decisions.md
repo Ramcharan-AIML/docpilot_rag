@@ -286,3 +286,28 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
 - **Not measured:** C5's quality and its real cost (calls, minutes). No number is claimed.
 - **Revisit:** if Phase 3's re-check (D-047) shows ranking still weak on tables/code, or a
   larger free quota becomes available; then run it on the winner only.
+
+## D-050: Qdrant server in Docker, image `qdrant/qdrant:v1.19.1` (step 3.1, 2026-10-21)
+
+- **What:** `docker-compose.yml` with one service, `qdrant/qdrant:v1.19.1`, port
+  `127.0.0.1:6333` (laptop only), data in `./qdrant_storage/` (gitignored). `config.QDRANT_URL`
+  (from `.env`) switches `store.get_client()` to server mode; empty = local mode.
+- **Verified 2026-10-21 on Docker Hub:** v1.19.1 (published 2026-09-03) has **amd64 and
+  arm64** builds, so the same image runs on AWS `m7i-flex.large` (x86) and the Oracle ARM VM.
+  Newest is v1.19.2; we take v1.19.1 to match `qdrant-client==1.19.1` exactly.
+- **Plan fix:** the plan's default `QDRANT_URL = "http://localhost:6333"` would make every
+  test and CI job look for a server that is not there. Default is empty; an explicit path
+  (tests) is always local mode; `scripts/ci_gate.py` forces local mode.
+- **Why a server:** local mode allows one process per folder (D-003): the API, an eval and
+  an ingest could not run together. The server also matches production (Phase 7).
+- **Alternative:** Qdrant Cloud free tier. **Why not now:** external account and network
+  latency in every eval; Docker teaches the deployment we need in Phase 7 anyway.
+- **Alternative:** `latest` tag. **Why not:** can change under us; client and server
+  versions must match (D-027).
+- Local Docker: Docker 29.5.3, Compose v5.1.4 (learner's laptop). No new Python dependency.
+- **Done check (2026-10-21, dev n=41, FT-200 re-ingested into Docker, 453 points):** every
+  score identical to local mode (R@1 0.634, R@5 0.805, MRR 0.701), same 0/1 marks and same
+  top-10 order on all 41 questions. Search latency: local mode p50 3.7 / p95 4.0 ms; Docker
+  via `localhost` **2062 / 2085 ms** (Windows tries IPv6 `::1` first, ~2 s timeout, port is
+  IPv4-only); via `127.0.0.1` **7.6 / 17.7 ms** (one HTTP hop). Rule: `QDRANT_URL` uses
+  `127.0.0.1`. Result file `2026-10-21_FT-200-docker_dev_retrieval.json` (`9017bb9+dirty`).

@@ -7,6 +7,16 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-21, session 31: Phase 2 merged; step 3.1 Qdrant in Docker (D-050)
+
+- Phase 2 gate closed: PR #3 merged (test + eval-gate green), tag `phase-2`.
+- 3.1: docker-compose.yml (qdrant v1.19.1, amd64+arm64 checked), `QDRANT_URL` server mode
+  in `get_client()` (default empty = local, for tests/CI; plan bug fixed), +1 test (161).
+- FT-200 re-ingested into Docker (453 points): scores identical to local on all 41 dev
+  questions. Learner predicted "recall same, latency changes": correct.
+- Found: `localhost` costs ~2 s per request on Windows (IPv6 first); `127.0.0.1` -> search
+  p50 7.6 / p95 17.7 ms (local mode 3.7 / 4.0).
+
 ### 2026-10-20, session 30: red-PR demo done, Phase 2 gate prep
 
 - Learner committed 2.10 (`f60ab50`) and ran the demo: PR #2 (units bug) -> `eval-gate`

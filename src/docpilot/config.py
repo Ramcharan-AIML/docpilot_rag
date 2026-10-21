@@ -24,6 +24,10 @@ DOCS_DIR = Path(os.getenv("DOCPILOT_DOCS_DIR", PROJECT_ROOT / "data" / "docs"))
 # Code files the docs include with {* ... *} markers (step 2.3), one folder per technology:
 # data/code/fastapi/docs_src/... Kept apart from DOCS_DIR so the loader never reads them.
 CODE_DIR = PROJECT_ROOT / "data" / "code"
+# Qdrant server in Docker (step 3.1, docker-compose.yml): set QDRANT_URL=http://127.0.0.1:6333
+# in .env (127.0.0.1, not localhost: see .env.example). Empty (the default) = local mode in QDRANT_PATH: the tests and CI use that,
+# because there is no Docker there. (The plan's default URL would have broken CI.)
+QDRANT_URL = os.getenv("QDRANT_URL", "")
 # local-mode Qdrant saves its files here (gitignored)
 QDRANT_PATH = Path(os.getenv("DOCPILOT_QDRANT_PATH", PROJECT_ROOT / "qdrant_local"))
 # How each collection was built (strategy, size, clean, includes), one JSON per collection,

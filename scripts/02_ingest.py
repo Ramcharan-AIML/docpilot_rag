@@ -136,7 +136,7 @@ def main() -> None:
 
     vectors = embed_documents([embedding_text(chunk) for chunk in chunks])
 
-    client = get_client(config.QDRANT_PATH)
+    client = get_client()
     try:
         create_fresh_collection(client, args.collection, config.EMBEDDING_DIM)
         add_chunks(client, args.collection, chunks, vectors)

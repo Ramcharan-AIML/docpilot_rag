@@ -438,3 +438,17 @@ below the saved score (1.000 / 0.870) minus a small allowance.
   catches small ones.
 - **Rule:** never merge on red. Private repos can't block the merge button, so it's on us.
 - **Learn it:** `docs/teaching/primer_ci_eval_gate.md`. Part 10 is the red-PR demo.
+
+## 45. Step 3.1: Qdrant moves into Docker (2026-10-21)
+
+Qdrant now runs as its own program in a Docker container (`docker compose up -d`), so the
+API, evals and scripts can use it at the same time. No more "stop uvicorn first".
+
+- **Same answers:** FT-200 rebuilt inside Docker gave identical scores on all 41 questions.
+  You predicted that correctly.
+- **The surprise:** the first run took 2 seconds per search. On Windows, `localhost` tries
+  IPv6 first and waits about 2 s before giving up. With `127.0.0.1` it's 7.6 ms. Rule: write
+  `QDRANT_URL=http://127.0.0.1:6333` in `.env`.
+- **Daily use:** start Docker Desktop, then `docker compose up -d`. Dashboard:
+  http://127.0.0.1:6333/dashboard. Stop with `docker compose down` (the data stays in
+  `qdrant_storage/`).

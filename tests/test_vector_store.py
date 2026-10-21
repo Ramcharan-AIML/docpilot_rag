@@ -9,7 +9,9 @@ from pathlib import Path
 import pytest
 from qdrant_client import QdrantClient
 
+from docpilot import config
 from docpilot.ingestion.chunkers.base import Chunk
+from docpilot.store import qdrant_store
 from docpilot.store.qdrant_store import (
     add_chunks,
     create_fresh_collection,
@@ -76,3 +78,19 @@ def test_mismatched_lengths_raise(client: QdrantClient) -> None:
 
     with pytest.raises(ValueError):
         add_chunks(client, NAME, chunks, vectors[:2])  # 3 chunks, 2 vectors
+
+
+def test_get_client_server_mode_only_without_a_path(monkeypatch, tmp_path):
+    # Step 3.1: QDRANT_URL set -> server (Docker); an explicit path always means local mode.
+    opened = []
+    monkeypatch.setattr(qdrant_store, "QdrantClient", lambda **kwargs: opened.append(kwargs))
+    monkeypatch.setattr(config, "QDRANT_URL", "http://localhost:6333")
+    get_client()
+    get_client(tmp_path)
+    monkeypatch.setattr(config, "QDRANT_URL", "")
+    get_client()
+    assert opened == [
+        {"url": "http://localhost:6333"},
+        {"path": str(tmp_path)},
+        {"path": str(config.QDRANT_PATH)},
+    ]

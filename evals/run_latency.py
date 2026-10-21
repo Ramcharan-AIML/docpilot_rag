@@ -44,7 +44,7 @@ def main() -> None:
     if args.limit:
         items = items[: args.limit]
 
-    qdrant_client = get_client(config.QDRANT_PATH)
+    qdrant_client = get_client()
     llm_client = get_llm_client()
     rows = []
     try:

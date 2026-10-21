@@ -46,6 +46,7 @@ def main() -> None:
         "DOCPILOT_DOCS_DIR": str(FIXTURE_DOCS),
         "DOCPILOT_QDRANT_PATH": str(work / "qdrant"),
         "DOCPILOT_MANIFEST_DIR": str(work / "manifests"),
+        "QDRANT_URL": "",  # always local mode: never write the gate's index into Docker Qdrant
     }
     python = sys.executable
     gate = [python, "-m", "evals.check_gate", str(result)]
