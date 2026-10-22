@@ -65,10 +65,18 @@ def ask(
         timings["total"] = elapsed_ms(total_start)
         return {"answer": config.NOT_FOUND_PHRASE, "sources": [], "timings_ms": timings}
 
-    user_prompt = f"Context:\n{build_context(hits)}\n\nQuestion: {question}"
     start = time.perf_counter()
-    answer = chat(llm_client, SYSTEM_PROMPT, user_prompt)
+    answer = generate(question, hits, llm_client)
     timings["llm"] = elapsed_ms(start)
 
     timings["total"] = elapsed_ms(total_start)
     return {"answer": answer, "sources": hits, "timings_ms": timings}
+
+
+def generate(question: str, hits: list[dict], llm_client: OpenAI) -> str:
+    """The generation half of RAG: numbered context + question -> cited answer.
+
+    Separate from retrieval so the generation eval (step 3.9) can feed it any hits.
+    """
+    user_prompt = f"Context:\n{build_context(hits)}\n\nQuestion: {question}"
+    return chat(llm_client, SYSTEM_PROMPT, user_prompt)

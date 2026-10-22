@@ -41,8 +41,8 @@ def params_and_metrics(record: dict) -> tuple[dict, dict]:
             metrics[f"{stage}_p95_ms"] = summary["p95"]
         metrics["n"] = record["per_stage_ms"]["total"]["n"]
         metrics["retries_429"] = record["retries_429_total"]
-    elif record["kind"] == "abstention":
-        metrics.update(record["overall"])
+    elif record["kind"] in ("abstention", "generation"):
+        metrics.update(record["overall"])  # all numbers (step 3.9 adds "generation")
     else:
         raise ValueError(f"unknown result kind {record['kind']!r}")
     return params, metrics

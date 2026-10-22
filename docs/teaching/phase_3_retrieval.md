@@ -275,6 +275,49 @@ compute inside, and you can tell when they are wrong.
 
 ---
 
+## 8b. Models in production: laptop vs cloud (learner question, 2026-10-22)
+
+**The 3.5 GB is only the experiment.** Like test-driving 5 cars at the showroom and buying
+one: step 3.7 tries 5 embedding models once, on the laptop, to choose. Production ships only
+the winners: bge-small (133 MB) + BM25 (0.09 MB) + MiniLM reranker (91 MB) = about 225 MB.
+
+**Two moments:**
+- **Ingestion (once, offline):** embed all chunks, store the numbers in Qdrant. Later only
+  new or changed documents are embedded again.
+- **Each question (live):** embed only the question (about 20-40 ms on the laptop), Qdrant
+  search (about 12 ms), rerank the top 20 (about 0.5 s), then the LLM (Groq, outside).
+
+**Yes, the models run in the cloud:** inside the API container, on the server's CPU, the
+same code as on the laptop. Two ways to get the files there: **bake them into the Docker
+image** (fast start, no internet needed, exact pinned files; image about 300 MB bigger) or
+download at first start (smaller image; slow first start, fails if Hugging Face is down).
+Rule: **load once at startup, keep in RAM, reuse for every request** (`lru_cache` in
+`get_model()` / `get_reranker()`).
+
+| Other way | Why not for us now |
+|---|---|
+| Separate model server (e.g. Hugging Face TEI) | more moving parts; worth it with heavy traffic |
+| Paid API (OpenAI embeddings, Cohere Rerank) | costs money; data leaves our server |
+| GPU server | costs money; our small models do not need it |
+
+**What can go wrong in production:**
+
+| Situation | Handling |
+|---|---|
+| Cold start (first question waits for model loading) | load and warm up at startup |
+| Many users at once on few CPU cores | load test (7.16), fewer candidates, cache repeated questions (Redis, 7.3) |
+| RAM full (models + Qdrant + Redis + API) | small models; one reason the 1.1 GB reranker lost |
+| Changing the embedding model | old chunk vectors and new question vectors no longer match: re-embed all chunks (new collection, then switch) |
+| Model files change on Hugging Face | pinned revisions |
+| Hugging Face down or rate-limited | bake files into the image |
+| Server CPU slower than the laptop | measure again on the server; never assume laptop numbers |
+| New documents | incremental ingestion: embed only new or changed chunks (7.17) |
+
+**Summary:** the laptop is the test kitchen (try many recipes); the cloud is the restaurant
+(cook only the winner, with small ingredients, loaded once, reused for every customer).
+
+---
+
 ## 9. One front door: `retrieval/pipeline.py`
 
 Everyone (evals, agents, API, MCP server) calls one function with one settings object.
