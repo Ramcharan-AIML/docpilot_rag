@@ -5,7 +5,6 @@ Saves evals/results/<date>_<config>_<split>_retrieval.json and prints a small ta
 """
 
 import argparse
-import time
 from collections import defaultdict
 from pathlib import Path
 
@@ -14,20 +13,20 @@ from docpilot.embedding.dense import embed_query
 from docpilot.embedding.sparse import embed_sparse_query
 from docpilot.ingestion.chunkers.parent_child import lift_to_parents, load_parents
 from docpilot.ingestion.manifest import load_manifest
-from docpilot.rag import elapsed_ms
 from docpilot.retrieval.fusion import DEFAULT_RRF_K
 from docpilot.retrieval.hybrid import DEFAULT_CANDIDATES, hybrid_search_manual
+from docpilot.retrieval.reranker import rerank
 from docpilot.store.qdrant_store import get_client, search, search_hybrid, search_sparse
 from evals.common import base_record, load_golden_file, load_split, save_result, to_json
 from evals.matching import MIN_OVERLAP, relevance_list
 from evals.metrics import (
     mean,
     ndcg_at_k,
-    percentile,
     recall_at_k,
     reciprocal_rank,
     strict_recall_at_k,
 )
+from evals.timing import StageTimes
 from evals.tracking import log_record
 
 # Fetch 10 so we can report @1, @3 and @5 from one search. ask() still uses TOP_K (4).
@@ -75,6 +74,8 @@ def print_table(record: dict) -> None:
     latency = record["search_latency_ms"]
     print(f"\nsearch latency (warm, n={latency['n']}): ", end="")
     print(f"p50 {latency['p50']} ms, p95 {latency['p95']} ms")
+    for stage, times in record["stage_latency_ms"].items():
+        print(f"  {stage:8} p50 {times['p50']:>8} ms   p95 {times['p95']:>8} ms")
 
 
 def main() -> None:
@@ -97,6 +98,8 @@ def main() -> None:
     parser.add_argument(
         "--candidates", type=int, default=DEFAULT_CANDIDATES, help="hybrid only: per searcher"
     )
+    # Step 3.5: rerank the top N search results with the cross-encoder (0 = no reranker).
+    parser.add_argument("--rerank", type=int, default=0, help="candidates to rerank, e.g. 30")
     parser.add_argument("--golden", type=Path, help="score this golden file, not --split")
     parser.add_argument("--output", type=Path, help="save the result here; skip MLflow")
     args = parser.parse_args()
@@ -109,6 +112,8 @@ def main() -> None:
     # Load the models now, so the first question is not a cold number.
     embed_query("warm-up")
     embed_sparse_query("warm-up")
+    if args.rerank:
+        rerank("warm-up", [{"text": "warm-up"}], keep=1)
 
     # Parent-child (plan 2.6.3): score the PARENT text, the text the LLM will read. Found
     # in the collection's manifest, so it cannot be forgotten on the command line.
@@ -116,37 +121,43 @@ def main() -> None:
     parents = load_parents(manifest["parents_file"]) if "parents_file" in manifest else None
     # Several children can share a parent: fetch more, so 10 different parents remain.
     fetch_k = SEARCH_K * 3 if parents else SEARCH_K
+    # With a reranker, search returns N candidates and the reranker keeps the best 10.
+    keep_after_search = args.rerank or SEARCH_K
+    if args.rerank:
+        fetch_k = max(fetch_k, args.rerank * 3 if parents else args.rerank)
 
     client = get_client()
-    rows, search_times = [], []
+    rows, times = [], StageTimes()
     try:
         for item in items:
-            if args.retriever in ("hybrid", "hybrid-server"):
-                # Embed both first, so the timer measures search + fusion only.
-                vector = embed_query(item["question"])
-                sparse_query = embed_sparse_query(item["question"])
-                hybrid = hybrid_search_manual if args.retriever == "hybrid" else search_hybrid
-                start = time.perf_counter()
-                hits = hybrid(
-                    client,
-                    args.collection,
-                    vector,
-                    sparse_query,
-                    fetch_k,
-                    candidates=args.candidates,
-                    rrf_k=args.rrf_k,
-                )
-            elif args.retriever == "sparse":
-                sparse_query = embed_sparse_query(item["question"])
-                start = time.perf_counter()
-                hits = search_sparse(client, args.collection, sparse_query, fetch_k)
-            else:
-                vector = embed_query(item["question"])
-                start = time.perf_counter()
-                hits = search(client, args.collection, vector, fetch_k)
-            if parents:
-                hits = lift_to_parents(hits, parents, SEARCH_K)
-            search_times.append(elapsed_ms(start))
+            question = item["question"]
+            # Stage 1, embed: the question becomes the vector(s) this searcher needs.
+            with times.measure("embed"):
+                vector = embed_query(question) if args.retriever != "sparse" else None
+                sparse_query = embed_sparse_query(question) if args.retriever != "dense" else None
+            # Stage 2, search (+ fusion for hybrid, + parent lookup for parent-child).
+            with times.measure("search"):
+                if args.retriever in ("hybrid", "hybrid-server"):
+                    hybrid = hybrid_search_manual if args.retriever == "hybrid" else search_hybrid
+                    hits = hybrid(
+                        client,
+                        args.collection,
+                        vector,
+                        sparse_query,
+                        fetch_k,
+                        candidates=args.candidates,
+                        rrf_k=args.rrf_k,
+                    )
+                elif args.retriever == "sparse":
+                    hits = search_sparse(client, args.collection, sparse_query, fetch_k)
+                else:
+                    hits = search(client, args.collection, vector, fetch_k)
+                if parents:
+                    hits = lift_to_parents(hits, parents, keep_after_search)
+            # Stage 3, rerank: the cross-encoder re-orders the N candidates, keeps the top 10.
+            if args.rerank:
+                with times.measure("rerank"):
+                    hits = rerank(question, hits[: args.rerank], keep=SEARCH_K)
             rows.append(score_item(item, hits))
     finally:
         client.close()
@@ -167,16 +178,23 @@ def main() -> None:
             "retriever": args.retriever,
         }
     )
+    if args.rerank:
+        record["settings"].update(
+            {
+                "rerank_candidates": args.rerank,
+                "reranker": config.RERANKER_MODEL,
+                "reranker_revision": config.RERANKER_REVISION,
+            }
+        )
     if args.retriever.startswith("hybrid"):
         record["settings"].update({"rrf_k": args.rrf_k, "candidates": args.candidates})
     record["overall"] = aggregate(rows)
     record["per_type"] = {name: aggregate(group) for name, group in sorted(by_type.items())}
     record["per_domain"] = {name: aggregate(group) for name, group in sorted(by_domain.items())}
-    record["search_latency_ms"] = {
-        "n": len(search_times),
-        "p50": percentile(search_times, 50),
-        "p95": percentile(search_times, 95),
-    }
+    # search_latency_ms keeps its old meaning (search only), so old rows stay comparable.
+    stages = times.summary()
+    record["search_latency_ms"] = stages["search"]
+    record["stage_latency_ms"] = stages  # step 3.5: embed / search / rerank, warm
     record["per_question"] = rows
     print_table(record)
     if args.output:

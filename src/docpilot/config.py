@@ -71,6 +71,11 @@ CONTEXT_CACHE = PROJECT_ROOT / "data" / "processed" / "context_cache.jsonl"
 
 # --- retrieval ---
 TOP_K = 4
+# Reranker (step 3.5, D-055): a cross-encoder reads question + chunk together. Model card
+# and revision checked on Hugging Face 2026-10-22 (MIT licence, 1.1 GB, max 512 tokens).
+RERANKER_MODEL = "BAAI/bge-reranker-base"
+RERANKER_REVISION = "2cfc18c9415c912f9d8155881c133215df768a70"
+RERANKER_MAX_TOKENS = 512
 # The collection the app, 03_ask.py and the evals use by default. Since D-047 (step 2.9):
 # FT-200 = fixed 200 tokens, overlap 25, cleaned, includes resolved. Build it with
 #   python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200
