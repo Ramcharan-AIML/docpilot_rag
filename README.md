@@ -54,14 +54,13 @@ Full table: [evals/ABLATION.md](evals/ABLATION.md).
 | 3.2 | Keyword search (BM25 sparse vectors) | R@5 0.805, same as meaning search, but on different questions |
 | 3.3 | Hybrid search with hand-written RRF | R@5 0.829, R@3 0.805 (dense: 0.805, 0.732) |
 | 3.4 | Same hybrid inside Qdrant (one call) | same results, search 12.3 ms vs 24.8 ms |
-| 3.5 | Reranker (cross-encoder) | bge-reranker-base, 20 candidates: R@5 0.854, MRR 0.700, but +6.4 s per question on CPU; a small fast reranker (MiniLM) is being tested |
+| 3.5 | Reranker (cross-encoder) on the top 20 | MiniLM: **R@5 0.878, MRR 0.725**, +0.5 s per question (big bge-reranker-base: R@5 0.854 at +6.4 s) |
 
 ---
 
 ## What comes next (to the end)
 
 **Phase 3 (remaining)**
-- 3.5 finish: test the small MiniLM reranker, then decide: reranker on or off (D-055).
 - 3.6 Query transforms: multi-query, HyDE, step-back, decomposition (LLM calls cached).
 - 3.7 Embedding model comparison (bge-small vs bge-base, bge-m3, nomic, e5).
 - 3.8 Metadata filters (technology, domain).

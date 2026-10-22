@@ -411,3 +411,34 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   between runs. The reranker (3.5) re-sorts the candidates, which removes most ties.
 - **Alternative:** keep manual (repeatable ties). **Why not:** 2 round trips, 2x slower.
   **Alternative:** DBSF fusion (score-based). **Why not now:** scores again; maybe a row later.
+
+## D-055: reranker = cross-encoder/ms-marco-MiniLM-L6-v2 on the top 20 (step 3.5, 2026-10-22)
+
+- **What:** `retrieval/reranker.py` (`CrossEncoder`, sentence-transformers 6.1.0, already
+  installed: no new library), `config.RERANKERS` (short name -> model + pinned revision),
+  `evals/timing.py` (p50/p95 per stage), `run_retrieval_eval --rerank N --reranker NAME`.
+  Default `config.RERANKER = "minilm"`, 20 candidates from Qdrant hybrid (C6-server).
+- **Models (Hugging Face, checked 2026-10-22):** `BAAI/bge-reranker-base` rev `2cfc18c9`
+  (MIT, 1.1 GB, multilingual); `cross-encoder/ms-marco-MiniLM-L6-v2` rev `233902d2`
+  (Apache-2.0, 91 MB, English, MS MARCO); both max 512 tokens.
+- **Numbers (dev n=41, CPU, warm):**
+
+| Row | R@1 | R@3 | R@5 | MRR | rerank p50 / p95 |
+|---|---|---|---|---|---|
+| C6-server (no reranker) | 0.561 | 0.805 | 0.829 | 0.687 | none |
+| C7-r20 bge-base | 0.585 | 0.780 | 0.854 | 0.700 | 6430 / 7469 ms |
+| C7-r30 bge-base | 0.585 | 0.780 | 0.829 | 0.698 | 10147 / 11605 ms |
+| C7-r50 bge-base | 0.585 | 0.780 | 0.829 | 0.698 | 12124 / 18960 ms |
+| **C7-mini-r20** | **0.610** | **0.829** | **0.878** | **0.725** | **485 / 547 ms** |
+
+- **Why MiniLM:** best on every metric except R@1 (dense alone 0.634, 1 question) and 13x
+  faster than bge-base. Bigger is not better here: MiniLM was trained on English search
+  questions and passages, close to our task. n=41, so the quality gap to bge-base (1
+  question at R@5) is noise; the speed gap is not.
+- **Why 20 candidates:** with bge-base, 30 and 50 found no new right chunk (top 10 = 37 in
+  all) and cost 1.6x to 1.9x the time. MiniLM r30/r50 not run (would need a new reason).
+- **Cost:** about +0.5 s per question (end-to-end Phase 1 p50 was 1.1 s).
+- **Alternative:** no reranker (C6-server). **Why not:** 2 fewer questions in the top 5.
+  **Alternative:** bge-reranker-base / v2-m3. **Why not:** 6 s+ per question on this CPU.
+  **Alternative:** Cohere Rerank. **Why not:** paid. **Later:** re-check on the test split
+  and in the chunking re-check at the gate.

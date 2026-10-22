@@ -234,6 +234,7 @@ included. 1 question = 0.024.
 | C6-k60 | hybrid, manual RRF k=60, 50+50 | 0.585 | **0.805** | **0.829** | **0.829** | 0.699 | **0.724** | 24.8 / 41.1 | `2026-10-22_C6-k60_dev_retrieval.json` (`2457017`) |
 | C6-server | hybrid, Qdrant RRF (sent k=61 = our 60), 50+50, 1 call | 0.561 | 0.805 | 0.829 | 0.829 | 0.687 | 0.715 | 12.3 / 26.2 | `2026-10-22_C6-server_dev_retrieval.json` (`07f7ef1`) |
 | C7-r20 | C6-server + rerank top 20 (bge-reranker-base) | 0.585 | 0.780 | **0.854** | 0.829 | **0.700** | 0.723 | search 24.9 / 50.7; **rerank 6430 / 7469** | `2026-10-22_C7-r20_dev_retrieval.json` (`3334243`) |
+| **C7-mini-r20** | C6-server + rerank top 20 (ms-marco-MiniLM-L6-v2) | 0.610 | **0.829** | **0.878** | **0.878** | **0.725** | **0.762** | search 16.5 / 33.8; **rerank 485 / 547** | `2026-10-22_C7-mini-r20_dev_retrieval.json` (`1ea5274`) |
 | C7-r30 | C6-server + rerank top 30 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 15.9 / 35.8; **rerank 10147 / 11605** | `2026-10-22_C7-r30_dev_retrieval.json` (`3334243`) |
 | C7-r50 | C6-server + rerank top 50 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 22.8 / 34.7; **rerank 12124 / 18960** | `2026-10-22_C7-r50_dev_retrieval.json` (`3334243`) |
 | C6-k10 | hybrid, manual RRF k=10, 50+50 | 0.585 | 0.780 | 0.805 | 0.805 | 0.691 | 0.709 | 26.0 / 44.9 | `2026-10-22_C6-k10_dev_retrieval.json` (`2457017`) |
@@ -265,3 +266,10 @@ Reading (D-053):
 - More candidates did not help: r30 and r50 found no new right chunk (top 10 = 37 in all)
   and pushed 2 answers one place down. Cost: rerank p50 6.4 s (r20) to 12.1 s (r50) per
   question, about 500x the search time. bge-reranker-base is too slow on this CPU for +1.
+- C7-mini-r20 (small reranker, D-055) vs C6-server: R@5 36 vs 34 questions, R@3 34 vs 33,
+  R@1 25 vs 23, MRR 0.725 vs 0.687; better on every metric. Up: q-008 3->1, q-010 6->3,
+  q-048 7->2, q-013 2->1, q-055 2->1. Down: q-049 1->2, q-059 3->5. It avoided the big
+  model's worst moves (q-003, q-007, q-023 stay in the top 3) but did not rescue q-018 (7).
+  Rerank p50 485 ms vs 6430 ms for bge-reranker-base (13x faster). Dense alone still has the
+  best R@1 (26 vs 25, 1 question). 36/41 equals the 3.2 "best of both" number, by a
+  different set of questions (q-017 in, q-018 out).

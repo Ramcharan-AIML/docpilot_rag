@@ -78,7 +78,7 @@ RERANKERS = {
     "bge-base": ("BAAI/bge-reranker-base", "2cfc18c9415c912f9d8155881c133215df768a70"),
     "minilm": ("cross-encoder/ms-marco-MiniLM-L6-v2", "233902d25c440f23af6f7d6e94d2946bac0bee0a"),
 }
-RERANKER = "bge-base"  # the default until D-055 picks one with data
+RERANKER = "minilm"  # D-055: as good as bge-base on dev, 13x faster on this CPU
 RERANKER_MAX_TOKENS = 512
 # The collection the app, 03_ask.py and the evals use by default. Since D-047 (step 2.9):
 # FT-200 = fixed 200 tokens, overlap 25, cleaned, includes resolved. Build it with

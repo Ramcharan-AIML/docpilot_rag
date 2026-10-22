@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
-| Current step | 3.4 done: Qdrant server-side RRF is the default hybrid (D-054), row C6-server |
-| Next step | learner: commit 3.4 results; then 3.5 reranker + timing (C7) |
+| Current step | 3.5 done: MiniLM reranker on the top 20 (D-055), rows C7 |
+| Next step | learner: commit 3.5 results; then 3.6 query transforms |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -71,7 +71,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 3.2 | Sparse (BM25) vectors | built 2026-10-21 (D-052): lab3_bm25.py by hand, FastEmbed BM25 + named vectors; clean C-sparse (`2457017`): R@1 0.537, R@5 0.805, MRR 0.658 |
 | 3.3 | Manual RRF | done 2026-10-22 (D-053): C6-k60 R@5 0.829 vs dense 0.805, R@3 0.805 vs 0.732, R@1 0.585 vs 0.634; k=10 worse by 1 |
 | 3.4 | Qdrant server-side fusion | done 2026-10-22 (D-054): same top 5 as manual 10/10 (Qdrant k=61 = our 60); C6-server R@5 0.829, p50 12.3 vs 24.8 ms; ties random |
-| 3.5 | Reranker + CPU latency | not started |
+| 3.5 | Reranker + CPU latency | done 2026-10-22 (D-055): C7-mini-r20 R@5 0.878, MRR 0.725, rerank p50 485 ms; bge-base r20 R@5 0.854 at 6.4 s |
 | 3.6 | Query transforms | not started |
 | 3.7 | Embedding model comparison | not started |
 | 3.8 | Metadata filtering | not started |

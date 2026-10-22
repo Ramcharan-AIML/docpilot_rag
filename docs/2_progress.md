@@ -7,6 +7,19 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-22, session 36: step 3.5 reranker (D-055)
+
+- Built reranker.py, evals/timing.py, --rerank / --reranker; +5 tests with a fake model
+  (183). bge-reranker-base download 1.1 GB (about 4 min, once).
+- bge-base (`3334243`): r20 R@1 0.585, R@5 0.854, MRR 0.700, rerank p50 6.4 s; r30 and r50
+  no better (same 37 in top 10), slower (10.1 s, 12.1 s). Moved 16 questions: 8 up, 7 down.
+- Learner chose option A: MiniLM (`1ea5274`): R@1 0.610, R@3 0.829, R@5 0.878, MRR 0.725,
+  rerank p50 485 ms. Default reranker = minilm, 20 candidates.
+- Learner predictions: R@1 up a little (right), reranking slow (right: 6.4 s; MiniLM 0.5 s),
+  MiniLM "slight difference" (it was better on every metric except dense's R@1).
+- Also: branch had no upstream, so pushes since 3.1 had failed; fixed with push -u.
+  README rewritten (status + roadmap); teaching section 4b added (learner's request).
+
 ### 2026-10-22, session 35: step 3.4 Qdrant server-side RRF (D-054)
 
 - Learner asked for much simpler English (saved to memory). Built store.search_hybrid(),

@@ -45,3 +45,23 @@ lists itself. **Now (3.4):** one request; Qdrant searches both ways and mixes in
   (30 tries: 16 one way, 14 the other). Our code always puts the meaning-search one first.
   One such tie (q-055) was at rank 1, so Recall@1 moved by 1 question. Not a real loss.
 - **Decision:** Qdrant's version is the default (same results, half the time).
+
+---
+
+## 50. Step 3.5: the reranker, a careful second reader (2026-10-22)
+
+**Idea:** search picks 20 candidates fast; the reranker reads question + chunk together
+and puts the best on top (teaching file section 4b).
+
+| Row (dev, 41 questions) | R@1 | R@5 | MRR | Rerank time |
+|---|---|---|---|---|
+| No reranker (C6-server) | 0.561 | 0.829 | 0.687 | 0 |
+| Big reranker, bge-base, top 20 | 0.585 | 0.854 | 0.700 | 6.4 s |
+| **Small reranker, MiniLM, top 20** | **0.610** | **0.878** | **0.725** | **0.5 s** |
+
+- The **small** model won: better scores and 13 times faster. Bigger is not always better.
+- **Candidates** = the shortlist search gives the reranker. 30 or 50 did not find more
+  right chunks than 20, only took longer. So we use 20.
+- The reranker rescued questions hybrid had buried (q-010, q-048), but it also moves some
+  good answers down (q-049, q-059). Always check question by question.
+- **Decision (D-055):** MiniLM on the top 20 is now the default.

@@ -38,12 +38,16 @@ LLM APIs (Groq, OpenAI-compatible), MLflow, Docker, Docker Compose, GitHub Actio
 - Built a **CI eval gate in GitHub Actions** that fails pull requests when retrieval
   quality drops, and proved it by injecting a chunking-units bug (MRR 0.87 to 0.50, build
   failed).
+- Built **hybrid retrieval** in **Qdrant** (dense BGE + sparse **BM25**, fused with
+  **Reciprocal Rank Fusion**, first by hand, then server-side) and a **cross-encoder
+  reranker**. Benchmarked a 1.1 GB and a 91 MB reranker on CPU and chose the small one:
+  **Recall@5 0.83 to 0.88, MRR 0.69 to 0.73** at **+0.5 s** per query (the big one: 6.4 s).
 - Containerized the vector database with **Docker Compose** (multi-architecture images).
   Verified identical retrieval scores, and diagnosed a Windows IPv6 `localhost` delay that
   cut search latency from **2,062 ms to 7.6 ms (p50)**.
-- Engineering: **161 automated tests**, PR-based Git workflow, pinned dependencies and
+- Engineering: **183 automated tests**, PR-based Git workflow, pinned dependencies and
   model revisions, and every metric traceable to a git commit.
-- *In progress:* hybrid search (BM25 + dense, RRF), cross-encoder reranking, **LangGraph**
+- *In progress:* query transforms, an LLM-judged generation eval, **LangGraph**
   agents with human-in-the-loop, guardrails (Presidio, NeMo Guardrails), and deployment with
   **Terraform, Kubernetes (k3s) and AWS**.
 
