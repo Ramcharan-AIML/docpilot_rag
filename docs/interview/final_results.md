@@ -24,8 +24,15 @@ Unknown = `n/a`. Updated 2026-10-22.
 | **+ MiniLM cross-encoder reranker (final)** | **0.610** | **0.829** | **0.878** | **0.725** | **0.762** |
 
 Headline: **Recall@5 0.78 -> 0.88, MRR 0.65 -> 0.73** (baseline -> final, dev).
-Held-out test split, final pipeline: **n/a (not run yet)**. Phase 2 test split (n=17):
-FT-200 R@1 0.471 vs C0 0.353; R@5 0.882 vs 0.941.
+**Held-out test split (n=17, never used for any choice):**
+
+| Stage | R@1 | R@5 | MRR | nDCG@5 |
+|---|---|---|---|---|
+| Baseline C0 | 0.353 | 0.941 | 0.608 | 0.674 |
+| FT-200 (dense) | 0.471 | 0.882 | 0.620 | 0.657 |
+| **Final (hybrid + reranker)** | **0.647** | **0.941** | **0.765** | **0.790** |
+
+Test headline: **top-1 accuracy 0.35 -> 0.65, MRR 0.61 -> 0.77** (`c1fb7dd`).
 
 ## Generation (LLM judge, step 3.9)
 
@@ -72,9 +79,10 @@ Small sample: "no failures found", not "perfect".
 1. Built an evaluation-driven RAG pipeline over 20 technical documents (453 chunks) with a
    65-question golden set (dev/test split, verbatim evidence) and hand-written Recall@k, MRR
    and nDCG metrics; every run tracked in MLflow and traceable to a git commit.
-2. Raised retrieval quality from **Recall@5 0.78 to 0.88** and **MRR 0.65 to 0.73** through
-   an 11-configuration chunking ablation, hybrid BM25 + dense search with Reciprocal Rank
-   Fusion in Qdrant, and a cross-encoder reranker.
+2. Raised retrieval quality from **Recall@5 0.78 to 0.88** and **MRR 0.65 to 0.73** (dev)
+   through an 11-configuration chunking ablation, hybrid BM25 + dense search with Reciprocal
+   Rank Fusion in Qdrant, and a cross-encoder reranker; on a held-out test set, **top-1
+   accuracy rose from 0.35 to 0.65 and MRR from 0.61 to 0.77**.
 3. Benchmarked rerankers on CPU and chose a 91 MB MiniLM cross-encoder over a 1.1 GB model
    that was 13x slower (6.4 s vs 0.49 s per query) and scored lower; showed that 4 query
    transforms (HyDE, multi-query, step-back, decomposition) added 0.9-2.7 s with no recall

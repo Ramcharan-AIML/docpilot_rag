@@ -4,7 +4,7 @@
   "collection": "docpilot_v1_ft200",
   "split": "test",
   "date": "2026-10-22",
-  "git_commit": "c163df3+dirty",
+  "git_commit": "c1fb7dd",
   "settings": {
     "golden_version": "v1",
     "chunk_strategy": "fixed_tokens",
@@ -159,24 +159,24 @@
   },
   "search_latency_ms": {
     "n": 17,
-    "p50": 31.7,
-    "p95": 60.9
+    "p50": 13.0,
+    "p95": 33.7
   },
   "stage_latency_ms": {
     "embed": {
       "n": 17,
-      "p50": 21.9,
-      "p95": 35.1
+      "p50": 46.9,
+      "p95": 64.0
     },
     "search": {
       "n": 17,
-      "p50": 31.7,
-      "p95": 60.9
+      "p50": 13.0,
+      "p95": 33.7
     },
     "rerank": {
       "n": 17,
-      "p50": 473.3,
-      "p95": 523.8
+      "p50": 894.6,
+      "p95": 967.1
     }
   },
   "per_question": [

@@ -301,3 +301,16 @@ Reading: no problem found on 10 mostly easy questions; small n, so "no failures 
 "perfect". q-006 (a retrieval miss: the evidence chunk was not in the top 5) still got a
 correct, supported answer from other chunks: the retrieval metric is stricter than what the
 user sees. Judge agreement: 2 spot-check items in `evals/spot_checks/`, learner verdict pending.
+
+### Final pipeline on the held-out test split (Phase 3 gate, run once)
+
+| Config | n | R@1 | R@3 | R@5 | strict R@5 | MRR | nDCG@5 | rerank p50 / p95 ms | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| C0-v1 (Phase 1 baseline) | 17 | 0.353 | 0.824 | 0.941 | 0.912 | 0.608 | 0.674 | none | `2026-10-20_C0-v1_test_retrieval.json` (`f4a3a49`) |
+| FT-200-v1 (Phase 2, dense) | 17 | 0.471 | 0.706 | 0.882 | 0.853 | 0.620 | 0.657 | none | `2026-10-20_FT-200-v1_test_retrieval.json` (`f4a3a49`) |
+| **FINAL-test** (hybrid + MiniLM rerank 20) | 17 | **0.647** | 0.824 | **0.941** | 0.912 | **0.765** | **0.790** | 895 / 967 | `2026-10-22_FINAL-test_test_retrieval.json` (`c1fb7dd`) |
+
+Top-1 hits 6 -> 8 -> 11 of 17; R@5 16 of 17 (same as C0): the gain on unseen questions is
+ranking. An earlier run of the same code with only 3 docs files uncommitted
+(`c163df3+dirty`, MLflow run bd96596e) gave identical scores with rerank p50 473 ms: the
+same work took 1.9x longer on a busier laptop, a reason to monitor latency continuously.

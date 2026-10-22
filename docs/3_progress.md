@@ -7,6 +7,15 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
 
 ## Session log
 
+### 2026-10-22, session 39: Phase 3 gate (FINAL-test), final results sheet, handoff
+
+- docs/interview/final_results.md (best numbers + 5 resume lines), teaching
+  primer_prometheus_grafana.md; context sent to the Phase_Guardrails session.
+- FINAL-test (`c1fb7dd`, test n=17): R@1 0.647, R@3 0.824, R@5 0.941, MRR 0.765, nDCG
+  0.790 (C0: 0.353 / 0.941 / 0.608). Same code run dirty earlier: identical scores, rerank
+  p50 473 vs 895 ms (laptop load).
+- Learner asked for a UI (demo); proposed Streamlit after guardrails (decision pending).
+
 ### 2026-10-22, session 38: 3.9 generation eval, 3.10 front door, scope cut (D-057, D-058)
 
 - Learner: 3 days to submit; wants production (Docker, Prometheus/Grafana, CI/CD, AWS S3,
