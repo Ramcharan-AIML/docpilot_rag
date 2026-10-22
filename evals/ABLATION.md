@@ -218,3 +218,30 @@ wrong 200-token piece; how-to 0.8 -> 0.4, n=5). Both miss 7, of which 4 are tabl
 (R@5 0.5 in both: fixes B/C). CoT chunks (half the index) take 3 of 165 top-5 slots of
 non-learning questions in C0 and 0 of 165 in C4-200. Not a pure chunking comparison (C0 is
 raw): 2.9 adds a fixed-size control row with cleaning + includes.
+
+---
+
+## Phase 3: retrieval (hand-written rows, dev n=41, collection `docpilot_v1_ft200`)
+
+All rows use the FT-200 chunks (D-047) in Docker Qdrant; only the **searcher** changes.
+Search latency is warm, n=41, this laptop (CPU), Qdrant v1.19.1 in Docker, embedding not
+included. 1 question = 0.024.
+
+| Config | Retriever | R@1 | R@3 | R@5 | strict R@5 | MRR | nDCG@5 | p50 / p95 ms | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| FT-200-dense-p3 | dense (BGE) | **0.634** | 0.732 | 0.805 | 0.805 | **0.701** | 0.722 | 9.9 / 27.1 | `2026-10-22_FT-200-dense-p3_dev_retrieval.json` (`2457017`) |
+| C-sparse | sparse (BM25) | 0.537 | 0.683 | 0.805 | 0.780 | 0.658 | 0.670 | 14.0 / 33.9 | `2026-10-22_C-sparse_dev_retrieval.json` (`2457017`) |
+| C6-k60 | hybrid, manual RRF k=60, 50+50 | 0.585 | **0.805** | **0.829** | **0.829** | 0.699 | **0.724** | 24.8 / 41.1 | `2026-10-22_C6-k60_dev_retrieval.json` (`2457017`) |
+| C6-k10 | hybrid, manual RRF k=10, 50+50 | 0.585 | 0.780 | 0.805 | 0.805 | 0.691 | 0.709 | 26.0 / 44.9 | `2026-10-22_C6-k10_dev_retrieval.json` (`2457017`) |
+
+Reading (D-053):
+- Dense parity: FT-200-dense-p3 equals Phase 2 FT-200-v1 on every metric, so the move to
+  named vectors (3.2) changed nothing.
+- C6-k60 vs dense: R@5 +1 question (34 vs 33), R@3 +3 (33 vs 30), top 4 (what `ask()`
+  sends the LLM) 33 vs 31; R@1 -2 (24 vs 26); MRR and nDCG equal. Hybrid puts more right
+  chunks in the top few, but not more at rank 1. Ordering is the reranker's job (3.5).
+- Ceiling 36/41 not reached: the 3 sparse-only questions (q-010, q-018, q-048; sparse
+  ranks 2, 4, 4) landed at 6, 7, 7. Dense ranked them 8, 7 and not in the top 10, and RRF
+  rewards agreement. The +1 is q-017, which neither searcher had in its top 5 (dense: not in
+  top 10, sparse 8); with both votes it reaches 5 at k=60 (8 at k=10).
+- k=60 vs k=10: 1 question apart (q-017), within noise; keep k=60 (the paper default).

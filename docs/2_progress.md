@@ -7,6 +7,17 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-22, session 34: step 3.3 hybrid search with hand-written RRF (D-053)
+
+- Built fusion.py, hybrid.py, --retriever hybrid; +7 tests (177). Plan fix: no separate
+  dense_search.py / sparse_search.py (they would repeat the 3.2 store functions).
+- Learner committed (`2457017`) and ran 4 clean rows. Dense parity holds (= FT-200-v1).
+  C6-k60: R@5 0.829 (34/41), R@3 0.805, R@1 0.585, MRR 0.699, p50 24.8 ms. Ceiling 36/41
+  missed: sparse-only q-010, q-018, q-048 land at 6, 7, 7. q-017 rescued (neither had it in
+  top 5). k=10: 1 question worse. Lesson: RRF rewards agreement; one strong vote is not enough.
+- Learner thought "FT-200 is best": all 4 rows ARE FT-200 (chunking); this step changes the
+  searcher. Clarified.
+
 ### 2026-10-21, session 33: step 3.2 BM25 (lab by hand, then FastEmbed) (D-052)
 
 - Learner committed 3.1b (`95342ef`). Explained SeaweedFS, boto3, BM25 (learner asked).

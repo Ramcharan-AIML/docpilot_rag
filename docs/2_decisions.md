@@ -372,3 +372,23 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   the database. **Alternative:** SPLADE / BM42 / miniCOIL (learned sparse, also in
   FastEmbed). **Why not now:** raw BM25 first (Rule 8); a learned sparse model is a later
   experiment with its own row.
+
+## D-053: hybrid search with hand-written RRF, k=60, 50 candidates each (step 3.3, 2026-10-22)
+
+- **What:** `retrieval/fusion.py` `reciprocal_rank_fusion()` (ranks only: sum of
+  1/(k+rank)); `retrieval/hybrid.py` `hybrid_search_manual()`: dense top 50 + sparse top 50,
+  RRF, top k; each hit keeps `dense_rank` / `sparse_rank` for reading failures.
+  `run_retrieval_eval --retriever hybrid --rrf-k --candidates`. No new dependency.
+- **Plan fix:** no `dense_search.py` / `sparse_search.py`: they would repeat
+  `store.search()` / `search_sparse()` from 3.2.
+- **Numbers (dev n=41, `2457017`, evals/ABLATION.md Phase 3):** C6-k60 R@1 0.585, R@3
+  0.805, R@5 0.829, MRR 0.699, nDCG@5 0.724, search p50 24.8 ms; dense R@1 0.634, R@3 0.732,
+  R@5 0.805, MRR 0.701, p50 9.9 ms. Ceiling (best of both) 36/41 = 0.878 not reached: the 3
+  sparse-only questions land at ranks 6-7. C6-k10: R@5 0.805, MRR 0.691.
+- **Why k=60:** k=10 was 1 question worse (noise level), and 60 is the published default.
+- **Why keep hybrid** (gains are only 1-3 questions): more right chunks in the top 3-5
+  (R@3 +3 questions), which is the candidate pool the reranker (3.5) will re-order. R@1 is
+  2 questions worse, so the reranker must win back the order. Re-decide after C7.
+- **Alternative:** add normalised scores (min-max of cosine + BM25). **Why not:** scales
+  differ per question; ranks need no tuning. **Alternative:** weighted RRF (trust dense
+  more). **Why not now:** an extra knob to tune on 41 questions overfits; maybe after 3.5.

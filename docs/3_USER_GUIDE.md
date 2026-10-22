@@ -484,3 +484,5 @@ it by hand in `labs/lab3_bm25.py`, then we used FastEmbed's version inside Qdran
 - **Best of both = 36 of 41.** Merging the two lists well is step 3.3, hybrid search.
 - FastEmbed's BM25 also handles word forms ("validate" = "validated"), which your hand-made
   lab version did not.
+
+Continues in [4_USER_GUIDE.md](4_USER_GUIDE.md).
