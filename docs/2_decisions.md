@@ -463,3 +463,5 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   prompt for comparison questions, or transforms inside the Phase 4 agent (only when the
   first retrieval looks weak), are later experiments with their own rows.
 - **Alternative:** keep stepback. **Why not:** one question, 1.1 s and quota per question.
+
+Continues in [3_decisions.md](3_decisions.md) (D-057 on).

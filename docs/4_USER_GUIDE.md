@@ -87,3 +87,25 @@ more general question, or sub-questions). We search with the original AND the ne
   cannot fix a table that was cut badly.
 - **Decision (D-056):** no transform. Same quality, 1 to 3 s slower, uses LLM quota.
   This "it did not help" result is normal on clean docs, and good to explain in interviews.
+
+---
+
+## 52. Steps 3.9 and 3.10: judging the answers, and the app gets the best search (2026-10-22)
+
+**3.9, generation eval:** a second LLM (Qwen, a different family) grades each answer:
+are all its facts in the chunks (faithfulness), does it match our reference (correctness),
+does it answer the question (relevancy)? Refusals are checked by plain code.
+
+| Run | Faithfulness | Made-up facts | Correctness | Refusals right |
+|---|---|---|---|---|
+| G-best (10 judged + 5 "not in docs") | 1.0 | 0 of 10 | 1.0 | 5 of 5, no wrong refusals |
+
+Small sample of mostly easy questions: "no failures found", not "perfect". You can check
+the judge yourself in `evals/spot_checks/` (write agree / disagree).
+
+**3.10, one front door:** `retrieve()` in `retrieval/pipeline.py` is now the only search
+the app uses: hybrid + MiniLM reranker, the same code the evals measured. The API loads the
+models when it starts, so the first user does not wait for loading.
+
+**Plan change (D-058):** 3 days left. Agents and multi-agent are dropped; next are light
+guardrails and production (Docker, Prometheus + Grafana, CI/CD, AWS S3).

@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from docpilot.llm.client import get_llm_client
 from docpilot.rag import ask
+from docpilot.retrieval.pipeline import warm_up_models
 from docpilot.store.qdrant_store import get_client
 
 MAX_QUESTION_CHARS = 2000  # a real question is far shorter; huge inputs waste LLM tokens
@@ -42,6 +43,9 @@ async def lifespan(app: FastAPI):
     """
     app.state.qdrant = get_client()
     app.state.llm = get_llm_client()
+    # Step 3.10: load the 3 models now (BGE, BM25, MiniLM reranker), not on the first
+    # question: otherwise the first user waits seconds for loading (a "cold start").
+    warm_up_models()
     yield  # the app serves requests while we are paused here
     app.state.qdrant.close()  # runs once at shutdown (local mode: releases the folder lock)
 

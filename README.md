@@ -18,12 +18,12 @@ interview notes: 20 documents, 453 chunks.
 | 0 | Foundations: environment, embedding labs | done (tag `phase-0`) |
 | 1 | Simple RAG baseline, golden question set, eval harness, mini API | done (tag `phase-1`) |
 | 2 | Better ingestion: cleaning, code and tables kept whole, 6 chunking strategies, MLflow, CI eval gate | done (tag `phase-2`) |
-| 3 | Better retrieval: Docker, keyword search, hybrid search, reranking, ... | **in progress** (steps 3.1 to 3.6 done) |
-| 4 | Agentic RAG with LangGraph | next |
-| 5 | Multi-agent, tools, MCP server, human review | planned |
-| 6 | Guardrails and security tests | planned |
-| 7 | Production: hardened API, cache, monitoring, Docker, CI/CD, AWS with Terraform, k3s | planned |
-| 8 | Stretch goals (GraphRAG-lite, DSPy, ColBERT, ...) | optional |
+| 3 | Better retrieval: Docker, keyword search, hybrid search, reranking, ... | **in progress** (steps 3.1 to 3.6, 3.9, 3.10 done) |
+| 4 | Agentic RAG with LangGraph | dropped for the deadline (future work) |
+| 5 | Multi-agent, tools, MCP server, human review | dropped for the deadline (future work) |
+| 6 | Guardrails and security tests | next (light version) |
+| 7 | Production: Docker, Prometheus + Grafana, CI/CD, AWS S3 with Terraform | next (core) |
+| 8 | Stretch goals (GraphRAG-lite, DSPy, ColBERT, ...) | dropped (future work) |
 
 Day-by-day detail: [docs/progress.md](docs/progress.md). The full story in simple English:
 [docs/USER_GUIDE.md](docs/USER_GUIDE.md) and its parts 2 to 4.
@@ -56,33 +56,29 @@ Full table: [evals/ABLATION.md](evals/ABLATION.md).
 | 3.4 | Same hybrid inside Qdrant (one call) | same results, search 12.3 ms vs 24.8 ms |
 | 3.5 | Reranker (cross-encoder) on the top 20 | MiniLM: **R@5 0.878, MRR 0.725**, +0.5 s per question (big bge-reranker-base: R@5 0.854 at +6.4 s) |
 | 3.6 | Query transforms (multi-query, HyDE, step-back, decomposition) | none helped: all R@5 0.878 = no transform, +0.9 to 2.7 s each, so none kept |
+| 3.9 | Generation eval with an LLM judge (Qwen) | 10 judged answers: faithfulness 1.0, 0 made-up facts, correctness 1.0; refusals 5/5 |
+| 3.10 | One retrieval front door, used by the app | `ask()` and the API now run hybrid + reranker |
 
 ---
 
-## What comes next (to the end)
+## What comes next (plan for submission, D-058)
 
-**Phase 3 (remaining)**
-- 3.7 Embedding model comparison (bge-small vs bge-base, bge-m3, nomic, e5).
-- 3.8 Metadata filters (technology, domain).
-- 3.9 Generation eval: faithfulness, answer relevancy, correctness, with an LLM judge
-  and hand spot-checks.
-- 3.10 One retrieval front door: `retrieve(question, settings)` with the winning defaults.
-- Gate: chunking re-check through the final pipeline, interview notes, PR, tag `phase-3`.
+**Phase 6: guardrails (light).** Plain-Python input guard (prompt injection, empty or too
+long input) and output guard (must cite or refuse), measured on a small attack set.
 
-**Phase 4: agentic RAG.** A hand-made agent loop first, then LangGraph (state, nodes,
-conditional edges, limits); RAGAS / DeepEval compared with our own metrics; agent vs
-no-agent row.
+**Phase 7: production (core).**
+- Docker image for the API (models baked in), full Docker Compose stack.
+- Prometheus + Grafana: live latency per stage (embed, search, rerank, LLM), request
+  count, refusal rate; a small load test to see latency under several users.
+- GitHub Actions CD: build the image and push it to GitHub Container Registry (CI tests
+  and the eval gate already run on every pull request).
+- AWS: account safety (MFA, budget alarm), S3 buckets with Terraform, the app switched
+  from local SeaweedFS to real S3; one EC2 server if time allows.
 
-**Phase 5: multi-agent and tools.** Calculator, SQL over extracted tables, web search;
-supervisor + specialist agents; human-in-the-loop review with saved checkpoints; an MCP server.
-
-**Phase 6: guardrails.** Red-team question set; input and output guards in plain Python
-first; poisoned-document test; PII masking (Presidio); compare NeMo Guardrails / Llama Guard.
-
-**Phase 7: production.** Async FastAPI with streaming, API keys, Postgres, Redis cache and
-rate limits, LLM fallback (LiteLLM), tracing, Prometheus + Grafana, RAG monitoring,
-multi-arch Docker images, CI/CD, AWS free plan via Terraform (EC2, S3, ECR), HTTPS, k3s,
-an EKS exercise, load test; later a move to Oracle Cloud Always Free.
+**Future work (not built, on purpose):** agents with LangGraph, multi-agent and
+human-in-the-loop review, MCP server, metadata filters, embedding-model comparison (built,
+not run), Redis cache, Postgres, LiteLLM fallbacks, Kubernetes (k3s / EKS), Oracle move,
+stretch goals (GraphRAG, DSPy, ColBERT).
 
 ---
 

@@ -1,14 +1,18 @@
-"""The naive RAG pipeline: embed question, search, build prompt, ask the LLM."""
+"""The RAG pipeline: retrieve chunks, build prompt, ask the LLM.
+
+Since step 3.10, retrieval goes through retrieval/pipeline.py: Qdrant hybrid search +
+MiniLM reranker (the Phase 3 winners), the same code the evals measure.
+"""
 
 import time
+from dataclasses import replace
 
 from openai import OpenAI
 from qdrant_client import QdrantClient
 
 from docpilot import config
-from docpilot.embedding.dense import embed_query
 from docpilot.llm.client import chat
-from docpilot.store.qdrant_store import search
+from docpilot.retrieval.pipeline import BEST, RetrievalSettings, retrieve
 
 # D-008: this prompt is our first (weak) guardrail. A chunk that says "ignore the rules"
 # can still fool it; real guards come in Phase 6.
@@ -40,11 +44,13 @@ def ask(
     qdrant_client: QdrantClient,
     llm_client: OpenAI,
     collection: str = config.COLLECTION_NAME,
+    settings: RetrievalSettings = BEST,
 ) -> dict:
     """Answer `question` from the indexed docs in `collection`.
 
     `collection` lets the evals measure latency and abstention for any chunking strategy
-    (step 2.6); the API keeps the default from config.py.
+    (step 2.6); the API keeps the default from config.py. `settings` picks the retrieval
+    (default: the Phase 3 winner; DENSE_ONLY = the Phase 1/2 app).
 
     Returns {"answer": str, "sources": hits, "timings_ms": {stage: ms}}. Timing every stage
     tells us WHERE the time goes, not just how much (D-031, primer_latency.md).
@@ -52,13 +58,9 @@ def ask(
     timings: dict[str, float] = {}
     total_start = time.perf_counter()
 
-    start = time.perf_counter()
-    query_vector = embed_query(question)
-    timings["embed_query"] = elapsed_ms(start)
-
-    start = time.perf_counter()
-    hits = search(qdrant_client, collection, query_vector, config.TOP_K)
-    timings["search"] = elapsed_ms(start)
+    # Fills timings with embed_query, search and (with the reranker) rerank.
+    settings = replace(settings, collection=collection)
+    hits = retrieve(question, qdrant_client, settings, timings)
 
     if not hits:
         # Empty index: nothing to ground an answer on, so do not spend an LLM call.

@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
-| Current step | 3.6 done: no query transform kept (D-056); 3.7 built, learner to run |
-| Next step | learner: commit 3.6 results + evals/cache; run 3.7 `python -m evals.compare_embedders --ablation` |
+| Current step | 3.10 done: app uses hybrid + reranker via retrieve() (D-058); scope cut for 3-day deadline |
+| Next step | Phase 6 light guardrails, then Phase 7 core: Docker, Prometheus + Grafana, CI/CD, AWS S3 (D-058) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -73,9 +73,10 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 3.4 | Qdrant server-side fusion | done 2026-10-22 (D-054): same top 5 as manual 10/10 (Qdrant k=61 = our 60); C6-server R@5 0.829, p50 12.3 vs 24.8 ms; ties random |
 | 3.5 | Reranker + CPU latency | done 2026-10-22 (D-055): C7-mini-r20 R@5 0.878, MRR 0.725, rerank p50 485 ms; bge-base r20 R@5 0.854 at 6.4 s |
 | 3.6 | Query transforms | done 2026-10-22 (D-056): multi/hyde/stepback/decompose all R@5 0.878 = C7; none kept (+1 s LLM each, 1 question at most) |
-| 3.7 | Embedding model comparison | built 2026-10-22: evals/compare_embedders.py (5 models, same chunks, dense); learner to run |
-| 3.8 | Metadata filtering | not started |
-| 3.9 | Generation eval harness v0 (faithfulness, relevancy, abstention) | not started |
+| 3.7 | Embedding model comparison | built, not run (deadline, D-057); bge-small kept |
+| 3.8 | Metadata filtering | skipped (D-058): 453 chunks, misses are tables |
+| 3.9 | Generation eval harness v0 (faithfulness, relevancy, abstention) | done 2026-10-22 (D-057): G-best faithfulness 1.0, correctness 1.0, abstention 1.0 (10 judged + 5 unanswerable, qwen judge) |
+| 3.10 | `retrieval/pipeline.py` front door, used by the app | done 2026-10-22 (D-058): ask() + API use hybrid + MiniLM reranker; models warmed at startup |
 | Gate | C6 to C8 rows; tag `phase-3` | not started |
 
 ### Phase 4: Agentic RAG with LangGraph

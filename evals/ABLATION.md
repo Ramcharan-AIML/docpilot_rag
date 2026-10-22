@@ -285,3 +285,19 @@ Reading (D-053):
   even the comparisons). Still missed in the top 5 by every row: q-006 and q-042
   (comparison), q-018, q-041, q-043 (table-or-code): table and cross-document problems,
   not wording problems. Cost: +0.9 to 2.7 s LLM p50 per question, plus free-tier quota.
+
+### Generation (step 3.9, D-057): is the final answer good?
+
+Generator `openai/gpt-oss-120b`, judge `qwen/qwen3.8-27b` (different family), prompt
+`judge-v1`, one judge call per answer, all outputs cached in `evals/cache/`. Retrieval =
+Phase 3 best (hybrid + MiniLM rerank 20, top 4). Dev: first 10 answerable + all 5
+unanswerable questions.
+
+| Config | n | Faithfulness | Hallucination rate | Correctness | Relevancy | Abstention acc. | LLM p50 / p95 ms | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|
+| G-best | 15 (10 judged) | 1.000 | 0.000 | 1.000 | 5.0 | 1.000 (0 false, 0 missed refusals) | 990 / 1420 | `2026-10-22_G-best_dev_generation.json` (`4c75fac`) |
+
+Reading: no problem found on 10 mostly easy questions; small n, so "no failures seen", not
+"perfect". q-006 (a retrieval miss: the evidence chunk was not in the top 5) still got a
+correct, supported answer from other chunks: the retrieval metric is stricter than what the
+user sees. Judge agreement: 2 spot-check items in `evals/spot_checks/`, learner verdict pending.

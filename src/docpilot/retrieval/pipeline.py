@@ -73,3 +73,12 @@ def retrieve(
         hits = rerank(question, hits, settings.top_k, settings.reranker)
         lap("rerank", start)
     return hits[: settings.top_k]
+
+
+def warm_up_models(settings: RetrievalSettings = BEST) -> None:
+    """Load every model `settings` uses, once, at server start (avoids a cold first request)."""
+    embed_query("warm-up")
+    if settings.hybrid:
+        embed_sparse_query("warm-up")
+    if settings.rerank_candidates:
+        rerank("warm-up", [{"text": "warm-up"}], 1, settings.reranker)
