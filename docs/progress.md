@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
-| Current step | 3.5 done: MiniLM reranker on the top 20 (D-055), rows C7 |
-| Next step | learner: commit 3.5 results; then 3.6 query transforms |
+| Current step | 3.6 done: no query transform kept (D-056); 3.7 built, learner to run |
+| Next step | learner: commit 3.6 results + evals/cache; run 3.7 `python -m evals.compare_embedders --ablation` |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -72,8 +72,8 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 3.3 | Manual RRF | done 2026-10-22 (D-053): C6-k60 R@5 0.829 vs dense 0.805, R@3 0.805 vs 0.732, R@1 0.585 vs 0.634; k=10 worse by 1 |
 | 3.4 | Qdrant server-side fusion | done 2026-10-22 (D-054): same top 5 as manual 10/10 (Qdrant k=61 = our 60); C6-server R@5 0.829, p50 12.3 vs 24.8 ms; ties random |
 | 3.5 | Reranker + CPU latency | done 2026-10-22 (D-055): C7-mini-r20 R@5 0.878, MRR 0.725, rerank p50 485 ms; bge-base r20 R@5 0.854 at 6.4 s |
-| 3.6 | Query transforms | not started |
-| 3.7 | Embedding model comparison | not started |
+| 3.6 | Query transforms | done 2026-10-22 (D-056): multi/hyde/stepback/decompose all R@5 0.878 = C7; none kept (+1 s LLM each, 1 question at most) |
+| 3.7 | Embedding model comparison | built 2026-10-22: evals/compare_embedders.py (5 models, same chunks, dense); learner to run |
 | 3.8 | Metadata filtering | not started |
 | 3.9 | Generation eval harness v0 (faithfulness, relevancy, abstention) | not started |
 | Gate | C6 to C8 rows; tag `phase-3` | not started |

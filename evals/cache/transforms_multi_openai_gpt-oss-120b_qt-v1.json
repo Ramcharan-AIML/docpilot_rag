@@ -1,0 +1,371 @@
+{
+  "How do I make a query parameter optional?": {
+    "texts": [
+      "How can I define a query parameter as optional?",
+      "What syntax lets me mark a query parameter optional?",
+      "How do I declare an optional query parameter in the endpoint definition?"
+    ],
+    "llm_ms": 1204.4,
+    "retries_429": 0
+  },
+  "What status code does FastAPI return on validation failure?": {
+    "texts": [
+      "Which HTTP status code does FastAPI send back when request validation fails?",
+      "What response code is returned by FastAPI on a Pydantic validation error?",
+      "What is the default status code FastAPI uses for validation‑related request rejections?"
+    ],
+    "llm_ms": 688.5,
+    "retries_429": 0
+  },
+  "What does `{file_path:path}` mean in a route?": {
+    "texts": [
+      "How is the `{file_path:path}` syntax interpreted in a FastAPI endpoint definition?",
+      "What does the `{file_path:path}` placeholder represent when declaring a route parameter?",
+      "In a route declaration, what is the purpose of using `{file_path:path}` as a path parameter?"
+    ],
+    "llm_ms": 768.6,
+    "retries_429": 0
+  },
+  "My route for the current user keeps getting caught by the route that takes a user ID. Why?": {
+    "texts": [
+      "Why does the endpoint for the logged‑in user get shadowed by the route that accepts a user_id path parameter?",
+      "What causes the current‑user route to be intercepted by the /users/{user_id} path definition?",
+      "Why is the authenticated‑user path being matched before the explicit user‑ID route?"
+    ],
+    "llm_ms": 678.5,
+    "retries_429": 0
+  },
+  "How does FastAPI decide if a function parameter is a path parameter, a query parameter or the request body?": {
+    "texts": [
+      "What determines whether FastAPI treats a function argument as a path, query, or body parameter?",
+      "How does FastAPI infer the location (path, query string, or request body) for each endpoint parameter?",
+      "By what mechanism does FastAPI classify a parameter as a path param, a query param, or part of the request payload?"
+    ],
+    "llm_ms": 824.2,
+    "retries_429": 0
+  },
+  "Show me the code for a minimal FastAPI app.": {
+    "texts": [
+      "Give me a concise example of a minimal FastAPI application.",
+      "How do I write the smallest possible FastAPI app code snippet?",
+      "Show a basic FastAPI starter script with only the essential components."
+    ],
+    "llm_ms": 943.5,
+    "retries_429": 0
+  },
+  "Which values in the URL make a `bool` query parameter `True`?": {
+    "texts": [
+      "What URL string representations are parsed as `True` for a boolean query parameter?",
+      "Which query‑string values cause a FastAPI `bool` parameter to evaluate to true?",
+      "In a request URL, which values will be coerced into a truthy boolean for a query argument?"
+    ],
+    "llm_ms": 628.7,
+    "retries_429": 0
+  },
+  "Where can I see the automatic interactive documentation for my API?": {
+    "texts": [
+      "Where can I access the auto‑generated OpenAPI UI for my FastAPI service?",
+      "Where is the interactive Swagger documentation endpoint exposed?",
+      "How do I view the built‑in ReDoc interface for my API?"
+    ],
+    "llm_ms": 697.1,
+    "retries_429": 0
+  },
+  "Can I restrict a query parameter to fixed values the same way as a path parameter?": {
+    "texts": [
+      "Is there a way to constrain a query string argument to a predefined set of values just like a path variable?",
+      "Can I enforce an enum of allowed values on a query parameter similarly to how I restrict a path parameter?",
+      "How do I limit a request's query parameter to specific choices in the same manner as a path parameter?"
+    ],
+    "llm_ms": 669.4,
+    "retries_429": 0
+  },
+  "What default values do `skip` and `limit` have in the query parameters example?": {
+    "texts": [
+      "What default values are assigned to the `skip` and `limit` query parameters in the example?",
+      "Which default values does the example use for the `skip` and `limit` query arguments?",
+      "In the sample endpoint, what are the preset defaults for the `skip` and `limit` query parameters?"
+    ],
+    "llm_ms": 857.5,
+    "retries_429": 0
+  },
+  "How do I make a query parameter required?": {
+    "texts": [
+      "How can I enforce a query parameter to be mandatory?",
+      "What is the syntax for declaring a required query argument?",
+      "How do I specify that a query parameter must be provided?"
+    ],
+    "llm_ms": 784.5,
+    "retries_429": 0
+  },
+  "What error message do I get if I leave out a required query parameter?": {
+    "texts": [
+      "What response does the API return when a required query parameter is omitted?",
+      "Which HTTP error is raised if a mandatory query argument is missing?",
+      "What status code and message are produced when a required query param isn’t supplied?"
+    ],
+    "llm_ms": 759.8,
+    "retries_429": 0
+  },
+  "Which class must my request data model inherit from?": {
+    "texts": [
+      "What base class should my request model derive from?",
+      "Which parent class is required for my request data schema?",
+      "From which class must my request payload model inherit?"
+    ],
+    "llm_ms": 726.1,
+    "retries_429": 0
+  },
+  "Which HTTP methods should I use to send data in a request body?": {
+    "texts": [
+      "What HTTP verbs allow a payload in the request body?",
+      "Which request methods support sending data within the body?",
+      "In which HTTP actions can I include a request body for transmitting data?"
+    ],
+    "llm_ms": 722.9,
+    "retries_429": 0
+  },
+  "Is it okay to put a JSON payload in a GET call?": {
+    "texts": [
+      "Can a GET request safely carry a JSON body?",
+      "Is it acceptable to include a JSON payload in an HTTP GET call?",
+      "Should a JSON payload be sent as part of a GET request’s body?"
+    ],
+    "llm_ms": 995.4,
+    "retries_429": 0
+  },
+  "What does FastAPI do with the request body once I declare it with a Pydantic model?": {
+    "texts": [
+      "How does FastAPI process the incoming payload when I annotate it with a Pydantic schema?",
+      "What steps does FastAPI take to parse and validate the request body after I bind it to a Pydantic model?",
+      "In FastAPI, what happens to the request data once it’s declared as a Pydantic model parameter?"
+    ],
+    "llm_ms": 842.1,
+    "retries_429": 0
+  },
+  "What is the difference between a request body and a response body?": {
+    "texts": [
+      "How do request payloads differ from response payloads?",
+      "In what ways does the body of an incoming HTTP request contrast with the body of an outgoing HTTP response?",
+      "What distinguishes the content sent in a request body from the content returned in a response body?"
+    ],
+    "llm_ms": 676.7,
+    "retries_429": 0
+  },
+  "What happens if I open /items/foo when item_id is declared as an int?": {
+    "texts": [
+      "What response does FastAPI give when I request /items/foo while the path parameter item_id is typed as an int?",
+      "How does the framework handle a GET to /items/foo if item_id is defined with an integer type annotation?",
+      "What error is returned when the endpoint /items/{item_id} receives the string “foo” but item_id is declared as an int?"
+    ],
+    "llm_ms": 867.7,
+    "retries_429": 0
+  },
+  "How do I limit a path parameter to a fixed set of allowed values?": {
+    "texts": [
+      "How can I restrict a FastAPI path parameter to a predefined enumeration of values?",
+      "What is the best way to validate that a route’s path variable only accepts a specific set of options?",
+      "How do I enforce that a path parameter matches one of a fixed list of allowed strings?"
+    ],
+    "llm_ms": 828.7,
+    "retries_429": 0
+  },
+  "What does the `@app.get(\"/\")` decorator do?": {
+    "texts": [
+      "How does the `@app.get(\"/\")` route decorator function in FastAPI?",
+      "What role does the `@app.get(\"/\")` decorator play when defining an endpoint?",
+      "In FastAPI, what effect does applying `@app.get(\"/\")` have on the associated function?"
+    ],
+    "llm_ms": 796.7,
+    "retries_429": 0
+  },
+  "What MRR did the C0 baseline get in my Phase 1 notes?": {
+    "texts": [
+      "What mean reciprocal rank (MRR) did the C0 baseline achieve according to my Phase 1 notes?",
+      "Can you tell me the MRR score recorded for the C0 baseline in the Phase 1 documentation?",
+      "What was the C0 baseline's MRR value as listed in my Phase 1 notes?"
+    ],
+    "llm_ms": 860.2,
+    "retries_429": 0
+  },
+  "What was the abstention accuracy of the naive baseline?": {
+    "texts": [
+      "What abstention accuracy did the simple baseline achieve?",
+      "What is the abstention accuracy reported for the naive baseline?",
+      "How accurate was the baseline’s abstention performance?"
+    ],
+    "llm_ms": 774.1,
+    "retries_429": 0
+  },
+  "How long did a typical answer take in the Phase 1 baseline (p50)?": {
+    "texts": [
+      "What was the median response time for answers in the Phase 1 baseline (p50)?",
+      "How long did a typical answer latency measure in the Phase 1 baseline at the 50th percentile?",
+      "What is the p50 duration of an answer during the Phase 1 baseline?"
+    ],
+    "llm_ms": 859.6,
+    "retries_429": 0
+  },
+  "In the chain-of-thought paper, what GSM8K accuracy did the smallest LaMDA model (420M) get with chain-of-thought prompting?": {
+    "texts": [
+      "According to the chain‑of‑thought paper, what GSM8K accuracy does the 420‑million‑parameter LaMDA model achieve with CoT prompting?",
+      "What GSM8K performance is reported for the smallest LaMDA (420 M) when using chain‑of‑thought prompting in the CoT study?",
+      "In the CoT research, how accurate is the 420M LaMDA model on the GSM8K benchmark under chain‑of‑thought prompting?"
+    ],
+    "llm_ms": 1095.1,
+    "retries_429": 0
+  },
+  "Did chain-of-thought prompting help GPT-3 175B on CSQA?": {
+    "texts": [
+      "Did applying chain‑of‑thought prompting improve the performance of the 175‑billion‑parameter GPT‑3 model on the CSQA benchmark?",
+      "Is there evidence that chain‑of‑thought prompting enhances GPT‑3‑175B’s results on the Commonsense QA (CSQA) task?",
+      "How does chain‑of‑thought prompting affect the accuracy of GPT‑3 175B when evaluated on the CSQA dataset?"
+    ],
+    "llm_ms": 1030.4,
+    "retries_429": 0
+  },
+  "What GSM8K accuracy did PaLM 62B get with standard prompting and with chain of thought?": {
+    "texts": [
+      "What GSM8K score did the PaLM 62‑billion model achieve using vanilla prompting compared to chain‑of‑thought prompting?",
+      "How does PaLM 62B’s accuracy on the GSM8K dataset differ between standard (zero‑shot) prompts and chain‑of‑thought prompts?",
+      "What are the GSM8K benchmark results for PaLM 62B with regular prompting versus with a chain‑of‑thought prompting strategy?"
+    ],
+    "llm_ms": 869.4,
+    "retries_429": 0
+  },
+  "How do I make Pydantic raise an error instead of converting the string '123' to an int?": {
+    "texts": [
+      "How can I configure Pydantic to validate strictly and reject the string \"123\" rather than coerce it to an integer?",
+      "What setting or validator should I use in Pydantic to raise a ValidationError instead of automatically casting a numeric string to an int?",
+      "Is there a way to enforce type checking in Pydantic so that passing \"123\" as a string triggers an error instead of being converted to an int?"
+    ],
+    "llm_ms": 892.4,
+    "retries_429": 0
+  },
+  "What does Pydantic do by default when an int field receives the string '123'?": {
+    "texts": [
+      "How does Pydantic handle automatic type coercion when an integer attribute is supplied the string \"123\"?",
+      "What default validation behavior does Pydantic apply to an int field that receives the literal \"123\" as a string?",
+      "When a model field typed as int is given the value '123' (a string), what conversion does Pydantic perform out‑of‑the‑box?"
+    ],
+    "llm_ms": 908.4,
+    "retries_429": 0
+  },
+  "What is `AliasChoices` used for in Pydantic?": {
+    "texts": [
+      "What role does the `AliasChoices` feature play in Pydantic models?",
+      "How does `AliasChoices` function within Pydantic's field aliasing system?",
+      "In what scenarios would you employ `AliasChoices` when defining Pydantic schemas?"
+    ],
+    "llm_ms": 819.4,
+    "retries_429": 0
+  },
+  "Can a Docker image be changed after it has been created?": {
+    "texts": [
+      "Is it possible to modify a Docker image after it has been built?",
+      "Can a Docker image be altered once it has been created?",
+      "Are Docker images mutable after their initial creation?"
+    ],
+    "llm_ms": 828.7,
+    "retries_429": 0
+  },
+  "How do I keep a database container's data when the container is deleted?": {
+    "texts": [
+      "How can I persist a database container’s data across container removal?",
+      "What’s the proper way to retain data from a Dockerized database when the container is deleted?",
+      "How do I ensure a database’s storage survives after the container is stopped and removed?"
+    ],
+    "llm_ms": 3181.6,
+    "retries_429": 0
+  },
+  "Show me an example Dockerfile for a Python application.": {
+    "texts": [
+      "Give me a sample Dockerfile that builds a Python application.",
+      "Can you illustrate a Dockerfile example for containerizing a Python project?",
+      "Show an example Dockerfile configuration for deploying a Python app in Docker."
+    ],
+    "llm_ms": 2964.3,
+    "retries_429": 0
+  },
+  "What is retrieval-augmented generation?": {
+    "texts": [
+      "How does retrieval‑augmented generation function in LLM pipelines?",
+      "What does the term retrieval‑augmented generation denote in generative AI architectures?",
+      "Can you describe the concept of retrieval‑augmented generation and its role in augmenting model outputs?"
+    ],
+    "llm_ms": 3225.0,
+    "retries_429": 0
+  },
+  "When was the term retrieval-augmented generation introduced?": {
+    "texts": [
+      "When did the phrase “retrieval‑augmented generation” first appear in the literature?",
+      "What is the original publication date for the term “retrieval‑augmented generation”?",
+      "In which year was the concept of retrieval‑augmented generation initially introduced?"
+    ],
+    "llm_ms": 3175.7,
+    "retries_429": 0
+  },
+  "What is a word embedding?": {
+    "texts": [
+      "What does the term “word embedding” denote in natural language processing?",
+      "How are word embeddings defined and utilized in NLP models?",
+      "Could you explain the concept and purpose of word embeddings?"
+    ],
+    "llm_ms": 3098.6,
+    "retries_429": 0
+  },
+  "How are ELMo and BERT embeddings different from static word embeddings?": {
+    "texts": [
+      "In what ways do contextualized embeddings like ELMo and BERT differ from traditional static word vectors?",
+      "How do the dynamic representations generated by ELMo and BERT contrast with fixed word embeddings?",
+      "What distinguishes the contextual token encodings of ELMo and BERT from conventional static embeddings?"
+    ],
+    "llm_ms": 3035.0,
+    "retries_429": 0
+  },
+  "What does precision measure in information retrieval?": {
+    "texts": [
+      "In information retrieval, what aspect does the precision metric evaluate?",
+      "How is precision defined as a performance measure within IR systems?",
+      "What does the precision score quantify when assessing retrieval results?"
+    ],
+    "llm_ms": 3099.1,
+    "retries_429": 0
+  },
+  "Why use cosine similarity instead of Euclidean distance for embeddings?": {
+    "texts": [
+      "Why is cosine similarity preferred over Euclidean distance for comparing embedding vectors?",
+      "What advantages does cosine similarity offer compared to Euclidean distance when measuring similarity between high‑dimensional embeddings?",
+      "When evaluating embedding similarity, why choose cosine similarity instead of Euclidean norm‑based distance?"
+    ],
+    "llm_ms": 3024.0,
+    "retries_429": 0
+  },
+  "Should the BGE query prefix also be added to the documents?": {
+    "texts": [
+      "Is it necessary to prepend the BGE query prefix to each document in the index?",
+      "Do we need to attach the BGE query prefix when storing the documents?",
+      "Should the BGE query prefix be incorporated into the document payloads?"
+    ],
+    "llm_ms": 3244.5,
+    "retries_429": 0
+  },
+  "Explain parent-child chunking in one sentence.": {
+    "texts": [
+      "Define parent‑child chunking in a single concise sentence.",
+      "Give a brief one‑sentence description of the parent‑child chunking approach.",
+      "Summarize the concept of parent‑child chunking using only one sentence."
+    ],
+    "llm_ms": 3261.3,
+    "retries_429": 0
+  },
+  "How does reciprocal rank fusion score a chunk?": {
+    "texts": [
+      "What mechanism does Reciprocal Rank Fusion use to compute the relevance score for a text chunk?",
+      "How does the Reciprocal Rank Fusion algorithm evaluate and assign a score to a document segment?",
+      "In which manner does Reciprocal Rank Fusion calculate the ranking score for a given chunk?"
+    ],
+    "llm_ms": 3105.8,
+    "retries_429": 0
+  }
+}

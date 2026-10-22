@@ -7,6 +7,15 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-22, session 37: steps 3.6 query transforms (D-056) and 3.7 built
+
+- Built query_transforms.py, multi_search(), transform_cache.py, --transform; 3.7
+  compare_embedders.py (5 models, pinned, prefixes from model cards), all_payloads();
+  psutil pinned in requirements-dev; +11 tests (194). Plan fix: 3.7 script in evals/.
+- Learner ran 4 transform rows (`f779c39`, 164 Groq calls, 0 retries): all R@5 0.878 =
+  C7-mini-r20; changed top-10 sets of 15-17 questions but the answer moved only for q-017.
+  Decompose split nothing. No transform kept. 3.7 not run yet.
+
 ### 2026-10-22, session 36: step 3.5 reranker (D-055)
 
 - Built reranker.py, evals/timing.py, --rerank / --reranker; +5 tests with a fake model

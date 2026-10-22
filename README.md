@@ -18,7 +18,7 @@ interview notes: 20 documents, 453 chunks.
 | 0 | Foundations: environment, embedding labs | done (tag `phase-0`) |
 | 1 | Simple RAG baseline, golden question set, eval harness, mini API | done (tag `phase-1`) |
 | 2 | Better ingestion: cleaning, code and tables kept whole, 6 chunking strategies, MLflow, CI eval gate | done (tag `phase-2`) |
-| 3 | Better retrieval: Docker, keyword search, hybrid search, reranking, ... | **in progress** (steps 3.1 to 3.5 done) |
+| 3 | Better retrieval: Docker, keyword search, hybrid search, reranking, ... | **in progress** (steps 3.1 to 3.6 done) |
 | 4 | Agentic RAG with LangGraph | next |
 | 5 | Multi-agent, tools, MCP server, human review | planned |
 | 6 | Guardrails and security tests | planned |
@@ -55,13 +55,13 @@ Full table: [evals/ABLATION.md](evals/ABLATION.md).
 | 3.3 | Hybrid search with hand-written RRF | R@5 0.829, R@3 0.805 (dense: 0.805, 0.732) |
 | 3.4 | Same hybrid inside Qdrant (one call) | same results, search 12.3 ms vs 24.8 ms |
 | 3.5 | Reranker (cross-encoder) on the top 20 | MiniLM: **R@5 0.878, MRR 0.725**, +0.5 s per question (big bge-reranker-base: R@5 0.854 at +6.4 s) |
+| 3.6 | Query transforms (multi-query, HyDE, step-back, decomposition) | none helped: all R@5 0.878 = no transform, +0.9 to 2.7 s each, so none kept |
 
 ---
 
 ## What comes next (to the end)
 
 **Phase 3 (remaining)**
-- 3.6 Query transforms: multi-query, HyDE, step-back, decomposition (LLM calls cached).
 - 3.7 Embedding model comparison (bge-small vs bge-base, bge-m3, nomic, e5).
 - 3.8 Metadata filters (technology, domain).
 - 3.9 Generation eval: faithfulness, answer relevancy, correctness, with an LLM judge

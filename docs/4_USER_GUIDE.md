@@ -65,3 +65,25 @@ and puts the best on top (teaching file section 4b).
 - The reranker rescued questions hybrid had buried (q-010, q-048), but it also moves some
   good answers down (q-049, q-059). Always check question by question.
 - **Decision (D-055):** MiniLM on the top 20 is now the default.
+
+---
+
+## 51. Step 3.6: letting the LLM rewrite the question (2026-10-22)
+
+**Idea:** before searching, the LLM rewrites the question (3 rewrites, a fake answer, a
+more general question, or sub-questions). We search with the original AND the new text.
+
+| Row (dev, 41 questions) | R@5 | MRR | Extra time per question |
+|---|---|---|---|
+| No transform (C7-mini-r20) | 0.878 | 0.725 | 0 |
+| multi (3 rewrites) | 0.878 | 0.726 | +0.9 s |
+| hyde (fake answer) | 0.878 | 0.726 | +1.0 s |
+| stepback (general question) | 0.878 | 0.728 | +1.1 s |
+| decompose (sub-questions) | 0.878 | 0.725 | +2.7 s |
+
+- The rewrites **did change** what search found (15 to 17 questions got other chunks), but
+  the **right answer** moved for only 1 question. The right chunk was already there.
+- The 5 questions we still miss are about **tables** and **comparisons**: better wording
+  cannot fix a table that was cut badly.
+- **Decision (D-056):** no transform. Same quality, 1 to 3 s slower, uses LLM quota.
+  This "it did not help" result is normal on clean docs, and good to explain in interviews.

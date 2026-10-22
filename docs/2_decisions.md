@@ -442,3 +442,24 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
   **Alternative:** bge-reranker-base / v2-m3. **Why not:** 6 s+ per question on this CPU.
   **Alternative:** Cohere Rerank. **Why not:** paid. **Later:** re-check on the test split
   and in the chunking re-check at the gate.
+
+## D-056: no query transform is kept; C8 = C7-mini-r20 (step 3.6, 2026-10-22)
+
+- **What:** `retrieval/query_transforms.py` (multi, hyde, stepback, decompose; prompts
+  `qt-v1`), `hybrid.multi_search()` (one Qdrant hybrid search per text, RRF over the lists,
+  original question always included), `evals/transform_cache.py` (one paid call per
+  question, cached and committed in `evals/cache/`, 429 retries), `--transform`.
+  HyDE's passage is embedded like a chunk (no BGE query prefix: `embed_passage()`).
+  `git_commit()` now ignores `evals/cache/` (an output, like `evals/results/`).
+- **Numbers (dev n=41, `f779c39`, all with hybrid + MiniLM rerank 20):** every transform
+  R@5 0.878 and R@1 0.610, equal to C7-mini-r20. MRR 0.725 to 0.728. Only stepback moved a
+  metric beyond the third decimal: R@3 0.854 vs 0.829 (one question, q-017). LLM p50: multi
+  0.86 s, hyde 0.99 s, stepback 1.10 s, decompose 2.67 s; 0 rate-limit retries.
+- **Why none kept:** +1 question at R@3 at best (noise level) for +1 s and 1 LLM call per
+  question. The reranker judges the ORIGINAL question, so a transform helps only if it
+  brings a NEW right chunk into the top 20; that happened once. The 5 questions still
+  missed are table and comparison questions: wording is not their problem.
+- **Revisit:** decompose split nothing (the prompt allows "repeat unchanged"); a stricter
+  prompt for comparison questions, or transforms inside the Phase 4 agent (only when the
+  first retrieval looks weak), are later experiments with their own rows.
+- **Alternative:** keep stepback. **Why not:** one question, 1.1 s and quota per question.

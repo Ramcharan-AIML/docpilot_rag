@@ -1,0 +1,289 @@
+{
+  "How do I make a query parameter optional?": {
+    "texts": [
+      "In FastAPI, declare a query parameter with a default value (e.g., `None`) to make it optional. Use the `typing.Optional` type hint together with `Query` if you need additional validation, such as `limit: Optional[int] = Query(None, ge=1, le=100)`. When the client omits the parameter, FastAPI will pass the default value to your endpoint function. If you prefer a non‑`None` default, simply assign the desired value (e.g., `page: int = Query(1)`). This pattern also works for other frameworks that rely on function signatures to infer request parameters."
+    ],
+    "llm_ms": 1809.3,
+    "retries_429": 0
+  },
+  "What status code does FastAPI return on validation failure?": {
+    "texts": [
+      "FastAPI relies on Pydantic for request validation, and when the incoming data does not satisfy the defined schema, the framework automatically generates a validation error response. This response is sent with the HTTP status code **422 Unprocessable Entity**. The body of the response includes a JSON payload under the `detail` key that lists each validation issue, such as missing fields or type mismatches. This behavior allows clients to programmatically detect and handle input‑related errors without additional custom code."
+    ],
+    "llm_ms": 924.7,
+    "retries_429": 0
+  },
+  "What does `{file_path:path}` mean in a route?": {
+    "texts": [
+      "In FastAPI route definitions, `{file_path:path}` declares a path‑parameter named **file_path** that uses the special **path** converter. Unlike the default string converter, the `path` type captures the entire remaining portion of the URL, including forward slashes, so it can represent nested file system paths such as `images/2023/holiday/photo.jpg`. This allows the endpoint to receive arbitrary sub‑paths as a single string argument. The captured value is then passed to the view function (or Pydantic model) as the `file_path` argument."
+    ],
+    "llm_ms": 902.4,
+    "retries_429": 0
+  },
+  "My route for the current user keeps getting caught by the route that takes a user ID. Why?": {
+    "texts": [
+      "In FastAPI the router matches paths in the order they are added, and a path with a variable segment (e.g., `/users/{user_id}`) will also match a literal segment like `/users/me` unless a more specific route is defined first. Because `/users/{user_id}` is registered before `/users/me`, the request for the current user is captured by the generic ID route. To fix this, declare the `/users/me` endpoint before the `/users/{user_id}` endpoint or use a path converter that excludes the string `\"me\"` from the `{user_id}` pattern. This ensures the current‑user route takes precedence over the ID‑based route."
+    ],
+    "llm_ms": 1065.7,
+    "retries_429": 0
+  },
+  "How does FastAPI decide if a function parameter is a path parameter, a query parameter or the request body?": {
+    "texts": [
+      "FastAPI determines the source of a function parameter by inspecting the route declaration and the parameter’s default value. If the parameter name appears inside the path string (e.g., `\"/items/{item_id}\"`), FastAPI treats it as a **path parameter**. Parameters that have a default value (or are explicitly wrapped with `Query`, `Header`, etc.) are taken from the **query string** (or the corresponding part of the request). When a parameter is a Pydantic model or a plain type without a default and is not listed in the path, FastAPI assumes it comes from the **request body**, unless you explicitly mark it with `Body`. You can also force a specific location by using the helper functions `Path()`, `Query()`, and `Body()`."
+    ],
+    "llm_ms": 1040.3,
+    "retries_429": 0
+  },
+  "Show me the code for a minimal FastAPI app.": {
+    "texts": [
+      "A minimal FastAPI application can be created with just a few lines of code. First, import `FastAPI` from the `fastapi` package and instantiate the app object. Then, define a simple route that returns a JSON response, and finally run the server with Uvicorn. Here is a complete example: ```python from fastapi import FastAPI app = FastAPI() @app.get(\"/\") def read_root(): return {\"message\": \"Hello, FastAPI!\"} # To run the app: uvicorn main:app --reload ```"
+    ],
+    "llm_ms": 912.5,
+    "retries_429": 0
+  },
+  "Which values in the URL make a `bool` query parameter `True`?": {
+    "texts": [
+      "In FastAPI (and the underlying Pydantic parser), a query parameter annotated as `bool` is considered **True** when the raw string value in the URL matches one of the recognized truthy literals. These literals are case‑insensitive and include `\"true\"`, `\"1\"`, `\"yes\"` and `\"on\"`. Any other value—such as `\"false\"`, `\"0\"`, `\"no\"`, `\"off\"` or an empty string—will be interpreted as **False**. This behavior lets clients use a variety of common representations for boolean flags in query strings."
+    ],
+    "llm_ms": 1161.6,
+    "retries_429": 0
+  },
+  "Where can I see the automatic interactive documentation for my API?": {
+    "texts": [
+      "FastAPI automatically generates interactive API documentation using Swagger UI, which is available at the **`/docs`** endpoint of your application. If you prefer the ReDoc style, you can access it at **`/redoc`**. Both endpoints are served when the app is running in development mode and require no additional configuration. The documentation reflects the current OpenAPI schema, so any changes to your routes or models are instantly reflected. You can open these URLs in any web browser to explore and test your API interactively."
+    ],
+    "llm_ms": 774.2,
+    "retries_429": 0
+  },
+  "Can I restrict a query parameter to fixed values the same way as a path parameter?": {
+    "texts": [
+      "Yes, you can constrain a query parameter to a predefined set of values just like a path parameter. In FastAPI this is typically done by declaring the parameter’s type as an `Enum` (or a `Literal` from `typing`) and using it in the function signature, e.g., `status: StatusEnum = Query(...)`. FastAPI will automatically validate incoming requests and return a 422 error if the supplied value is not one of the allowed options. You can also achieve similar validation with a regular‑expression pattern passed to `Query(..., regex=\"^(foo|bar|baz)$\")`."
+    ],
+    "llm_ms": 1020.3,
+    "retries_429": 0
+  },
+  "What default values do `skip` and `limit` have in the query parameters example?": {
+    "texts": [
+      "In the FastAPI query‑parameter example, the `skip` parameter defaults to `0`, meaning no items are omitted from the start of the result set unless a different value is supplied. The `limit` parameter defaults to `100`, capping the number of items returned to one hundred by default. These defaults ensure that a request without explicit pagination arguments returns the first hundred records starting from the beginning. Adjusting either `skip` or `limit` in the request URL overrides these defaults as needed."
+    ],
+    "llm_ms": 989.6,
+    "retries_429": 0
+  },
+  "How do I make a query parameter required?": {
+    "texts": [
+      "In FastAPI, a query parameter becomes required when you declare it without providing a default value. Define the parameter in the endpoint function signature using a type annotation, e.g., `def read_items(q: str):`, and FastAPI will enforce that `q` must be supplied in the request URL. If you need additional validation, you can also use `Query(..., description=\"Your required query\")`, where the ellipsis (`...`) signals that the parameter is mandatory. When a client omits the required query parameter, FastAPI automatically returns a 422 Unprocessable Entity response indicating the missing field."
+    ],
+    "llm_ms": 909.5,
+    "retries_429": 0
+  },
+  "What error message do I get if I leave out a required query parameter?": {
+    "texts": [
+      "If a required query parameter is omitted, FastAPI returns a **422 Unprocessable Entity** response. The JSON body contains a `detail` list that pinpoints the missing value, e.g.: ```json { detail\": [ { loc\": [\"query\", \"my_param\"], msg\": \"field required\", type\": \"value_error.missing } ] } ``` The key part of the error message is the `\"msg\": \"field required\"` entry, which tells you that the query parameter must be supplied. This response is generated automatically by Pydantic’s validation layer."
+    ],
+    "llm_ms": 1075.3,
+    "retries_429": 0
+  },
+  "Which class must my request data model inherit from?": {
+    "texts": [
+      "In FastAPI, any request payload you want to validate and parse must be defined as a Pydantic model. To create such a model, subclass **pydantic.BaseModel** and declare the expected fields as type‑annotated attributes. FastAPI will automatically read the incoming JSON, instantiate your subclass, and perform validation based on the type hints. If you need custom validation logic, you can add `@validator` methods inside the same class. This inheritance is required for all request body models used with `@app.post`, `@app.put`, etc."
+    ],
+    "llm_ms": 944.1,
+    "retries_429": 0
+  },
+  "Which HTTP methods should I use to send data in a request body?": {
+    "texts": [
+      "In HTTP, the methods that are defined to carry a request payload are **POST**, **PUT**, **PATCH**, and **DELETE**. POST is typically used to create a new resource, while PUT replaces an entire existing resource and PATCH applies a partial update. DELETE can include a body when the server expects additional data to identify the deletion criteria, though its support varies across implementations. GET and HEAD must not contain a request body according to the specification."
+    ],
+    "llm_ms": 763.6,
+    "retries_429": 0
+  },
+  "Is it okay to put a JSON payload in a GET call?": {
+    "texts": [
+      "In HTTP, a GET request is defined to be safe and idempotent, meaning it should not have side effects and its semantics are limited to retrieving resources. Because of this, the specification discourages sending a request body—such as a JSON payload—with a GET, and many servers, proxies, and client libraries will ignore or reject it. If you need to transmit structured data to influence the response, encode the parameters in the query string or switch to a POST (or another method that explicitly supports a body). Relying on a JSON body in a GET call can lead to undefined behavior and interoperability problems."
+    ],
+    "llm_ms": 1056.1,
+    "retries_429": 0
+  },
+  "What does FastAPI do with the request body once I declare it with a Pydantic model?": {
+    "texts": [
+      "When you declare a request body with a Pydantic model, FastAPI reads the incoming JSON payload, parses it, and creates an instance of that model. During this process FastAPI validates the data against the model’s type annotations and any custom validators, raising a 422 error if validation fails. The resulting model instance is then passed to your path‑operation function as a regular Python object, allowing you to work with fully‑typed, validated data directly."
+    ],
+    "llm_ms": 961.9,
+    "retries_429": 0
+  },
+  "What is the difference between a request body and a response body?": {
+    "texts": [
+      "In HTTP communication, the request body contains the data that a client sends to the server, typically used with methods like POST, PUT, or PATCH to create or update resources. The response body, on the other hand, carries the data the server returns to the client, such as the representation of a newly created resource or the result of a query. While the request body is defined by the client and interpreted by the server, the response body is generated by the server and interpreted by the client. Both bodies are optional and their formats (JSON, XML, etc.) are negotiated via the `Content-Type` and `Accept` headers."
+    ],
+    "llm_ms": 927.5,
+    "retries_429": 0
+  },
+  "What happens if I open /items/foo when item_id is declared as an int?": {
+    "texts": [
+      "When the `item_id` path parameter is typed as `int`, FastAPI still matches the route `/items/{item_id}` for any string segment, but it then attempts to coerce the value to an integer. Supplying a non‑numeric value such as `\"foo\"` fails this conversion, so FastAPI raises a validation error. The framework responds with a **422 Unprocessable Entity** status code and a JSON body that details the type mismatch (e.g., `\"value is not a valid integer\"`). No handler code is executed because the request is rejected during the request‑validation phase."
+    ],
+    "llm_ms": 1132.9,
+    "retries_429": 0
+  },
+  "How do I limit a path parameter to a fixed set of allowed values?": {
+    "texts": [
+      "In FastAPI you can restrict a path parameter to a predefined set of values by using a Python `Enum`. Define an `Enum` class with the allowed options, then annotate the path parameter with that enum type; FastAPI will automatically validate incoming requests against the enum members. If a client supplies a value that is not part of the enum, FastAPI returns a 422 validation error with a clear message. This approach keeps the allowed values centralized and makes the OpenAPI schema reflect the constraint."
+    ],
+    "llm_ms": 897.2,
+    "retries_429": 0
+  },
+  "What does the `@app.get(\"/\")` decorator do?": {
+    "texts": [
+      "The `@app.get(\"/\")` decorator registers a route handler for HTTP GET requests targeting the root URL (`/`) of the FastAPI application. When a client sends a GET request to this path, FastAPI invokes the decorated function and returns its result as the response body. The decorator also automatically generates OpenAPI documentation for the endpoint, including the expected response model and status codes. By default, the route is synchronous, but it can be defined as an async function to take advantage of asynchronous I/O."
+    ],
+    "llm_ms": 899.1,
+    "retries_429": 0
+  },
+  "What MRR did the C0 baseline get in my Phase 1 notes?": {
+    "texts": [
+      "In the Phase 1 evaluation notes, the C0 baseline model recorded a Monthly Recurring Revenue (MRR) of **$12,500**. This figure was calculated using the standard revenue‑per‑user metric applied to the validation set. The baseline’s MRR served as the reference point for subsequent experiments that introduced feature‑engineered variants. All later comparisons in the report are expressed as percentage improvements over this $12,500 baseline."
+    ],
+    "llm_ms": 1094.6,
+    "retries_429": 0
+  },
+  "What was the abstention accuracy of the naive baseline?": {
+    "texts": [
+      "The naive baseline was evaluated using the standard abstention‑accuracy metric, which measures the proportion of correctly classified instances among those for which the model chose to make a prediction. In our experiments, the naive baseline achieved an abstention accuracy of **78.4 %**. This figure reflects the baseline’s performance when it abstains on the most ambiguous 20 % of the test set, allowing a direct comparison with more sophisticated models that employ calibrated confidence thresholds."
+    ],
+    "llm_ms": 845.0,
+    "retries_429": 0
+  },
+  "How long did a typical answer take in the Phase 1 baseline (p50)?": {
+    "texts": [
+      "In the Phase 1 baseline evaluation, the median (p50) latency for generating an answer was approximately **1.3 seconds**. This figure represents the typical response time experienced by half of the queries under the baseline configuration. The measurement was taken on a standard CPU‑only instance with the default model settings and a batch size of one. For comparison, the p90 latency was around 2.5 seconds, indicating that outliers were relatively rare. Adjusting hardware or model parameters can further reduce the p50 response time."
+    ],
+    "llm_ms": 1056.3,
+    "retries_429": 0
+  },
+  "In the chain-of-thought paper, what GSM8K accuracy did the smallest LaMDA model (420M) get with chain-of-thought prompting?": {
+    "texts": [
+      "In the original Chain‑of‑Thought (CoT) paper, the authors evaluated a 420 M‑parameter LaMDA model on the GSM8K arithmetic benchmark. Using CoT prompting, this smallest LaMDA variant achieved an accuracy of **≈15 %** (15.2 % in the reported experiments). By contrast, the same model with standard zero‑shot prompting only reached about 10 % accuracy, highlighting the modest but consistent gain provided by CoT even for relatively small language models."
+    ],
+    "llm_ms": 1356.6,
+    "retries_429": 0
+  },
+  "Did chain-of-thought prompting help GPT-3 175B on CSQA?": {
+    "texts": [
+      "Chain‑of‑thought (CoT) prompting was evaluated on the 175‑billion‑parameter GPT‑3 model using the CommonsenseQA (CSQA) benchmark. The experiments showed a consistent gain of roughly 4–5 percentage points in accuracy compared with standard zero‑shot prompting. This improvement is attributed to CoT’s ability to surface intermediate reasoning steps that guide the model toward the correct answer. Consequently, CoT prompting is considered an effective technique for enhancing GPT‑3‑175B performance on CSQA."
+    ],
+    "llm_ms": 903.7,
+    "retries_429": 0
+  },
+  "What GSM8K accuracy did PaLM 62B get with standard prompting and with chain of thought?": {
+    "texts": [
+      "The PaLM 62‑billion‑parameter model reaches **≈58 % accuracy on the GSM8K benchmark when using standard (zero‑shot) prompting**. When the same model is prompted with **Chain‑of‑Thought (CoT) reasoning**, its performance rises to **≈71 % accuracy**. These results demonstrate that explicit reasoning steps can substantially improve numerical problem‑solving for large language models."
+    ],
+    "llm_ms": 954.1,
+    "retries_429": 0
+  },
+  "How do I make Pydantic raise an error instead of converting the string '123' to an int?": {
+    "texts": [
+      "In Pydantic you can prevent automatic type coercion by enabling strict mode for the field. Set `strict = True` in the model’s `Config` (or use `model_config = ConfigDict(strict=True)` in Pydantic 2) so that a value like `'123'` will not be cast to an `int`. Alternatively, declare the field with `int | StrictInt` or use `conint(strict=True)` to enforce strict integer parsing. With strict mode enabled, providing the string `'123'` will raise a `ValidationError` instead of silently converting it."
+    ],
+    "llm_ms": 978.7,
+    "retries_429": 0
+  },
+  "What does Pydantic do by default when an int field receives the string '123'?": {
+    "texts": [
+      "By default, Pydantic performs type coercion during model validation. When an `int` field receives the string `'123'`, Pydantic automatically parses the string and converts it to the integer `123`. This conversion succeeds as long as the string represents a valid integer literal. If the string cannot be interpreted as an integer (e.g., `'abc'`), Pydantic raises a `ValidationError`. Strict type checking can be enabled with `StrictInt` to prevent this automatic coercion."
+    ],
+    "llm_ms": 987.5,
+    "retries_429": 0
+  },
+  "What is `AliasChoices` used for in Pydantic?": {
+    "texts": [
+      "`AliasChoices` is a Pydantic utility that lets you declare multiple possible aliases for a single model field. When parsing input data, Pydantic will accept any of the specified aliases and map them to the underlying field name, simplifying compatibility with external APIs that use different naming conventions. It is typically used in a model’s field definition, e.g., `my_field: str = Field(alias=AliasChoices(\"myField\", \"my_field\", \"my-field\"))`. This feature works in conjunction with `model_config` options such as `populate_by_name=True`, allowing both the canonical name and any of the aliases to be used for population and serialization."
+    ],
+    "llm_ms": 1075.8,
+    "retries_429": 0
+  },
+  "Can a Docker image be changed after it has been created?": {
+    "texts": [
+      "Once a Docker image is built, its layers are immutable; you cannot modify the image in place. To incorporate changes, you must create a new image—typically by writing a new Dockerfile that `FROM` the original image and adds the desired modifications, then rebuilding it. Alternatively, you can start a container from the existing image, make changes inside the running container, and then commit those changes to a new image using `docker commit`. This workflow preserves the original image while producing an updated version."
+    ],
+    "llm_ms": 846.9,
+    "retries_429": 0
+  },
+  "How do I keep a database container's data when the container is deleted?": {
+    "texts": [
+      "To retain a database’s data after its container is removed, store the data on a Docker volume or a host‑bound directory rather than inside the container’s writable layer. Create a named volume (e.g., `docker volume create db_data`) and mount it to the database’s data directory with `-v db_data:/var/lib/postgresql/data` (adjust the path for your DB). Alternatively, bind‑mount a host folder (e.g., `-v /my/host/db:/var/lib/mysql`) so the files persist on the host filesystem. When you delete and recreate the container, attach the same volume or bind‑mount, and the database will see the existing data unchanged."
+    ],
+    "llm_ms": 1115.4,
+    "retries_429": 0
+  },
+  "Show me an example Dockerfile for a Python application.": {
+    "texts": [
+      "Here is a minimal Dockerfile for a Python application that uses `requirements.txt` for dependencies: ```dockerfile # Use the official lightweight Python image. FROM python:3.11-slim # Set a working directory inside the container. WORKDIR /app # Copy only the requirements file first to leverage Docker layer caching. COPY requirements.txt . # Install the Python dependencies. RUN pip install --no-cache-dir -r requirements.txt # Copy the rest of the application code. COPY . . # Define the default command to run the app. CMD [\"python\", \"main.py\"] ``` Build the image with `docker build -t my-python-app .` and run it using `docker run --rm -p 8000:8000 my-python-app`."
+    ],
+    "llm_ms": 993.6,
+    "retries_429": 0
+  },
+  "What is retrieval-augmented generation?": {
+    "texts": [
+      "Retrieval‑augmented generation (RAG) is an AI architecture that combines a large language model with an external knowledge base. The model first retrieves relevant documents or passages from the database using a similarity search, then conditions its generation on this retrieved context. This approach allows the system to produce up‑to‑date, factual answers without needing to store all information in the model’s parameters. RAG is commonly used in question‑answering, chatbots, and search‑enhanced summarization tasks."
+    ],
+    "llm_ms": 1011.3,
+    "retries_429": 0
+  },
+  "When was the term retrieval-augmented generation introduced?": {
+    "texts": [
+      "Retrieval‑augmented generation (RAG) was first introduced in the research paper “Retrieval‑Augmented Generation for Knowledge‑Intensive NLP Tasks” by Patrick Lewis, Ethan Perez, Aleksandra Piktus, and colleagues. The work was released as a pre‑print on arXiv in October 2020 and later presented at the NeurIPS 2020 conference. The RAG framework combines a dense retriever with a sequence‑to‑sequence generator to incorporate external knowledge at inference time. Since its 2020 debut, the term has become a standard reference in the literature on knowledge‑enhanced language models."
+    ],
+    "llm_ms": 1126.1,
+    "retries_429": 0
+  },
+  "What is a word embedding?": {
+    "texts": [
+      "A word embedding is a dense, low‑dimensional vector representation of a token that captures its semantic and syntactic properties based on context. These vectors are learned from large text corpora using algorithms such as Word2Vec, GloVe, or fastText, which map words that appear in similar contexts to nearby points in the embedding space. Because embeddings encode relationships like similarity and analogies, they enable downstream models to process natural language more efficiently than one‑hot encodings. In practice, pre‑trained embeddings can be fine‑tuned or combined with task‑specific layers to improve performance on classification, translation, or retrieval tasks."
+    ],
+    "llm_ms": 1151.7,
+    "retries_429": 0
+  },
+  "How are ELMo and BERT embeddings different from static word embeddings?": {
+    "texts": [
+      "ELMo and BERT generate **contextualized** word embeddings, meaning the vector for a token is computed from the entire surrounding sentence rather than being a single fixed representation. In contrast, static embeddings such as Word2Vec or GloVe assign one immutable vector to each word type, regardless of its context. ELMo builds these vectors from the hidden states of a bidirectional LSTM trained on a language‑modeling objective, while BERT uses the hidden layers of a deep Transformer encoder trained with masked‑language‑model and next‑sentence‑prediction tasks. Consequently, the same word can have many different embeddings in ELMo or BERT depending on its usage, whereas static embeddings cannot capture such variation."
+    ],
+    "llm_ms": 1087.1,
+    "retries_429": 0
+  },
+  "What does precision measure in information retrieval?": {
+    "texts": [
+      "Precision quantifies the accuracy of a retrieval system by measuring the proportion of retrieved documents that are actually relevant. Formally, it is calculated as the number of true‑positive results divided by the sum of true‑positives and false‑positives (TP / (TP + FP)). A high precision value indicates that most of the items returned to the user are pertinent to the query, even if some relevant items are missed. This metric is often evaluated alongside recall, which captures the system’s ability to retrieve all relevant documents."
+    ],
+    "llm_ms": 1190.0,
+    "retries_429": 0
+  },
+  "Why use cosine similarity instead of Euclidean distance for embeddings?": {
+    "texts": [
+      "Cosine similarity measures the angle between two embedding vectors, making it invariant to their magnitude and focusing on directional alignment, which is often more indicative of semantic similarity. In contrast, Euclidean distance is sensitive to vector length, so differences in scale can dominate the distance metric even when the underlying semantics are similar. Embeddings produced by neural models are typically normalized or lie on a hypersphere, so cosine similarity provides a more stable and interpretable similarity score across varying vector norms. Consequently, using cosine similarity reduces the impact of irrelevant scaling variations and yields better retrieval performance for tasks like nearest‑neighbor search and clustering."
+    ],
+    "llm_ms": 1029.1,
+    "retries_429": 0
+  },
+  "Should the BGE query prefix also be added to the documents?": {
+    "texts": [
+      "When using the BGE (Bidirectional Graph Embedding) model, the query prefix is intended to steer the embedding of the search request, not the stored content. Therefore, you should prepend the BGE query prefix only to the query text before encoding it, while leaving the document texts unchanged. Adding the prefix to documents would distort their embeddings and reduce retrieval relevance. Keep the prefix application limited to the query side of the pipeline."
+    ],
+    "llm_ms": 942.3,
+    "retries_429": 0
+  },
+  "Explain parent-child chunking in one sentence.": {
+    "texts": [
+      "Parent‑child chunking is a hierarchical text‑segmentation technique where a large “parent” chunk is recursively divided into smaller “child” chunks that preserve the logical structure of the original content. This approach enables efficient processing of long documents by allowing downstream models to operate on manageable pieces while still retaining context. Each child chunk inherits metadata from its parent, such as source identifiers and positional information, which facilitates reconstruction of the full document after analysis. The method is commonly used in retrieval‑augmented generation pipelines to balance token limits with contextual relevance."
+    ],
+    "llm_ms": 944.8,
+    "retries_429": 0
+  },
+  "How does reciprocal rank fusion score a chunk?": {
+    "texts": [
+      "Reciprocal Rank Fusion (RRF) assigns a score to each retrieved chunk by aggregating its positions across multiple ranking lists. For every list that contains the chunk, RRF adds a term `1 / (k + rank)`, where `rank` is the 1‑based position of the chunk in that list and `k` is a small constant (commonly set to 60) that dampens the influence of lower‑ranked items. The final RRF score for the chunk is the sum of these reciprocal terms from all lists, rewarding chunks that appear high in many rankings. Chunks with higher summed values are considered more relevant and are placed earlier in the fused result set."
+    ],
+    "llm_ms": 1057.0,
+    "retries_429": 0
+  }
+}

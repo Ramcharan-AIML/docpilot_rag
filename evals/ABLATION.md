@@ -235,6 +235,10 @@ included. 1 question = 0.024.
 | C6-server | hybrid, Qdrant RRF (sent k=61 = our 60), 50+50, 1 call | 0.561 | 0.805 | 0.829 | 0.829 | 0.687 | 0.715 | 12.3 / 26.2 | `2026-10-22_C6-server_dev_retrieval.json` (`07f7ef1`) |
 | C7-r20 | C6-server + rerank top 20 (bge-reranker-base) | 0.585 | 0.780 | **0.854** | 0.829 | **0.700** | 0.723 | search 24.9 / 50.7; **rerank 6430 / 7469** | `2026-10-22_C7-r20_dev_retrieval.json` (`3334243`) |
 | **C7-mini-r20** | C6-server + rerank top 20 (ms-marco-MiniLM-L6-v2) | 0.610 | **0.829** | **0.878** | **0.878** | **0.725** | **0.762** | search 16.5 / 33.8; **rerank 485 / 547** | `2026-10-22_C7-mini-r20_dev_retrieval.json` (`1ea5274`) |
+| C8-multi | C7-mini-r20 + 3 LLM rewrites (RRF) | 0.610 | 0.829 | 0.878 | 0.878 | 0.726 | 0.763 | LLM 860 / 3226; rerank 463 / 518 | `2026-10-22_C8-multi_dev_retrieval.json` (`f779c39`) |
+| C8-hyde | C7-mini-r20 + fake answer passage | 0.610 | 0.829 | 0.878 | 0.878 | 0.726 | 0.763 | LLM 994 / 1190; rerank 961 / 1019 | `2026-10-22_C8-hyde_dev_retrieval.json` (`f779c39`) |
+| C8-stepback | C7-mini-r20 + 1 general question | 0.610 | 0.854 | 0.878 | 0.878 | 0.728 | 0.765 | LLM 1101 / 3277; rerank 457 / 517 | `2026-10-22_C8-stepback_dev_retrieval.json` (`f779c39`) |
+| C8-decompose | C7-mini-r20 + sub-questions | 0.610 | 0.829 | 0.878 | 0.878 | 0.725 | 0.762 | LLM 2673 / 3012; rerank 477 / 539 | `2026-10-22_C8-decompose_dev_retrieval.json` (`f779c39`) |
 | C7-r30 | C6-server + rerank top 30 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 15.9 / 35.8; **rerank 10147 / 11605** | `2026-10-22_C7-r30_dev_retrieval.json` (`3334243`) |
 | C7-r50 | C6-server + rerank top 50 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 22.8 / 34.7; **rerank 12124 / 18960** | `2026-10-22_C7-r50_dev_retrieval.json` (`3334243`) |
 | C6-k10 | hybrid, manual RRF k=10, 50+50 | 0.585 | 0.780 | 0.805 | 0.805 | 0.691 | 0.709 | 26.0 / 44.9 | `2026-10-22_C6-k10_dev_retrieval.json` (`2457017`) |
@@ -273,3 +277,11 @@ Reading (D-053):
   Rerank p50 485 ms vs 6430 ms for bge-reranker-base (13x faster). Dense alone still has the
   best R@1 (26 vs 25, 1 question). 36/41 equals the 3.2 "best of both" number, by a
   different set of questions (q-017 in, q-018 out).
+- C8 query transforms (D-056; LLM `openai/gpt-oss-120b` on Groq, 1 call per question, cached
+  in `evals/cache/`, prompt version qt-v1): **no transform kept, C8 = C7-mini-r20.** The
+  transforms changed the top-10 chunk set for 15 (multi), 17 (hyde), 16 (stepback) and 0
+  (decompose) questions, but the right chunk moved for one question only: q-017 5->4 (multi,
+  hyde) or 5->3 (stepback). Decompose returned all 41 questions unchanged (none split, not
+  even the comparisons). Still missed in the top 5 by every row: q-006 and q-042
+  (comparison), q-018, q-041, q-043 (table-or-code): table and cross-document problems,
+  not wording problems. Cost: +0.9 to 2.7 s LLM p50 per question, plus free-tier quota.
