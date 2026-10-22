@@ -118,6 +118,38 @@ measure p50/p95 latency for 20, 30, and 50 candidates and choose with data.
 
 **Why not Cohere Rerank:** paid. `bge-reranker` models are free and run locally.
 
+### 4b. The simple version (step 3.5, written for the learner on 2026-10-22)
+
+**1. What a reranker does**
+- Search turns the question into numbers, and each chunk into numbers, **separately**.
+  Then it compares the numbers. Fast, but the model **never reads the question and the
+  chunk together**.
+- A reranker reads **question + chunk together**, like a teacher reading each answer
+  sheet, and gives one score: "how well does this chunk answer this question?"
+- Very accurate, but **slow**: one model run per chunk.
+
+**2. Why use both**
+1. Search quickly picks about 30 candidates out of 453 chunks (fast).
+2. The reranker carefully re-orders only those 30 (slow but accurate).
+3. We keep the best ones.
+
+Like a job interview: HR quickly shortlists 30 CVs, then the manager reads only those 30
+carefully. The trade-off we measure: more candidates (20, 30, 50) = more chances to find the
+right chunk, but more waiting time.
+
+**3. What we built**
+
+| File | What it does |
+|---|---|
+| `src/docpilot/retrieval/reranker.py` | `rerank()`: scores each (question, chunk) pair, sorts, keeps the best; remembers each chunk's old place (`search_rank`) |
+| `src/docpilot/config.py` | model `BAAI/bge-reranker-base`, revision pinned |
+| `evals/timing.py` | measures time per stage: embed, search, rerank (p50 / p95) |
+| `evals/run_retrieval_eval.py` | option `--rerank N` (rerank the top N) |
+| `tests/test_reranker.py` | 5 tests with a fake model (no 1.1 GB download in CI) |
+
+No new library: `sentence-transformers` was already installed. Real results: rows C7 in
+`evals/ABLATION.md` and section 50 of `docs/4_USER_GUIDE.md`.
+
 ---
 
 ## 5. Query transforms

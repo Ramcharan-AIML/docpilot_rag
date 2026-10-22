@@ -233,6 +233,9 @@ included. 1 question = 0.024.
 | C-sparse | sparse (BM25) | 0.537 | 0.683 | 0.805 | 0.780 | 0.658 | 0.670 | 14.0 / 33.9 | `2026-10-22_C-sparse_dev_retrieval.json` (`2457017`) |
 | C6-k60 | hybrid, manual RRF k=60, 50+50 | 0.585 | **0.805** | **0.829** | **0.829** | 0.699 | **0.724** | 24.8 / 41.1 | `2026-10-22_C6-k60_dev_retrieval.json` (`2457017`) |
 | C6-server | hybrid, Qdrant RRF (sent k=61 = our 60), 50+50, 1 call | 0.561 | 0.805 | 0.829 | 0.829 | 0.687 | 0.715 | 12.3 / 26.2 | `2026-10-22_C6-server_dev_retrieval.json` (`07f7ef1`) |
+| C7-r20 | C6-server + rerank top 20 (bge-reranker-base) | 0.585 | 0.780 | **0.854** | 0.829 | **0.700** | 0.723 | search 24.9 / 50.7; **rerank 6430 / 7469** | `2026-10-22_C7-r20_dev_retrieval.json` (`3334243`) |
+| C7-r30 | C6-server + rerank top 30 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 15.9 / 35.8; **rerank 10147 / 11605** | `2026-10-22_C7-r30_dev_retrieval.json` (`3334243`) |
+| C7-r50 | C6-server + rerank top 50 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 22.8 / 34.7; **rerank 12124 / 18960** | `2026-10-22_C7-r50_dev_retrieval.json` (`3334243`) |
 | C6-k10 | hybrid, manual RRF k=10, 50+50 | 0.585 | 0.780 | 0.805 | 0.805 | 0.691 | 0.709 | 26.0 / 44.9 | `2026-10-22_C6-k10_dev_retrieval.json` (`2457017`) |
 
 Reading (D-053):
@@ -253,3 +256,12 @@ Reading (D-053):
   Our code always lets the dense list win a tie. Search p50 halves: 12.3 vs 24.8 ms.
 - `python -m evals.compare_fusion` (first 10 dev questions, top 5): Qdrant with k=61 = ours
   10/10 (same chunks, same order). Qdrant's default k (2): same chunks 4/10, same order 2/10.
+- C7 vs C6-server (reranker `BAAI/bge-reranker-base` rev `2cfc18c9`, CPU, warm, n=41): the
+  reranker moved 16 of 41 questions. Better 8: the 3 sparse-only questions hybrid buried
+  (q-010 6->3, q-018 7->3, q-048 7->2), q-006 out of top 10 -> 6, and four to rank 1
+  (q-008, q-013, q-047, q-055); r20 only: q-017 5->4. Worse 7: q-003 3 -> out of top 10,
+  q-007 2->6, q-023 2->5 (r20) / 6, q-009 / q-049 / q-064 1->2, q-059 3->4. Net: R@1 +1 question
+  (24 vs 23), R@5 +1 (35 vs 34, r20 only), top 10 equal (37). Within noise (1 question = 0.024).
+- More candidates did not help: r30 and r50 found no new right chunk (top 10 = 37 in all)
+  and pushed 2 answers one place down. Cost: rerank p50 6.4 s (r20) to 12.1 s (r50) per
+  question, about 500x the search time. bge-reranker-base is too slow on this CPU for +1.
