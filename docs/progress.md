@@ -77,7 +77,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 3.8 | Metadata filtering | skipped (D-058): 453 chunks, misses are tables |
 | 3.9 | Generation eval harness v0 (faithfulness, relevancy, abstention) | done 2026-10-22 (D-057): G-best faithfulness 1.0, correctness 1.0, abstention 1.0 (10 judged + 5 unanswerable, qwen judge) |
 | 3.10 | `retrieval/pipeline.py` front door, used by the app | done 2026-10-22 (D-058): ask() + API use hybrid + MiniLM reranker; models warmed at startup |
-| Gate | C6 to C8 rows; tag `phase-3` | not started |
+| Gate | C6 to C8 rows; tag `phase-3` | rows done (C6, C7, C8, G-best); open: FINAL-test run, spot-check verdicts, PR merge, tag `phase-3` |
 
 ### Phase 4: Agentic RAG with LangGraph
 | Step | What | Status |
