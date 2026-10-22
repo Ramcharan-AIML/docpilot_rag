@@ -7,6 +7,16 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+### 2026-10-22, session 35: step 3.4 Qdrant server-side RRF (D-054)
+
+- Learner asked for much simpler English (saved to memory). Built store.search_hybrid(),
+  evals/compare_fusion.py, --retriever hybrid-server; +1 test (178).
+- Found: Qdrant RRF = 1/(k + rank - 1), default k = 2; our k=60 = Qdrant k=61 (checked on
+  the server). Learner predicted "same top 5" and "faster": both right.
+- Results (`07f7ef1`): compare 10/10 same (default k: 2/10 same order). C6-server R@5 0.829,
+  R@1 0.561 (manual 0.585: one tie, q-055, Qdrant orders ties at random 16/30 vs 14/30),
+  search p50 12.3 ms vs 24.8 ms manual. Server kept as default.
+
 ### 2026-10-22, session 34: step 3.3 hybrid search with hand-written RRF (D-053)
 
 - Built fusion.py, hybrid.py, --retriever hybrid; +7 tests (177). Plan fix: no separate

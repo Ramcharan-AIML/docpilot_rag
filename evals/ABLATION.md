@@ -232,6 +232,7 @@ included. 1 question = 0.024.
 | FT-200-dense-p3 | dense (BGE) | **0.634** | 0.732 | 0.805 | 0.805 | **0.701** | 0.722 | 9.9 / 27.1 | `2026-10-22_FT-200-dense-p3_dev_retrieval.json` (`2457017`) |
 | C-sparse | sparse (BM25) | 0.537 | 0.683 | 0.805 | 0.780 | 0.658 | 0.670 | 14.0 / 33.9 | `2026-10-22_C-sparse_dev_retrieval.json` (`2457017`) |
 | C6-k60 | hybrid, manual RRF k=60, 50+50 | 0.585 | **0.805** | **0.829** | **0.829** | 0.699 | **0.724** | 24.8 / 41.1 | `2026-10-22_C6-k60_dev_retrieval.json` (`2457017`) |
+| C6-server | hybrid, Qdrant RRF (sent k=61 = our 60), 50+50, 1 call | 0.561 | 0.805 | 0.829 | 0.829 | 0.687 | 0.715 | 12.3 / 26.2 | `2026-10-22_C6-server_dev_retrieval.json` (`07f7ef1`) |
 | C6-k10 | hybrid, manual RRF k=10, 50+50 | 0.585 | 0.780 | 0.805 | 0.805 | 0.691 | 0.709 | 26.0 / 44.9 | `2026-10-22_C6-k10_dev_retrieval.json` (`2457017`) |
 
 Reading (D-053):
@@ -245,3 +246,10 @@ Reading (D-053):
   rewards agreement. The +1 is q-017, which neither searcher had in its top 5 (dense: not in
   top 10, sparse 8); with both votes it reaches 5 at k=60 (8 at k=10).
 - k=60 vs k=10: 1 question apart (q-017), within noise; keep k=60 (the paper default).
+- C6-server vs C6-k60 (D-054): top 10 identical for 36 of 41 questions; the other 5 differ
+  only by tied chunks swapping places. One tie (q-055: chunk 0 dense 1 / sparse 2, chunk 5
+  dense 2 / sparse 1, same score) sits at rank 1, so R@1 is 1 question lower (0.561 vs
+  0.585). Qdrant orders ties at random: 30 repeats of q-055 gave 16 x (5, 0), 14 x (0, 5).
+  Our code always lets the dense list win a tie. Search p50 halves: 12.3 vs 24.8 ms.
+- `python -m evals.compare_fusion` (first 10 dev questions, top 5): Qdrant with k=61 = ours
+  10/10 (same chunks, same order). Qdrant's default k (2): same chunks 4/10, same order 2/10.

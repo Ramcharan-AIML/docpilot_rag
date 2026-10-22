@@ -392,3 +392,22 @@ which reached the 500-line limit. Same format: what, why, alternative, why not.
 - **Alternative:** add normalised scores (min-max of cosine + BM25). **Why not:** scales
   differ per question; ranks need no tuning. **Alternative:** weighted RRF (trust dense
   more). **Why not now:** an extra knob to tune on 41 questions overfits; maybe after 3.5.
+
+## D-054: Qdrant server-side RRF is the default hybrid search (step 3.4, 2026-10-22)
+
+- **What:** `store.search_hybrid()`: one `query_points` call with two `Prefetch` (dense,
+  sparse; limit 50 each) and `RrfQuery(rrf=Rrf(k=rrf_k + 1))`. Checked on qdrant-client
+  1.19.1 + server v1.19.1: `Rrf` has `k` and `weights`; `FusionQuery(Fusion.RRF)` = no k.
+- **Found:** Qdrant scores 1/(k + rank - 1) (1-based rank; local-mode source
+  `qdrant_client/hybrid/fusion.py`, server checked by scores): its k=61 gives our k=60's
+  scores exactly. Its **default k is 2**, which changes the order (2/10 same order as ours).
+  Ties come back in random order on the server (q-055: 16/30 vs 14/30).
+- **Numbers (dev n=41, `07f7ef1`):** C6-server R@5 0.829, R@1 0.561, MRR 0.687, search p50
+  12.3 ms / p95 26.2 ms; manual C6-k60 R@5 0.829, R@1 0.585, MRR 0.699, p50 24.8 / 41.1 ms.
+  The R@1 gap is one tie (q-055), not a real difference.
+- **Why server as default:** same results except tie order, half the search time, one
+  network call, less of our code to keep. Manual RRF stays for teaching and tests.
+- **Cost:** tie order is not repeatable, so a hybrid eval can move by about 1 question
+  between runs. The reranker (3.5) re-sorts the candidates, which removes most ties.
+- **Alternative:** keep manual (repeatable ties). **Why not:** 2 round trips, 2x slower.
+  **Alternative:** DBSF fusion (score-based). **Why not now:** scores again; maybe a row later.
