@@ -438,3 +438,51 @@ below the saved score (1.000 / 0.870) minus a small allowance.
   catches small ones.
 - **Rule:** never merge on red. Private repos can't block the merge button, so it's on us.
 - **Learn it:** `docs/teaching/primer_ci_eval_gate.md`. Part 10 is the red-PR demo.
+
+## 45. Step 3.1: Qdrant moves into Docker (2026-10-21)
+
+Qdrant now runs as its own program in a Docker container (`docker compose up -d`), so the
+API, evals and scripts can use it at the same time. No more "stop uvicorn first".
+
+- **Same answers:** FT-200 rebuilt inside Docker gave identical scores on all 41 questions.
+  You predicted that correctly.
+- **The surprise:** the first run took 2 seconds per search. On Windows, `localhost` tries
+  IPv6 first and waits about 2 s before giving up. With `127.0.0.1` it's 7.6 ms. Rule: write
+  `QDRANT_URL=http://127.0.0.1:6333` in `.env`.
+- **Daily use:** start Docker Desktop, then `docker compose up -d`. Dashboard:
+  http://127.0.0.1:6333/dashboard. Stop with `docker compose down` (the data stays in
+  `qdrant_storage/`).
+
+## 46. Step 3.1b: a local "Amazon S3" and the MLflow server (2026-10-21)
+
+`docker compose up -d` now starts three services: **Qdrant** (the index), **SeaweedFS** (S3
+buckets for files) and **MLflow** (your lab notebook, now a server at http://127.0.0.1:5000).
+
+- **Buckets:** `docpilot-raw-docs` (the corpus), `docpilot-snapshots` (index backups),
+  `docpilot-mlflow` (MLflow's files). The same Python code will use real Amazon S3 in Phase 7
+  by leaving `S3_ENDPOINT_URL` empty.
+- **New commands:** `python scripts/04_sync_docs.py` (upload the corpus),
+  `python scripts/02_ingest.py --from-s3 ...` (fresh machine), `python scripts/snapshot_index.py
+  --backup` / `--restore --target <name>` (back up / restore the index in about 3 s instead of
+  re-embedding for about 50 s).
+- **All checked:** files come back byte-identical, and an index built from the bucket or
+  restored from a snapshot scores exactly the same.
+- **Lesson:** Docker data in a OneDrive folder was huge and slow (a 621 MB snapshot taking
+  91 s). In Docker's own named volumes it's 2 MB in 0.3 s. Data survives
+  `docker compose down`; only `docker compose down -v` deletes it.
+
+## 47. Step 3.2: keyword search (BM25) next to meaning search (2026-10-21)
+
+**What BM25 is:** smart word matching. Rare words count more ("max_length" beats "the"),
+repeating a word helps less each time, and short focused chunks beat long ones. You wrote
+it by hand in `labs/lab3_bm25.py`, then we used FastEmbed's version inside Qdrant.
+
+- Every chunk now has **two vectors**: `dense` (meaning) and `sparse` (keywords).
+- **BM25 alone** found the answer in the top 5 for 33 of 41 questions, the same count as
+  meaning search, but **not the same questions**: 3 found only by meaning, 3 only by
+  keywords (including q-018, which every Phase 2 chunker missed).
+- **Best of both = 36 of 41.** Merging the two lists well is step 3.3, hybrid search.
+- FastEmbed's BM25 also handles word forms ("validate" = "validated"), which your hand-made
+  lab version did not.
+
+Continues in [4_USER_GUIDE.md](4_USER_GUIDE.md).

@@ -24,7 +24,9 @@ target-version = "py312"
 # they are not code we run, so the formatter must not rewrite them (D-035).
 # tests/fixtures/: the CI gate's pages must stay byte-for-byte as written, or its scores
 # move (ruff reformatted a code example inside one on 2026-10-20; D-048).
-extend-exclude = ["docs", "tests/fixtures"]
+# evals/spot_checks/: records of what the LLM answered (code blocks included); a human
+# judges them as written (CI failed on one, 2026-10-22, PR #4).
+extend-exclude = ["docs", "tests/fixtures", "evals/spot_checks"]
 
 [tool.ruff.lint]
 # E/F: real errors and unused names. I: sorted imports.

@@ -23,7 +23,12 @@ load_dotenv(PROJECT_ROOT / ".env")
 DOCS_DIR = Path(os.getenv("DOCPILOT_DOCS_DIR", PROJECT_ROOT / "data" / "docs"))
 # Code files the docs include with {* ... *} markers (step 2.3), one folder per technology:
 # data/code/fastapi/docs_src/... Kept apart from DOCS_DIR so the loader never reads them.
-CODE_DIR = PROJECT_ROOT / "data" / "code"
+CODE_DIR = Path(os.getenv("DOCPILOT_CODE_DIR", PROJECT_ROOT / "data" / "code"))
+# Qdrant server in Docker (step 3.1, docker-compose.yml): set QDRANT_URL=http://127.0.0.1:6333
+# in .env (127.0.0.1, not localhost: see .env.example). Empty (the default) = local mode in
+# QDRANT_PATH: the tests and CI use that, because there is no Docker there. (The plan's
+# default URL would have broken CI.)
+QDRANT_URL = os.getenv("QDRANT_URL", "")
 # local-mode Qdrant saves its files here (gitignored)
 QDRANT_PATH = Path(os.getenv("DOCPILOT_QDRANT_PATH", PROJECT_ROOT / "qdrant_local"))
 # How each collection was built (strategy, size, clean, includes), one JSON per collection,
@@ -66,6 +71,15 @@ CONTEXT_CACHE = PROJECT_ROOT / "data" / "processed" / "context_cache.jsonl"
 
 # --- retrieval ---
 TOP_K = 4
+# Rerankers (step 3.5, D-055): a cross-encoder reads question + chunk together. Short name
+# -> (model, pinned revision). Model cards checked on Hugging Face 2026-10-22; both read at
+# most 512 tokens. bge-base: MIT, 1.1 GB. minilm: Apache-2.0, 91 MB, trained on MS MARCO.
+RERANKERS = {
+    "bge-base": ("BAAI/bge-reranker-base", "2cfc18c9415c912f9d8155881c133215df768a70"),
+    "minilm": ("cross-encoder/ms-marco-MiniLM-L6-v2", "233902d25c440f23af6f7d6e94d2946bac0bee0a"),
+}
+RERANKER = "minilm"  # D-055: as good as bge-base on dev, 13x faster on this CPU
+RERANKER_MAX_TOKENS = 512
 # The collection the app, 03_ask.py and the evals use by default. Since D-047 (step 2.9):
 # FT-200 = fixed 200 tokens, overlap 25, cleaned, includes resolved. Build it with
 #   python scripts/02_ingest.py --clean --includes --strategy fixed_tokens --size 200
@@ -79,6 +93,22 @@ INGEST_ARGS += ["--overlap", "25"]
 INGEST_COMMAND = (
     f"python scripts/02_ingest.py {' '.join(INGEST_ARGS)} --collection {COLLECTION_NAME}"
 )
+
+# --- object storage (step 3.1b, D-019, D-051) ---
+# Laptop: SeaweedFS in Docker; .env sets S3_ENDPOINT_URL=http://127.0.0.1:8333 and the two
+# local keys. AWS (Phase 7): leave all three EMPTY, so boto3 talks to real Amazon S3 with the
+# machine's IAM role and no keys in any file. Same code, one setting.
+S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", "")
+S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY", "")
+S3_SECRET_KEY = os.getenv("S3_SECRET_KEY", "")
+# The object store's address as seen from INSIDE Docker: Qdrant downloads snapshots from it
+# by itself. Laptop: http://seaweedfs:8333 (the Compose service name). AWS: empty.
+S3_ENDPOINT_URL_DOCKER = os.getenv("S3_ENDPOINT_URL_DOCKER", "")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")  # the real region is chosen in Phase 7
+# Bucket names must be unique across ALL of AWS, so Phase 7 sets its own through .env.
+RAW_DOCS_BUCKET = os.getenv("RAW_DOCS_BUCKET", "docpilot-raw-docs")
+SNAPSHOT_BUCKET = os.getenv("SNAPSHOT_BUCKET", "docpilot-snapshots")
+MLFLOW_BUCKET = os.getenv("MLFLOW_BUCKET", "docpilot-mlflow")  # used by the MLflow server
 
 # --- LLM (D-004) ---
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")

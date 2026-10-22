@@ -5,6 +5,8 @@
 sentence-transformers==6.1.0   # embedding model loader (BGE), pulls in torch + transformers
 numpy==2.5.3                   # vector maths (cosine similarity in the labs)
 python-dotenv==1.2.4           # reads .env into environment variables (D-026, checked 2026-10-09)
+boto3==1.43.116                # S3 API: SeaweedFS locally, Amazon S3 on AWS (D-051, checked 2026-10-21)
+fastembed==0.8.1               # BM25 sparse vectors; 0.8.x = the range qdrant-client 1.19.1 supports (D-052, checked 2026-10-21)
 qdrant-client==1.19.1          # vector database client, local mode in Phase 1 (D-027, checked 2026-10-12)
 openai==3.29.0                 # OpenAI-compatible client, pointed at free providers (D-028, checked 2026-10-12)
 fastapi==0.143.1               # web API framework, POST /ask (D-034, checked 2026-10-14)

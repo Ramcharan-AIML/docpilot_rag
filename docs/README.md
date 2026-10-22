@@ -5,7 +5,7 @@ Start here. Every session begins with `progress.md`.
 | I want to... | Open |
 |---|---|
 | Know where we are and what is next | [progress.md](progress.md) |
-| Read the step-by-step story of what was done | [USER_GUIDE.md](USER_GUIDE.md), then [2_USER_GUIDE.md](2_USER_GUIDE.md) (from step 1a.3), then [3_USER_GUIDE.md](3_USER_GUIDE.md) (gates, Phase 2) |
+| Read the step-by-step story of what was done | [USER_GUIDE.md](USER_GUIDE.md), then [2_USER_GUIDE.md](2_USER_GUIDE.md) (from step 1a.3), then [3_USER_GUIDE.md](3_USER_GUIDE.md) (gates, Phase 2), then [4_USER_GUIDE.md](4_USER_GUIDE.md) (from step 3.3) |
 | Continue in a new chat without losing context | [CHAT_CONTEXT.md](CHAT_CONTEXT.md) |
 | See the rules Claude Code loads every session | [../CLAUDE.md](../CLAUDE.md) |
 | Know the rules (500 lines, numbers, secrets, gates) | [RULEBOOK.md](RULEBOOK.md) |
@@ -18,7 +18,7 @@ Start here. Every session begins with `progress.md`.
 | Practise interview questions per phase | [interview/README.md](interview/README.md) |
 | Tell "where did you get stuck?" stories (big failures only) | [interview/challenges_and_failures.md](interview/challenges_and_failures.md) |
 | Write my own interview answers | [interview_notes.md](interview_notes.md) |
-| See why every choice was made | [decisions.md](decisions.md), [2_decisions.md](2_decisions.md) (D-038 on) |
+| See why every choice was made | [decisions.md](decisions.md), [2_decisions.md](2_decisions.md) (D-038 on), [3_decisions.md](3_decisions.md) (D-057 on) |
 
 ```text
 docs/
@@ -30,6 +30,7 @@ docs/
 ├── CHAT_CONTEXT.md            handoff summary for a new chat
 ├── decisions.md               decision log + version pins + free-tier checks
 ├── 2_decisions.md             decision log continued (D-038 on)
+├── 3_decisions.md             decision log continued (D-057 on)
 ├── interview_notes.md         learner's own answers (own words only)
 ├── architecture/              target system design (3 parts; part 3 = cloud, infra, MLOps)
 ├── implementation_plan/       phase-by-phase build steps with file names and code sketches

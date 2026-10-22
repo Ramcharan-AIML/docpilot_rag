@@ -1,95 +1,118 @@
 # Resume Entry: DocPilot
 
-Copy-ready text for your resume and LinkedIn. **Rule:** list only what is built and
-measured at the moment you send the resume. Interviewers ask about every word; a skill you
-have not built yet is the fastest way to lose trust. Update this file at every phase gate.
+Copy-ready text for your resume and LinkedIn. Updated 2026-10-21 (Phase 2 done, Phase 3
+step 3.1 done). **Rule:** every number comes from a real run in `evals/ABLATION.md` or the
+decision log. A tool you list must be one you can explain and show; interviewers ask about
+every word.
+
+Two versions:
+- **Version 1 (send now):** what's built and measured today, plus one honest "in progress"
+  line. That line still puts the full stack's keywords in front of the ATS.
+- **Version 2 (full project):** the finished project from start to deployment. Use it once
+  those phases exist, and fill every `[X]` only from a real run. Never send a `[X]`.
 
 ---
 
-## Title (pick one)
+## Version 1: send now (true on 2026-10-21)
 
-1. **DocPilot: Evaluation-Driven RAG Assistant for Technical Documentation** (recommended now)
-2. **DocPilot: Agentic RAG Platform with Hybrid Search, Guardrails and Cloud Deployment**
-   (use after Phases 3-7 are done)
-3. **DocPilot: Production-Grade GenAI Assistant over Docs, PDFs and Word Files** (after 2.7 + 7)
+**DocPilot: Evaluation-Driven RAG Assistant for Technical Docs, AI/ML Papers and Interview Prep**
+*Python, RAG, FastAPI, Pydantic, Qdrant, Hugging Face (BGE embeddings), Docling (PDF/DOCX),
+LLM APIs (Groq, OpenAI-compatible), MLflow, Docker, Docker Compose, GitHub Actions (CI), pytest*
 
-Why title 1 now: "evaluation-driven" is true today, rare among student projects, and is
-exactly what AI-engineer interviewers probe. Words like "agentic" or "production-grade"
-must wait until those phases exist.
+- Built an end-to-end **Retrieval-Augmented Generation (RAG)** assistant over 20 documents
+  in 3 domains (FastAPI/Pydantic/Docker docs, AI/ML papers and articles, interview notes),
+  including **PDF and Word** files parsed with **Docling**, served via a **FastAPI**
+  endpoint that returns cited answers and refuses when the answer isn't in the documents.
+- Designed an **LLM evaluation harness from scratch**: a 65-question golden dataset
+  (dev/test split, 3 domains, unanswerable "near-miss" questions) labelled with verbatim
+  evidence and an automatic validator. Implemented **Recall@k, MRR, nDCG, abstention
+  accuracy and per-stage p50/p95 latency** by hand. Baseline: **0.91 abstention accuracy
+  with zero fabricated answers**, and showed the LLM is ~96% of response time.
+- Ran an **11-configuration chunking ablation** (fixed, token-based, recursive, semantic,
+  parent-child, hierarchical, Q&A-pair) tracked in **MLflow**, all within the embedding
+  model's 512-token limit. The chosen strategy raised **Recall@1 from 0.54 to 0.63** on dev
+  (0.35 to 0.47 on the held-out test set) with no loss in recall and the smallest LLM context.
+- Used error analysis to fix **data-quality issues** (HTML noise, unresolved code
+  includes, PDF table padding, captions split from tables), and found data cleaning
+  mattered more than the choice of chunking strategy.
+- Built a **CI eval gate in GitHub Actions** that fails pull requests when retrieval
+  quality drops, and proved it by injecting a chunking-units bug (MRR 0.87 to 0.50, build
+  failed).
+- Built **hybrid retrieval** in **Qdrant** (dense BGE + sparse **BM25**, fused with
+  **Reciprocal Rank Fusion**, first by hand, then server-side) and a **cross-encoder
+  reranker**. Benchmarked a 1.1 GB and a 91 MB reranker on CPU and chose the small one:
+  **Recall@5 0.83 to 0.88, MRR 0.69 to 0.73** at **+0.5 s** per query (the big one: 6.4 s).
+- Containerized the vector database with **Docker Compose** (multi-architecture images).
+  Verified identical retrieval scores, and diagnosed a Windows IPv6 `localhost` delay that
+  cut search latency from **2,062 ms to 7.6 ms (p50)**.
+- Engineering: **183 automated tests**, PR-based Git workflow, pinned dependencies and
+  model revisions, and every metric traceable to a git commit.
+- *In progress:* query transforms, an LLM-judged generation eval, **LangGraph**
+  agents with human-in-the-loop, guardrails (Presidio, NeMo Guardrails), and deployment with
+  **Terraform, Kubernetes (k3s) and AWS**.
 
 ---
 
-## Version A: use NOW (Phase 1 done, Phase 2 started, 2026-10-15)
-
-**DocPilot: Evaluation-Driven RAG Assistant for Technical Documentation**
-*Python, FastAPI, Qdrant, Hugging Face (BGE embeddings), LLM API (Groq, OpenAI-compatible), MLflow, pytest, GitHub Actions*
-
-- Built an end-to-end Retrieval-Augmented Generation pipeline (ingestion, chunking,
-  384-dim BGE embeddings, Qdrant vector search, cited LLM answers) served through a
-  **FastAPI** `/ask` endpoint with Pydantic validation.
-- Designed an **evaluation harness from scratch**: a 32-question golden dataset labelled
-  by verbatim evidence (dev/test split, 16% unanswerable "near-miss" questions) with an
-  automatic validator; metrics **Recall@k, MRR, nDCG, abstention accuracy and per-stage
-  p50/p95 latency**, written and unit-tested by hand.
-- Established a measured baseline: **Recall@5 0.84, MRR 0.67** (dev), **abstention
-  accuracy 0.91 with zero made-up answers** on unanswerable questions, **p50 1.1 s**
-  warm latency, and showed the LLM is ~96% of response time.
-- Used error analysis to trace failures to **ingestion and ranking** (Recall@1 0.53 vs
-  Recall@5 0.84; a correct-looking answer containing invented code), which set the
-  roadmap for structure-aware chunking and reranking.
-- Engineering practice: **66 automated tests**, **CI on GitHub Actions** (lint, tests,
-  file-size rule), PR workflow, pinned dependencies and model revisions, every metric
-  traceable to a git commit, experiment tracking in **MLflow**.
-
-## Version B: target when the project is complete (fill numbers only from real runs)
+## Version 2: full project (finished, through deployment)
 
 **DocPilot: Agentic RAG Platform with Hybrid Search, Guardrails and Cloud Deployment**
-*Python, LangGraph, FastAPI, Qdrant (hybrid dense + sparse), cross-encoder reranking,
-Docling (PDF/Word), MLflow, RAGAS/DeepEval, guardrails (NeMo / Presidio), Docker,
-Kubernetes (k3s), Terraform, AWS, Prometheus/Grafana, GitHub Actions*
+*Python, LangGraph, RAG, FastAPI, Pydantic, Qdrant (hybrid dense + sparse), Hugging Face
+sentence-transformers (BGE embeddings, cross-encoder reranker), Docling, LiteLLM (Groq,
+Gemini, OpenRouter, Ollama), MCP, RAGAS, DeepEval, LLM-as-a-judge, NeMo Guardrails,
+Microsoft Presidio, Redis, PostgreSQL, MLflow, Docker, Kubernetes (k3s, Amazon EKS),
+Terraform, AWS (EC2, S3, ECR, IAM, CloudWatch), Oracle Cloud, Prometheus, Grafana,
+GitHub Actions CI/CD*
 
-- Agentic RAG with **LangGraph** (route, retrieve, grade, rewrite, human-in-the-loop)
-  over technical docs, AI/ML learning material and interview notes, including **PDF and
-  Word** documents parsed with Docling.
-- Improved retrieval from the C0 baseline (Recall@5 0.84, MRR 0.67) to **[n/a until
-  measured]** via structure-aware chunking, **hybrid search (RRF)** and a **reranker**;
-  each change measured in an ablation table with its latency cost.
-- Generation quality measured with an **LLM-as-a-judge** (faithfulness, relevancy),
-  validated against hand labels and compared with RAGAS/DeepEval: **[n/a]**.
-- **Guardrails** against prompt injection and PII: attack success rate **[n/a]** ->
-  **[n/a]**, false-block rate **[n/a]**.
-- Deployed with **Docker, Terraform and k3s** on cloud free tiers, monitored with
-  **Prometheus/Grafana**; CI eval gate blocks pull requests that lower retrieval quality.
-
----
-
-## Skills line (the keywords recruiters and ATS scanners look for)
-
-**Now (true today):** Python · RAG · LLMs · Prompt engineering · Embeddings ·
-Vector databases (Qdrant) · Hugging Face / sentence-transformers · FastAPI · Pydantic ·
-LLM evaluation (Recall@k, MRR, nDCG, abstention, latency) · MLflow · pytest ·
-GitHub Actions (CI) · Git
-
-**Add only when built:** LangGraph / AI agents · Hybrid search · Reranking · RAGAS /
-DeepEval · LLM-as-a-judge · Guardrails · Docling (PDF/Word parsing) · Docker ·
-Kubernetes · Terraform · AWS · Prometheus / Grafana
-
-Why these matter to recruiters: AI-engineer job posts ask most for **RAG, vector
-databases, LLM APIs, evaluation, agents (LangGraph), FastAPI, Docker/Kubernetes and a
-cloud**. Evaluation and deployment are what separate an "engineer" from a "tutorial"
-project.
+- Architected an **agentic RAG platform** with **LangGraph** (route, retrieve, grade,
+  rewrite, **human-in-the-loop** review) that answers questions over technical docs, AI/ML
+  papers and interview notes (Markdown, PDF, Word) with citations and calibrated refusals.
+- Engineered the ingestion pipeline (**Docling** PDF/DOCX parsing, cleaning, token-aware
+  chunking) and chose the chunking strategy with an **11-configuration ablation**:
+  **Recall@1 0.54 to 0.63** on dev, 0.35 to 0.47 on held-out test.
+- Built **hybrid retrieval**: dense BGE plus sparse **BM25** vectors in **Qdrant**, fused
+  with **Reciprocal Rank Fusion**, **cross-encoder reranking**, query transforms
+  (multi-query, HyDE) and metadata filters. Raised Recall@5 from 0.78 to **[X]** and MRR
+  from 0.65 to **[X]**, with p50/p95 latency measured per stage.
+- Designed a full **evaluation stack**: a 65-question golden set with verbatim evidence,
+  hand-written Recall@k/MRR/nDCG, **LLM-as-a-judge** faithfulness (validated against human
+  spot-checks, agreement **[X]%**), cross-checked with **RAGAS/DeepEval**, all tracked in
+  **MLflow**. A **CI eval gate** in GitHub Actions blocks pull requests that degrade retrieval.
+- Implemented **guardrails** against direct and indirect **prompt injection**, PII leakage
+  (**Presidio**) and unsafe tool use (**NeMo Guardrails**). Measured on a red-team set:
+  attack success rate **[X]% to [X]%**, false-block rate **[X]%**.
+- Productionized with **FastAPI** (async, SSE streaming, API-key auth), **Redis** rate
+  limiting and semantic caching, **LiteLLM** fallbacks across free LLM providers, and an
+  **MCP server**. Deployed multi-architecture **Docker** images to **Kubernetes (k3s)** with
+  **Terraform** on **AWS**, then Oracle Cloud. Monitored with **Prometheus/Grafana**; p95
+  latency **[X] s**, at a cost of **$0 per month**.
 
 ---
 
-## Two-line version (LinkedIn headline, project summary)
+## Skills line (ATS keywords)
 
-> Built DocPilot, an evaluation-driven RAG assistant over technical docs: hand-built eval
-> harness (Recall@5 0.84, MRR 0.67, 0.91 abstention, p50 1.1 s), FastAPI service, CI and
-> MLflow experiment tracking; now adding structure-aware chunking, hybrid search and agents.
+**True today:** Python · Generative AI · LLMs · RAG · Prompt Engineering · Embeddings ·
+Vector Databases (Qdrant) · Hugging Face · sentence-transformers · Docling · FastAPI ·
+Pydantic · LLM Evaluation (Recall@k, MRR, nDCG) · MLflow · Docker · Docker Compose ·
+GitHub Actions · CI/CD · pytest · Git
+
+**Add as each one is built:** LangGraph · AI Agents · Hybrid Search · BM25 · Reranking ·
+RAGAS · DeepEval · LLM-as-a-Judge · Guardrails · Prompt Injection Defense · Presidio ·
+LiteLLM · MCP · Redis · PostgreSQL · Kubernetes · Terraform · AWS · Prometheus · Grafana
+
+---
+
+## Two-line version (LinkedIn, project summary)
+
+> Built DocPilot, an evaluation-driven RAG assistant over technical docs, AI/ML papers and
+> interview notes (PDF, Word, Markdown): hand-built eval harness and 65-question golden set,
+> 11-config chunking ablation (Recall@1 0.54 to 0.63), CI eval gate on GitHub Actions,
+> Dockerized Qdrant. Now adding hybrid search, reranking, LangGraph agents and cloud deployment.
 
 ## Before you send it: checklist
 
-- [ ] Every number matches `evals/ABLATION.md` (and you can say how it was measured)
-- [ ] Every tool listed is in the code you can show
-- [ ] You can explain each bullet out loud in 30 seconds (`docs/teaching/2_evals_guide.md`)
-- [ ] Repo link added only once it is public (end of project, by your choice)
+- [ ] Every number matches `evals/ABLATION.md` or the decision log (and you can say how it
+      was measured)
+- [ ] Every tool you list is one you can show in the code
+- [ ] You can explain each bullet out loud in 30 seconds
+- [ ] No `[X]` left anywhere
+- [ ] Add the repo link only once it is public (end of project, your choice)

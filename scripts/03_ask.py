@@ -26,7 +26,7 @@ def main() -> None:
     args = parser.parse_args()
     question = args.question
 
-    client = get_client(config.QDRANT_PATH)
+    client = get_client()
     try:
         if not client.collection_exists(config.COLLECTION_NAME):
             sys.exit(f"No index found. Build it first:\n  {config.INGEST_COMMAND}")

@@ -36,3 +36,9 @@ def embed_query(question: str) -> list[float]:
     """
     vector = get_model().encode(config.BGE_QUERY_PREFIX + question, normalize_embeddings=True)
     return vector.tolist()
+
+
+def embed_passage(text: str) -> list[float]:
+    """Embed one text the way chunks are embedded (no query prefix). Step 3.6 HyDE: the
+    LLM's fake answer is a passage, so it must be embedded like the chunks it looks like."""
+    return get_model().encode(text, normalize_embeddings=True).tolist()

@@ -1,0 +1,201 @@
+{
+  "kind": "retrieval",
+  "config_id": "FINAL-test",
+  "collection": "docpilot_v1_ft200",
+  "split": "test",
+  "date": "2026-10-22",
+  "git_commit": "c1fb7dd",
+  "settings": {
+    "golden_version": "v1",
+    "chunk_strategy": "fixed_tokens",
+    "chunk_size": 200,
+    "chunk_overlap": 25,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "embedding_revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "answer_top_k": 4,
+    "settings_source": "manifest",
+    "chunk_unit": "tokens",
+    "cleaned": true,
+    "includes": true,
+    "sources": "all",
+    "chunk_count": 453,
+    "largest_chunk_tokens": 201,
+    "chunks_over_limit": 0,
+    "sparse_model": "Qdrant/bm25",
+    "bm25_k1": 1.2,
+    "bm25_b": 0.75,
+    "bm25_avg_len": 78.6,
+    "ingest_seconds": 43.0,
+    "search_k": 10,
+    "min_overlap": 0.7,
+    "scored_on": "chunk",
+    "retriever": "hybrid-server",
+    "rerank_candidates": 20,
+    "reranker": "cross-encoder/ms-marco-MiniLM-L6-v2",
+    "reranker_revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+    "rrf_k": 60,
+    "candidates": 50
+  },
+  "overall": {
+    "n": 17,
+    "recall@1": 0.647,
+    "recall@3": 0.824,
+    "recall@5": 0.941,
+    "strict_recall@5": 0.912,
+    "mrr": 0.765,
+    "ndcg@5": 0.79
+  },
+  "per_type": {
+    "comparison": {
+      "n": 1,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.5,
+      "mrr": 1.0,
+      "ndcg@5": 0.613
+    },
+    "concept": {
+      "n": 1,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@5": 1.0
+    },
+    "exact-identifier": {
+      "n": 1,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@5": 1.0
+    },
+    "factual": {
+      "n": 4,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@5": 1.0
+    },
+    "how-to": {
+      "n": 2,
+      "recall@1": 0.0,
+      "recall@3": 0.5,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.375,
+      "ndcg@5": 0.531
+    },
+    "interview": {
+      "n": 2,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@5": 1.0
+    },
+    "multi-hop": {
+      "n": 1,
+      "recall@1": 0.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.5,
+      "ndcg@5": 0.693
+    },
+    "paraphrase": {
+      "n": 2,
+      "recall@1": 0.0,
+      "recall@3": 0.5,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 0.375,
+      "ndcg@5": 0.531
+    },
+    "table-or-code": {
+      "n": 3,
+      "recall@1": 0.667,
+      "recall@3": 0.667,
+      "recall@5": 0.667,
+      "strict_recall@5": 0.667,
+      "mrr": 0.667,
+      "ndcg@5": 0.667
+    }
+  },
+  "per_domain": {
+    "docs": {
+      "n": 11,
+      "recall@1": 0.545,
+      "recall@3": 0.818,
+      "recall@5": 1.0,
+      "strict_recall@5": 0.955,
+      "mrr": 0.727,
+      "ndcg@5": 0.766
+    },
+    "interview": {
+      "n": 3,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "strict_recall@5": 1.0,
+      "mrr": 1.0,
+      "ndcg@5": 1.0
+    },
+    "learning": {
+      "n": 3,
+      "recall@1": 0.667,
+      "recall@3": 0.667,
+      "recall@5": 0.667,
+      "strict_recall@5": 0.667,
+      "mrr": 0.667,
+      "ndcg@5": 0.667
+    }
+  },
+  "search_latency_ms": {
+    "n": 17,
+    "p50": 13.0,
+    "p95": 33.7
+  },
+  "stage_latency_ms": {
+    "embed": {
+      "n": 17,
+      "p50": 46.9,
+      "p95": 64.0
+    },
+    "search": {
+      "n": 17,
+      "p50": 13.0,
+      "p95": 33.7
+    },
+    "rerank": {
+      "n": 17,
+      "p50": 894.6,
+      "p95": 967.1
+    }
+  },
+  "per_question": [
+    {"id": "q-014", "type": "how-to", "domain": "docs", "relevance": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.25, "ndcg@5": 0.43067655807339306, "retrieved": ["fastapi/body.md#9 0.032", "fastapi/body.md#5 0.032", "fastapi/body.md#10 0.032", "fastapi/body.md#0 0.031", "fastapi/body.md#4 0.032", "fastapi/body.md#12 0.030", "fastapi/body.md#1 0.029", "fastapi/query-params.md#6 0.027", "fastapi/path-params.md#2 0.030", "fastapi/query-params.md#7 0.026"]},
+    {"id": "q-021", "type": "paraphrase", "domain": "docs", "relevance": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.25, "ndcg@5": 0.43067655807339306, "retrieved": ["fastapi/query-params.md#2 0.031", "fastapi/query-params.md#1 0.029", "fastapi/query-params.md#0 0.032", "fastapi/path-params.md#2 0.016", "fastapi/query-params.md#6 0.023", "fastapi/first-steps.md#18 0.031", "pydantic/strict_mode.md#0 0.027", "fastapi/body.md#11 0.024", "fastapi/first-steps.md#13 0.024", "fastapi/path-params.md#1 0.025"]},
+    {"id": "q-022", "type": "exact-identifier", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/path-params.md#14 0.033", "fastapi/path-params.md#16 0.032", "fastapi/path-params.md#9 0.031", "fastapi/path-params.md#12 0.032", "fastapi/path-params.md#11 0.031", "fastapi/path-params.md#17 0.031", "fastapi/path-params.md#15 0.030", "fastapi/path-params.md#13 0.030", "fastapi/body.md#11 0.026", "fastapi/path-params.md#0 0.029"]},
+    {"id": "q-024", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/path-params.md#6 0.029", "fastapi/path-params.md#4 0.031", "fastapi/path-params.md#20 0.031", "interview/phase_1_notes.docx#7 0.031", "interview/phase_1_notes.docx#8 0.026", "fastapi/path-params.md#2 0.031", "interview/phase_1_notes.docx#9 0.028", "fastapi/first-steps.md#15 0.027", "fastapi/body.md#5 0.032", "fastapi/first-steps.md#6 0.024"]},
+    {"id": "q-025", "type": "how-to", "domain": "docs", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["fastapi/first-steps.md#10 0.033", "fastapi/first-steps.md#8 0.031", "fastapi/first-steps.md#9 0.032", "fastapi/path-params.md#19 0.028", "fastapi/query-params.md#6 0.029", "fastapi/first-steps.md#18 0.026", "fastapi/first-steps.md#19 0.027", "fastapi/path-params.md#8 0.025", "fastapi/first-steps.md#11 0.029", "fastapi/path-params.md#0 0.028"]},
+    {"id": "q-027", "type": "table-or-code", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["fastapi/first-steps.md#15 0.033", "fastapi/first-steps.md#14 0.033", "fastapi/first-steps.md#17 0.031", "wikipedia/retrieval-augmented-generation.md#0 0.025", "wikipedia/retrieval-augmented-generation.md#5 0.024", "fastapi/query-params.md#1 0.025", "fastapi/query-params.md#4 0.025", "wikipedia/retrieval-augmented-generation.md#4 0.026", "fastapi/path-params.md#4 0.026", "fastapi/body.md#0 0.024"]},
+    {"id": "q-028", "type": "comparison", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 1, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 0.5, "rr": 1.0, "ndcg@5": 0.6131471927654584, "retrieved": ["fastapi/first-steps.md#4 0.033", "fastapi/path-params.md#5 0.031", "interview/phase_3_interview.md#8 0.031", "fastapi/body.md#6 0.030", "fastapi/path-params.md#6 0.025", "fastapi/path-params.md#4 0.025", "fastapi/first-steps.md#3 0.015", "fastapi/body.md#0 0.022", "wikipedia/evaluation-measures-information-retrieval.md#4 0.027", "fastapi/path-params.md#12 0.024"]},
+    {"id": "q-029", "type": "multi-hop", "domain": "docs", "relevance": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6934264036172708, "retrieved": ["fastapi/body.md#12 0.033", "fastapi/body.md#3 0.031", "fastapi/query-params.md#7 0.032", "fastapi/query-params.md#9 0.029", "fastapi/body.md#0 0.030", "fastapi/query-params.md#1 0.030", "fastapi/query-params.md#8 0.031", "fastapi/query-params.md#3 0.028", "fastapi/body.md#10 0.024", "fastapi/body.md#5 0.024"]},
+    {"id": "q-040", "type": "table-or-code", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_1_notes.docx#13 0.033", "interview/phase_2_interview.md#7 0.031", "interview/phase_1_notes.docx#12 0.032", "interview/phase_1_notes.docx#2 0.031", "interview/phase_1_notes.docx#3 0.031", "interview/phase_2_interview.md#0 0.027", "interview/phase_2_interview.md#8 0.030", "interview/phase_3_interview.md#0 0.024", "interview/phase_1_notes.docx#11 0.030", "interview/phase_1_notes.docx#10 0.030"]},
+    {"id": "q-044", "type": "table-or-code", "domain": "learning", "relevance": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 0.0, "recall@5": 0.0, "strict_recall@5": 0.0, "rr": 0.0, "ndcg@5": 0.0, "retrieved": ["cot/cot_2201.11903v6.pdf#28 0.033", "cot/cot_2201.11903v6.pdf#99 0.031", "cot/cot_2201.11903v6.pdf#16 0.031", "cot/cot_2201.11903v6.pdf#80 0.029", "cot/cot_2201.11903v6.pdf#1 0.030", "cot/cot_2201.11903v6.pdf#27 0.033", "cot/cot_2201.11903v6.pdf#32 0.027", "cot/cot_2201.11903v6.pdf#18 0.030", "cot/cot_2201.11903v6.pdf#83 0.029", "cot/cot_2201.11903v6.pdf#3 0.029"]},
+    {"id": "q-052", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["pydantic/config.md#0 0.033", "pydantic/config.md#4 0.029", "pydantic/config.md#10 0.031", "pydantic/config.md#6 0.032", "pydantic/alias.md#14 0.030", "pydantic/strict_mode.md#10 0.029", "pydantic/strict_mode.md#3 0.024", "pydantic/config.md#2 0.029", "pydantic/config.md#9 0.029", "pydantic/config.md#7 0.030"]},
+    {"id": "q-053", "type": "paraphrase", "domain": "docs", "relevance": [0, 1, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 0.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 0.5, "ndcg@5": 0.6309297535714575, "retrieved": ["docker/publishing-ports.md#6 0.033", "docker/publishing-ports.md#1 0.033", "docker/publishing-ports.md#7 0.030", "docker/what-is-a-container.md#9 0.029", "docker/publishing-ports.md#0 0.031", "docker/what-is-a-container.md#5 0.028", "docker/publishing-ports.md#8 0.030", "docker/what-is-a-container.md#4 0.030", "docker/publishing-ports.md#4 0.029", "docker/what-is-a-container.md#3 0.026"]},
+    {"id": "q-054", "type": "factual", "domain": "docs", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["docker/what-is-a-container.md#1 0.032", "docker/persisting-container-data.md#0 0.032", "docker/persisting-container-data.md#1 0.030", "docker/what-is-a-container.md#2 0.031", "docker/what-is-a-container.md#10 0.027", "docker/persisting-container-data.md#5 0.026", "docker/what-is-a-container.md#9 0.028", "docker/persisting-container-data.md#7 0.031", "docker/persisting-container-data.md#8 0.030", "docker/what-is-a-container.md#6 0.027"]},
+    {"id": "q-061", "type": "concept", "domain": "learning", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["wikipedia/evaluation-measures-information-retrieval.md#15 0.033", "wikipedia/evaluation-measures-information-retrieval.md#10 0.032", "wikipedia/evaluation-measures-information-retrieval.md#6 0.031", "wikipedia/evaluation-measures-information-retrieval.md#5 0.028", "wikipedia/evaluation-measures-information-retrieval.md#17 0.031", "wikipedia/evaluation-measures-information-retrieval.md#14 0.029", "wikipedia/evaluation-measures-information-retrieval.md#11 0.030", "wikipedia/evaluation-measures-information-retrieval.md#13 0.029", "cot/cot_2201.11903v6.pdf#165 0.027", "interview/phase_1_notes.docx#4 0.026"]},
+    {"id": "q-062", "type": "factual", "domain": "learning", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["wikipedia/retrieval-augmented-generation.md#3 0.033", "wikipedia/retrieval-augmented-generation.md#4 0.027", "wikipedia/retrieval-augmented-generation.md#0 0.031", "wikipedia/retrieval-augmented-generation.md#1 0.031", "interview/phase_1_notes.docx#1 0.032", "wikipedia/retrieval-augmented-generation.md#9 0.029", "cot/cot_2201.11903v6.pdf#5 0.022", "interview/phase_1_notes.docx#3 0.022", "cot/cot_2201.11903v6.pdf#75 0.025", "wikipedia/retrieval-augmented-generation.md#11 0.025"]},
+    {"id": "q-068", "type": "interview", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_2_interview.md#1 0.033", "interview/phase_2_interview.md#0 0.032", "wikipedia/retrieval-augmented-generation.md#9 0.029", "interview/phase_1_notes.docx#2 0.029", "interview/phase_2_interview.md#5 0.028", "interview/phase_2_interview.md#4 0.027", "interview/phase_2_interview.md#2 0.030", "interview/phase_1_notes.docx#5 0.025", "interview/phase_1_notes.docx#4 0.027", "interview/phase_2_interview.md#6 0.027"]},
+    {"id": "q-069", "type": "interview", "domain": "interview", "relevance": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "recall@1": 1.0, "recall@3": 1.0, "recall@5": 1.0, "strict_recall@5": 1.0, "rr": 1.0, "ndcg@5": 1.0, "retrieved": ["interview/phase_0_interview.md#2 0.033", "interview/phase_0_interview.md#1 0.033", "interview/phase_3_interview.md#1 0.031", "interview/phase_1_notes.docx#0 0.016", "interview/phase_0_interview.md#0 0.029", "cot/cot_2201.11903v6.pdf#106 0.025", "cot/cot_2201.11903v6.pdf#107 0.029", "cot/cot_2201.11903v6.pdf#97 0.025", "wikipedia/retrieval-augmented-generation.md#6 0.030", "cot/cot_2201.11903v6.pdf#113 0.023"]}
+  ]
+}

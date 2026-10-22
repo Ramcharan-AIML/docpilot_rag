@@ -218,3 +218,99 @@ wrong 200-token piece; how-to 0.8 -> 0.4, n=5). Both miss 7, of which 4 are tabl
 (R@5 0.5 in both: fixes B/C). CoT chunks (half the index) take 3 of 165 top-5 slots of
 non-learning questions in C0 and 0 of 165 in C4-200. Not a pure chunking comparison (C0 is
 raw): 2.9 adds a fixed-size control row with cleaning + includes.
+
+---
+
+## Phase 3: retrieval (hand-written rows, dev n=41, collection `docpilot_v1_ft200`)
+
+All rows use the FT-200 chunks (D-047) in Docker Qdrant; only the **searcher** changes.
+Search latency is warm, n=41, this laptop (CPU), Qdrant v1.19.1 in Docker, embedding not
+included. 1 question = 0.024.
+
+| Config | Retriever | R@1 | R@3 | R@5 | strict R@5 | MRR | nDCG@5 | p50 / p95 ms | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| FT-200-dense-p3 | dense (BGE) | **0.634** | 0.732 | 0.805 | 0.805 | **0.701** | 0.722 | 9.9 / 27.1 | `2026-10-22_FT-200-dense-p3_dev_retrieval.json` (`2457017`) |
+| C-sparse | sparse (BM25) | 0.537 | 0.683 | 0.805 | 0.780 | 0.658 | 0.670 | 14.0 / 33.9 | `2026-10-22_C-sparse_dev_retrieval.json` (`2457017`) |
+| C6-k60 | hybrid, manual RRF k=60, 50+50 | 0.585 | **0.805** | **0.829** | **0.829** | 0.699 | **0.724** | 24.8 / 41.1 | `2026-10-22_C6-k60_dev_retrieval.json` (`2457017`) |
+| C6-server | hybrid, Qdrant RRF (sent k=61 = our 60), 50+50, 1 call | 0.561 | 0.805 | 0.829 | 0.829 | 0.687 | 0.715 | 12.3 / 26.2 | `2026-10-22_C6-server_dev_retrieval.json` (`07f7ef1`) |
+| C7-r20 | C6-server + rerank top 20 (bge-reranker-base) | 0.585 | 0.780 | **0.854** | 0.829 | **0.700** | 0.723 | search 24.9 / 50.7; **rerank 6430 / 7469** | `2026-10-22_C7-r20_dev_retrieval.json` (`3334243`) |
+| **C7-mini-r20** | C6-server + rerank top 20 (ms-marco-MiniLM-L6-v2) | 0.610 | **0.829** | **0.878** | **0.878** | **0.725** | **0.762** | search 16.5 / 33.8; **rerank 485 / 547** | `2026-10-22_C7-mini-r20_dev_retrieval.json` (`1ea5274`) |
+| C8-multi | C7-mini-r20 + 3 LLM rewrites (RRF) | 0.610 | 0.829 | 0.878 | 0.878 | 0.726 | 0.763 | LLM 860 / 3226; rerank 463 / 518 | `2026-10-22_C8-multi_dev_retrieval.json` (`f779c39`) |
+| C8-hyde | C7-mini-r20 + fake answer passage | 0.610 | 0.829 | 0.878 | 0.878 | 0.726 | 0.763 | LLM 994 / 1190; rerank 961 / 1019 | `2026-10-22_C8-hyde_dev_retrieval.json` (`f779c39`) |
+| C8-stepback | C7-mini-r20 + 1 general question | 0.610 | 0.854 | 0.878 | 0.878 | 0.728 | 0.765 | LLM 1101 / 3277; rerank 457 / 517 | `2026-10-22_C8-stepback_dev_retrieval.json` (`f779c39`) |
+| C8-decompose | C7-mini-r20 + sub-questions | 0.610 | 0.829 | 0.878 | 0.878 | 0.725 | 0.762 | LLM 2673 / 3012; rerank 477 / 539 | `2026-10-22_C8-decompose_dev_retrieval.json` (`f779c39`) |
+| C7-r30 | C6-server + rerank top 30 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 15.9 / 35.8; **rerank 10147 / 11605** | `2026-10-22_C7-r30_dev_retrieval.json` (`3334243`) |
+| C7-r50 | C6-server + rerank top 50 | 0.585 | 0.780 | 0.829 | 0.805 | 0.698 | 0.713 | search 22.8 / 34.7; **rerank 12124 / 18960** | `2026-10-22_C7-r50_dev_retrieval.json` (`3334243`) |
+| C6-k10 | hybrid, manual RRF k=10, 50+50 | 0.585 | 0.780 | 0.805 | 0.805 | 0.691 | 0.709 | 26.0 / 44.9 | `2026-10-22_C6-k10_dev_retrieval.json` (`2457017`) |
+
+Reading (D-053):
+- Dense parity: FT-200-dense-p3 equals Phase 2 FT-200-v1 on every metric, so the move to
+  named vectors (3.2) changed nothing.
+- C6-k60 vs dense: R@5 +1 question (34 vs 33), R@3 +3 (33 vs 30), top 4 (what `ask()`
+  sends the LLM) 33 vs 31; R@1 -2 (24 vs 26); MRR and nDCG equal. Hybrid puts more right
+  chunks in the top few, but not more at rank 1. Ordering is the reranker's job (3.5).
+- Ceiling 36/41 not reached: the 3 sparse-only questions (q-010, q-018, q-048; sparse
+  ranks 2, 4, 4) landed at 6, 7, 7. Dense ranked them 8, 7 and not in the top 10, and RRF
+  rewards agreement. The +1 is q-017, which neither searcher had in its top 5 (dense: not in
+  top 10, sparse 8); with both votes it reaches 5 at k=60 (8 at k=10).
+- k=60 vs k=10: 1 question apart (q-017), within noise; keep k=60 (the paper default).
+- C6-server vs C6-k60 (D-054): top 10 identical for 36 of 41 questions; the other 5 differ
+  only by tied chunks swapping places. One tie (q-055: chunk 0 dense 1 / sparse 2, chunk 5
+  dense 2 / sparse 1, same score) sits at rank 1, so R@1 is 1 question lower (0.561 vs
+  0.585). Qdrant orders ties at random: 30 repeats of q-055 gave 16 x (5, 0), 14 x (0, 5).
+  Our code always lets the dense list win a tie. Search p50 halves: 12.3 vs 24.8 ms.
+- `python -m evals.compare_fusion` (first 10 dev questions, top 5): Qdrant with k=61 = ours
+  10/10 (same chunks, same order). Qdrant's default k (2): same chunks 4/10, same order 2/10.
+- C7 vs C6-server (reranker `BAAI/bge-reranker-base` rev `2cfc18c9`, CPU, warm, n=41): the
+  reranker moved 16 of 41 questions. Better 8: the 3 sparse-only questions hybrid buried
+  (q-010 6->3, q-018 7->3, q-048 7->2), q-006 out of top 10 -> 6, and four to rank 1
+  (q-008, q-013, q-047, q-055); r20 only: q-017 5->4. Worse 7: q-003 3 -> out of top 10,
+  q-007 2->6, q-023 2->5 (r20) / 6, q-009 / q-049 / q-064 1->2, q-059 3->4. Net: R@1 +1 question
+  (24 vs 23), R@5 +1 (35 vs 34, r20 only), top 10 equal (37). Within noise (1 question = 0.024).
+- More candidates did not help: r30 and r50 found no new right chunk (top 10 = 37 in all)
+  and pushed 2 answers one place down. Cost: rerank p50 6.4 s (r20) to 12.1 s (r50) per
+  question, about 500x the search time. bge-reranker-base is too slow on this CPU for +1.
+- C7-mini-r20 (small reranker, D-055) vs C6-server: R@5 36 vs 34 questions, R@3 34 vs 33,
+  R@1 25 vs 23, MRR 0.725 vs 0.687; better on every metric. Up: q-008 3->1, q-010 6->3,
+  q-048 7->2, q-013 2->1, q-055 2->1. Down: q-049 1->2, q-059 3->5. It avoided the big
+  model's worst moves (q-003, q-007, q-023 stay in the top 3) but did not rescue q-018 (7).
+  Rerank p50 485 ms vs 6430 ms for bge-reranker-base (13x faster). Dense alone still has the
+  best R@1 (26 vs 25, 1 question). 36/41 equals the 3.2 "best of both" number, by a
+  different set of questions (q-017 in, q-018 out).
+- C8 query transforms (D-056; LLM `openai/gpt-oss-120b` on Groq, 1 call per question, cached
+  in `evals/cache/`, prompt version qt-v1): **no transform kept, C8 = C7-mini-r20.** The
+  transforms changed the top-10 chunk set for 15 (multi), 17 (hyde), 16 (stepback) and 0
+  (decompose) questions, but the right chunk moved for one question only: q-017 5->4 (multi,
+  hyde) or 5->3 (stepback). Decompose returned all 41 questions unchanged (none split, not
+  even the comparisons). Still missed in the top 5 by every row: q-006 and q-042
+  (comparison), q-018, q-041, q-043 (table-or-code): table and cross-document problems,
+  not wording problems. Cost: +0.9 to 2.7 s LLM p50 per question, plus free-tier quota.
+
+### Generation (step 3.9, D-057): is the final answer good?
+
+Generator `openai/gpt-oss-120b`, judge `qwen/qwen3.8-27b` (different family), prompt
+`judge-v1`, one judge call per answer, all outputs cached in `evals/cache/`. Retrieval =
+Phase 3 best (hybrid + MiniLM rerank 20, top 4). Dev: first 10 answerable + all 5
+unanswerable questions.
+
+| Config | n | Faithfulness | Hallucination rate | Correctness | Relevancy | Abstention acc. | LLM p50 / p95 ms | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|
+| G-best | 15 (10 judged) | 1.000 | 0.000 | 1.000 | 5.0 | 1.000 (0 false, 0 missed refusals) | 990 / 1420 | `2026-10-22_G-best_dev_generation.json` (`4c75fac`) |
+
+Reading: no problem found on 10 mostly easy questions; small n, so "no failures seen", not
+"perfect". q-006 (a retrieval miss: the evidence chunk was not in the top 5) still got a
+correct, supported answer from other chunks: the retrieval metric is stricter than what the
+user sees. Judge agreement: 2 spot-check items in `evals/spot_checks/`, learner verdict pending.
+
+### Final pipeline on the held-out test split (Phase 3 gate, run once)
+
+| Config | n | R@1 | R@3 | R@5 | strict R@5 | MRR | nDCG@5 | rerank p50 / p95 ms | Result file (commit) |
+|---|---|---|---|---|---|---|---|---|---|
+| C0-v1 (Phase 1 baseline) | 17 | 0.353 | 0.824 | 0.941 | 0.912 | 0.608 | 0.674 | none | `2026-10-20_C0-v1_test_retrieval.json` (`f4a3a49`) |
+| FT-200-v1 (Phase 2, dense) | 17 | 0.471 | 0.706 | 0.882 | 0.853 | 0.620 | 0.657 | none | `2026-10-20_FT-200-v1_test_retrieval.json` (`f4a3a49`) |
+| **FINAL-test** (hybrid + MiniLM rerank 20) | 17 | **0.647** | 0.824 | **0.941** | 0.912 | **0.765** | **0.790** | 895 / 967 | `2026-10-22_FINAL-test_test_retrieval.json` (`c1fb7dd`) |
+
+Top-1 hits 6 -> 8 -> 11 of 17; R@5 16 of 17 (same as C0): the gain on unseen questions is
+ranking. An earlier run of the same code with only 3 docs files uncommitted
+(`c163df3+dirty`, MLflow run bd96596e) gave identical scores with rerank p50 473 ms: the
+same work took 1.9x longer on a busier laptop, a reason to monitor latency continuously.

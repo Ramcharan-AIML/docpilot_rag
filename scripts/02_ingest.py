@@ -21,6 +21,13 @@ from functools import partial
 
 from docpilot import config
 from docpilot.embedding.dense import embed_documents
+from docpilot.embedding.sparse import (
+    BM25_B,
+    BM25_K1,
+    SPARSE_MODEL,
+    average_length,
+    embed_sparse_documents,
+)
 from docpilot.ingestion.chunkers.base import embedding_text
 from docpilot.ingestion.chunkers.contextual import ContextWriter
 from docpilot.ingestion.chunkers.fixed import fixed_size_chunks, fixed_token_chunks
@@ -39,6 +46,7 @@ from docpilot.ingestion.includes import resolve_includes
 from docpilot.ingestion.loader import load_documents
 from docpilot.ingestion.manifest import save_manifest
 from docpilot.ingestion.metadata import add_metadata, technology_of
+from docpilot.storage.object_store import download_prefix, get_s3_client
 from docpilot.store.qdrant_store import add_chunks, create_fresh_collection, get_client
 
 TOKENS = config.CHUNK_TOKENS
@@ -78,6 +86,10 @@ def main() -> None:
     # Step 2.7 added PDF/DOCX sources; "--sources fastapi" rebuilds the golden-v0 corpus
     # (the 4 FastAPI pages every row before 2.7 was measured on).
     parser.add_argument("--sources", nargs="+", help="only these sources (default: all)")
+    # Step 3.1b: a fresh machine restores the corpus from object storage first (D-051).
+    parser.add_argument(
+        "--from-s3", action="store_true", help="restore data/docs + data/code from the bucket"
+    )
     # A separate collection per variant keeps C0 intact, so both can be evaluated.
     # Required since D-047: with a default, a bare run would refill the app's collection
     # (FT-200) with fixed 800-character chunks without any warning.
@@ -98,6 +110,11 @@ def main() -> None:
         chunk_function = partial(parent_child_chunks, parents=parents)
     writer = ContextWriter() if args.strategy == "contextual" else None
 
+    if args.from_s3:
+        s3 = get_s3_client()
+        for prefix, folder in (("docs/", config.DOCS_DIR), ("code/", config.CODE_DIR)):
+            count = download_prefix(s3, config.RAW_DOCS_BUCKET, prefix, folder)
+            print(f"restored {count} files from s3://{config.RAW_DOCS_BUCKET}/{prefix}")
     documents = load_documents(config.DOCS_DIR)
     if args.sources:
         documents = [doc for doc in documents if technology_of(doc.source) in args.sources]
@@ -134,12 +151,18 @@ def main() -> None:
         f"over the {MAX_CHUNK_TOKENS}-token limit: {over_limit}"
     )
 
-    vectors = embed_documents([embedding_text(chunk) for chunk in chunks])
+    texts = [embedding_text(chunk) for chunk in chunks]
+    vectors = embed_documents(texts)
+    # Step 3.2: BM25 keyword vectors too. The length penalty needs the corpus' real average
+    # length in BM25 words (FastEmbed's default 256 is a guess for other corpora).
+    bm25_avg_len = round(average_length(texts), 1)
+    sparse_vectors = embed_sparse_documents(texts, bm25_avg_len)
+    print(f"sparse (BM25) vectors: {len(sparse_vectors)}, average length {bm25_avg_len} words")
 
-    client = get_client(config.QDRANT_PATH)
+    client = get_client()
     try:
         create_fresh_collection(client, args.collection, config.EMBEDDING_DIM)
-        add_chunks(client, args.collection, chunks, vectors)
+        add_chunks(client, args.collection, chunks, vectors, sparse_vectors)
         stored = client.count(args.collection, exact=True).count
     finally:
         client.close()  # release the folder lock even if something above failed
@@ -155,6 +178,10 @@ def main() -> None:
         "chunk_count": len(chunks),
         "largest_chunk_tokens": max(token_counts),
         "chunks_over_limit": over_limit,
+        "sparse_model": SPARSE_MODEL,
+        "bm25_k1": BM25_K1,
+        "bm25_b": BM25_B,
+        "bm25_avg_len": bm25_avg_len,
         # Ingest cost is part of the result (plan 2.9 main table); stored up to here
         # (everything but writing the manifest), on this laptop's CPU.
         "ingest_seconds": round(time.perf_counter() - started, 1),

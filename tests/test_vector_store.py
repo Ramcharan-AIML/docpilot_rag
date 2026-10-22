@@ -9,13 +9,16 @@ from pathlib import Path
 import pytest
 from qdrant_client import QdrantClient
 
+from docpilot import config
 from docpilot.ingestion.chunkers.base import Chunk
+from docpilot.store import qdrant_store
 from docpilot.store.qdrant_store import (
     add_chunks,
     create_fresh_collection,
     get_client,
     make_point_id,
     search,
+    search_sparse,
 )
 
 NAME = "test_collection"
@@ -76,3 +79,40 @@ def test_mismatched_lengths_raise(client: QdrantClient) -> None:
 
     with pytest.raises(ValueError):
         add_chunks(client, NAME, chunks, vectors[:2])  # 3 chunks, 2 vectors
+
+
+def test_get_client_server_mode_only_without_a_path(monkeypatch, tmp_path):
+    # Step 3.1: QDRANT_URL set -> server (Docker); an explicit path always means local mode.
+    opened = []
+    monkeypatch.setattr(qdrant_store, "QdrantClient", lambda **kwargs: opened.append(kwargs))
+    monkeypatch.setattr(config, "QDRANT_URL", "http://localhost:6333")
+    get_client()
+    get_client(tmp_path)
+    monkeypatch.setattr(config, "QDRANT_URL", "")
+    get_client()
+    assert opened == [
+        {"url": "http://localhost:6333", "timeout": 60},
+        {"path": str(tmp_path)},
+        {"path": str(config.QDRANT_PATH)},
+    ]
+
+
+def test_sparse_search_finds_the_rare_word(client: QdrantClient) -> None:
+    # Step 3.2: made-up BM25 word ids. Word 7 is rare (one chunk); word 1 is in every chunk,
+    # so Qdrant's IDF makes it nearly worthless.
+    chunks, vectors = three_chunks()
+    sparse = [
+        {"indices": [1, 2], "values": [1.0, 1.0]},
+        {"indices": [1, 7], "values": [1.0, 1.0]},
+        {"indices": [1, 3], "values": [1.0, 1.0]},
+    ]
+    add_chunks(client, NAME, chunks, vectors, sparse)
+    hits = search_sparse(client, NAME, {"indices": [1, 7], "values": [1.0, 1.0]}, top_k=3)
+    assert hits[0]["chunk_number"] == 1  # the chunk with the rare word wins
+    assert search(client, NAME, [1.0, 0.0, 0.0, 0.0], top_k=1)[0]["chunk_number"] == 0
+
+
+def test_sparse_vectors_must_match_chunks(client: QdrantClient) -> None:
+    chunks, vectors = three_chunks()
+    with pytest.raises(ValueError):
+        add_chunks(client, NAME, chunks, vectors, [{"indices": [1], "values": [1.0]}])

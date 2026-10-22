@@ -7,6 +7,73 @@ checklist stay there). Newest session on top.
 
 ## Session log
 
+Newer sessions (37 on) are in [3_progress.md](3_progress.md).
+
+### 2026-10-22, session 36: step 3.5 reranker (D-055)
+
+- Built reranker.py, evals/timing.py, --rerank / --reranker; +5 tests with a fake model
+  (183). bge-reranker-base download 1.1 GB (about 4 min, once).
+- bge-base (`3334243`): r20 R@1 0.585, R@5 0.854, MRR 0.700, rerank p50 6.4 s; r30 and r50
+  no better (same 37 in top 10), slower (10.1 s, 12.1 s). Moved 16 questions: 8 up, 7 down.
+- Learner chose option A: MiniLM (`1ea5274`): R@1 0.610, R@3 0.829, R@5 0.878, MRR 0.725,
+  rerank p50 485 ms. Default reranker = minilm, 20 candidates.
+- Learner predictions: R@1 up a little (right), reranking slow (right: 6.4 s; MiniLM 0.5 s),
+  MiniLM "slight difference" (it was better on every metric except dense's R@1).
+- Also: branch had no upstream, so pushes since 3.1 had failed; fixed with push -u.
+  README rewritten (status + roadmap); teaching section 4b added (learner's request).
+
+### 2026-10-22, session 35: step 3.4 Qdrant server-side RRF (D-054)
+
+- Learner asked for much simpler English (saved to memory). Built store.search_hybrid(),
+  evals/compare_fusion.py, --retriever hybrid-server; +1 test (178).
+- Found: Qdrant RRF = 1/(k + rank - 1), default k = 2; our k=60 = Qdrant k=61 (checked on
+  the server). Learner predicted "same top 5" and "faster": both right.
+- Results (`07f7ef1`): compare 10/10 same (default k: 2/10 same order). C6-server R@5 0.829,
+  R@1 0.561 (manual 0.585: one tie, q-055, Qdrant orders ties at random 16/30 vs 14/30),
+  search p50 12.3 ms vs 24.8 ms manual. Server kept as default.
+
+### 2026-10-22, session 34: step 3.3 hybrid search with hand-written RRF (D-053)
+
+- Built fusion.py, hybrid.py, --retriever hybrid; +7 tests (177). Plan fix: no separate
+  dense_search.py / sparse_search.py (they would repeat the 3.2 store functions).
+- Learner committed (`2457017`) and ran 4 clean rows. Dense parity holds (= FT-200-v1).
+  C6-k60: R@5 0.829 (34/41), R@3 0.805, R@1 0.585, MRR 0.699, p50 24.8 ms. Ceiling 36/41
+  missed: sparse-only q-010, q-018, q-048 land at 6, 7, 7. q-017 rescued (neither had it in
+  top 5). k=10: 1 question worse. Lesson: RRF rewards agreement; one strong vote is not enough.
+- Learner thought "FT-200 is best": all 4 rows ARE FT-200 (chunking); this step changes the
+  searcher. Clarified.
+
+### 2026-10-21, session 33: step 3.2 BM25 (lab by hand, then FastEmbed) (D-052)
+
+- Learner committed 3.1b (`95342ef`). Explained SeaweedFS, boto3, BM25 (learner asked).
+- Lab 3 (learner ran it): IDF "the" 0.288 vs rare words 1.386; "max_length" -> sentence 1
+  only (1.551, others 0); "query parameter" -> short sentence 1 beat long sentence 5 (length
+  penalty); "validate" did not match "validated" (no stemming); tf 10 -> 1.966 vs tf 1 ->
+  1.005 (ceiling 2.2). Learner did not predict (new topic); explanation given after.
+- FastEmbed 0.8.1 BM25 + named vectors dense/sparse + IDF modifier; avg_len 78.6 measured.
+  +5 tests (170). Try run: dense unchanged; sparse R@5 0.805, MRR 0.658; best of both 36/41.
+
+### 2026-10-21, session 32: step 3.1b object storage + MLflow server (D-051)
+
+- Learner committed 3.1 (`d064d6f`). Built SeaweedFS 4.48 + MLflow 3.17.1 server (own
+  Dockerfile adds boto3) in Compose; object_store.py, 04_sync_docs.py, ingest --from-s3,
+  snapshots.py + snapshot_index.py; boto3 1.43.116, moto 5.2.4 (+4 moto tests, 165 total).
+- Done checks: 39 files byte-identical after round trip; index from the S3 copy and from
+  a restored snapshot both give R@1 0.634 / R@5 0.805 / MRR 0.701; MLflow server holds 32
+  re-logged runs, artifacts in SeaweedFS, ABLATION.md regenerated identical.
+- Found: bind mounts in OneDrive made a 453-point collection 593 MB and a snapshot take
+  91 s (621 MB); named volumes: 2 MB in 0.3 s. Also fixed a too-long comment from 3.1.
+
+### 2026-10-21, session 31: Phase 2 merged; step 3.1 Qdrant in Docker (D-050)
+
+- Phase 2 gate closed: PR #3 merged (test + eval-gate green), tag `phase-2`.
+- 3.1: docker-compose.yml (qdrant v1.19.1, amd64+arm64 checked), `QDRANT_URL` server mode
+  in `get_client()` (default empty = local, for tests/CI; plan bug fixed), +1 test (161).
+- FT-200 re-ingested into Docker (453 points): scores identical to local on all 41 dev
+  questions. Learner predicted "recall same, latency changes": correct.
+- Found: `localhost` costs ~2 s per request on Windows (IPv6 first); `127.0.0.1` -> search
+  p50 7.6 / p95 17.7 ms (local mode 3.7 / 4.0).
+
 ### 2026-10-20, session 30: red-PR demo done, Phase 2 gate prep
 
 - Learner committed 2.10 (`f60ab50`) and ran the demo: PR #2 (units bug) -> `eval-gate`

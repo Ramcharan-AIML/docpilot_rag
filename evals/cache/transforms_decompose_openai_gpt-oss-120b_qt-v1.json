@@ -1,0 +1,289 @@
+{
+  "How do I make a query parameter optional?": {
+    "texts": [
+      "How do I make a query parameter optional?"
+    ],
+    "llm_ms": 1042.1,
+    "retries_429": 0
+  },
+  "What status code does FastAPI return on validation failure?": {
+    "texts": [
+      "What status code does FastAPI return on validation failure?"
+    ],
+    "llm_ms": 942.1,
+    "retries_429": 0
+  },
+  "What does `{file_path:path}` mean in a route?": {
+    "texts": [
+      "What does `{file_path:path}` mean in a route?"
+    ],
+    "llm_ms": 980.4,
+    "retries_429": 0
+  },
+  "My route for the current user keeps getting caught by the route that takes a user ID. Why?": {
+    "texts": [
+      "My route for the current user keeps getting caught by the route that takes a user ID. Why?"
+    ],
+    "llm_ms": 773.6,
+    "retries_429": 0
+  },
+  "How does FastAPI decide if a function parameter is a path parameter, a query parameter or the request body?": {
+    "texts": [
+      "How does FastAPI decide if a function parameter is a path parameter, a query parameter or the request body?"
+    ],
+    "llm_ms": 821.9,
+    "retries_429": 0
+  },
+  "Show me the code for a minimal FastAPI app.": {
+    "texts": [
+      "Show me the code for a minimal FastAPI app."
+    ],
+    "llm_ms": 892.7,
+    "retries_429": 0
+  },
+  "Which values in the URL make a `bool` query parameter `True`?": {
+    "texts": [
+      "Which values in the URL make a `bool` query parameter `True`?"
+    ],
+    "llm_ms": 780.2,
+    "retries_429": 0
+  },
+  "Where can I see the automatic interactive documentation for my API?": {
+    "texts": [
+      "Where can I see the automatic interactive documentation for my API?"
+    ],
+    "llm_ms": 688.7,
+    "retries_429": 0
+  },
+  "Can I restrict a query parameter to fixed values the same way as a path parameter?": {
+    "texts": [
+      "Can I restrict a query parameter to fixed values the same way as a path parameter?"
+    ],
+    "llm_ms": 706.8,
+    "retries_429": 0
+  },
+  "What default values do `skip` and `limit` have in the query parameters example?": {
+    "texts": [
+      "What default values do `skip` and `limit` have in the query parameters example?"
+    ],
+    "llm_ms": 859.0,
+    "retries_429": 0
+  },
+  "How do I make a query parameter required?": {
+    "texts": [
+      "How do I make a query parameter required?"
+    ],
+    "llm_ms": 860.6,
+    "retries_429": 0
+  },
+  "What error message do I get if I leave out a required query parameter?": {
+    "texts": [
+      "What error message do I get if I leave out a required query parameter?"
+    ],
+    "llm_ms": 870.1,
+    "retries_429": 0
+  },
+  "Which class must my request data model inherit from?": {
+    "texts": [
+      "Which class must my request data model inherit from?"
+    ],
+    "llm_ms": 764.2,
+    "retries_429": 0
+  },
+  "Which HTTP methods should I use to send data in a request body?": {
+    "texts": [
+      "Which HTTP methods should I use to send data in a request body?"
+    ],
+    "llm_ms": 900.3,
+    "retries_429": 0
+  },
+  "Is it okay to put a JSON payload in a GET call?": {
+    "texts": [
+      "Is it okay to put a JSON payload in a GET call?"
+    ],
+    "llm_ms": 782.7,
+    "retries_429": 0
+  },
+  "What does FastAPI do with the request body once I declare it with a Pydantic model?": {
+    "texts": [
+      "What does FastAPI do with the request body once I declare it with a Pydantic model?"
+    ],
+    "llm_ms": 796.1,
+    "retries_429": 0
+  },
+  "What is the difference between a request body and a response body?": {
+    "texts": [
+      "What is the difference between a request body and a response body?"
+    ],
+    "llm_ms": 601.1,
+    "retries_429": 0
+  },
+  "What happens if I open /items/foo when item_id is declared as an int?": {
+    "texts": [
+      "What happens if I open /items/foo when item_id is declared as an int?"
+    ],
+    "llm_ms": 1010.5,
+    "retries_429": 0
+  },
+  "How do I limit a path parameter to a fixed set of allowed values?": {
+    "texts": [
+      "How do I limit a path parameter to a fixed set of allowed values?"
+    ],
+    "llm_ms": 1044.8,
+    "retries_429": 0
+  },
+  "What does the `@app.get(\"/\")` decorator do?": {
+    "texts": [
+      "What does the `@app.get(\"/\")` decorator do?"
+    ],
+    "llm_ms": 2769.1,
+    "retries_429": 0
+  },
+  "What MRR did the C0 baseline get in my Phase 1 notes?": {
+    "texts": [
+      "What MRR did the C0 baseline get in my Phase 1 notes?"
+    ],
+    "llm_ms": 2847.8,
+    "retries_429": 0
+  },
+  "What was the abstention accuracy of the naive baseline?": {
+    "texts": [
+      "What was the abstention accuracy of the naive baseline?"
+    ],
+    "llm_ms": 2646.8,
+    "retries_429": 0
+  },
+  "How long did a typical answer take in the Phase 1 baseline (p50)?": {
+    "texts": [
+      "How long did a typical answer take in the Phase 1 baseline (p50)?"
+    ],
+    "llm_ms": 2868.1,
+    "retries_429": 0
+  },
+  "In the chain-of-thought paper, what GSM8K accuracy did the smallest LaMDA model (420M) get with chain-of-thought prompting?": {
+    "texts": [
+      "In the chain-of-thought paper, what GSM8K accuracy did the smallest LaMDA model (420M) get with chain-of-thought prompting?"
+    ],
+    "llm_ms": 2971.8,
+    "retries_429": 0
+  },
+  "Did chain-of-thought prompting help GPT-3 175B on CSQA?": {
+    "texts": [
+      "Did chain-of-thought prompting help GPT-3 175B on CSQA?"
+    ],
+    "llm_ms": 2991.2,
+    "retries_429": 0
+  },
+  "What GSM8K accuracy did PaLM 62B get with standard prompting and with chain of thought?": {
+    "texts": [
+      "What GSM8K accuracy did PaLM 62B get with standard prompting and with chain of thought?"
+    ],
+    "llm_ms": 2926.7,
+    "retries_429": 0
+  },
+  "How do I make Pydantic raise an error instead of converting the string '123' to an int?": {
+    "texts": [
+      "How do I make Pydantic raise an error instead of converting the string '123' to an int?"
+    ],
+    "llm_ms": 2977.2,
+    "retries_429": 0
+  },
+  "What does Pydantic do by default when an int field receives the string '123'?": {
+    "texts": [
+      "What does Pydantic do by default when an int field receives the string '123'?"
+    ],
+    "llm_ms": 2852.3,
+    "retries_429": 0
+  },
+  "What is `AliasChoices` used for in Pydantic?": {
+    "texts": [
+      "What is `AliasChoices` used for in Pydantic?"
+    ],
+    "llm_ms": 2830.9,
+    "retries_429": 0
+  },
+  "Can a Docker image be changed after it has been created?": {
+    "texts": [
+      "Can a Docker image be changed after it has been created?"
+    ],
+    "llm_ms": 2673.3,
+    "retries_429": 0
+  },
+  "How do I keep a database container's data when the container is deleted?": {
+    "texts": [
+      "How do I keep a database container's data when the container is deleted?"
+    ],
+    "llm_ms": 2890.4,
+    "retries_429": 0
+  },
+  "Show me an example Dockerfile for a Python application.": {
+    "texts": [
+      "Show me an example Dockerfile for a Python application."
+    ],
+    "llm_ms": 2859.8,
+    "retries_429": 0
+  },
+  "What is retrieval-augmented generation?": {
+    "texts": [
+      "What is retrieval-augmented generation?"
+    ],
+    "llm_ms": 2756.0,
+    "retries_429": 0
+  },
+  "When was the term retrieval-augmented generation introduced?": {
+    "texts": [
+      "When was the term retrieval-augmented generation introduced?"
+    ],
+    "llm_ms": 2970.2,
+    "retries_429": 0
+  },
+  "What is a word embedding?": {
+    "texts": [
+      "What is a word embedding?"
+    ],
+    "llm_ms": 3011.9,
+    "retries_429": 0
+  },
+  "How are ELMo and BERT embeddings different from static word embeddings?": {
+    "texts": [
+      "How are ELMo and BERT embeddings different from static word embeddings?"
+    ],
+    "llm_ms": 3020.9,
+    "retries_429": 0
+  },
+  "What does precision measure in information retrieval?": {
+    "texts": [
+      "What does precision measure in information retrieval?"
+    ],
+    "llm_ms": 2959.5,
+    "retries_429": 0
+  },
+  "Why use cosine similarity instead of Euclidean distance for embeddings?": {
+    "texts": [
+      "Why use cosine similarity instead of Euclidean distance for embeddings?"
+    ],
+    "llm_ms": 2924.8,
+    "retries_429": 0
+  },
+  "Should the BGE query prefix also be added to the documents?": {
+    "texts": [
+      "Should the BGE query prefix also be added to the documents?"
+    ],
+    "llm_ms": 3035.3,
+    "retries_429": 0
+  },
+  "Explain parent-child chunking in one sentence.": {
+    "texts": [
+      "Explain parent-child chunking in one sentence."
+    ],
+    "llm_ms": 2950.0,
+    "retries_429": 0
+  },
+  "How does reciprocal rank fusion score a chunk?": {
+    "texts": [
+      "How does reciprocal rank fusion score a chunk?"
+    ],
+    "llm_ms": 2845.8,
+    "retries_429": 0
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "c19b9aa42c44b18afe2de79e88259c22b024616e8eff1a6ca9818847fa882932": {
+    "claims": [
+      {
+        "claim": "To make a query parameter optional, give it a default value of None in the function signature.",
+        "supported": true
+      },
+      {
+        "claim": "In the example, the parameter q is declared with = None.",
+        "supported": true
+      },
+      {
+        "claim": "FastAPI treats a parameter declared with = None as an optional query parameter.",
+        "supported": true
+      },
+      {
+        "claim": "FastAPI will set the parameter to None when the client does not provide it.",
+        "supported": true
+      },
+      {
+        "claim": "The 'Optional parameters' section states that you can declare optional query parameters by setting their default to None.",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly identifies that setting the default value to None makes the query parameter optional, which matches the reference answer and the provided context.",
+    "relevancy": 5
+  },
+  "541e50a73213a0ee2dbd2727f515055b9bef3b2285f0370f0c69e82893baf2f9": {
+    "claims": [
+      {
+        "claim": "FastAPI responds with an HTTP 422 (Unprocessable Entity) status code when a request fails validation",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly identifies the status code as 422, which matches the reference answer and is supported by the context in source [3] which mentions 'automatic validation with 422 errors'.",
+    "relevancy": 5
+  },
+  "d86a3ad664a68247ef486ab0bf5c65f32aa072498e01cf30dc0c0fa503644ffc": {
+    "claims": [
+      {
+        "claim": "{file_path:path} defines a path-parameter named file_path",
+        "supported": true
+      },
+      {
+        "claim": "The :path suffix tells FastAPI that this parameter should match an arbitrary path string",
+        "supported": true
+      },
+      {
+        "claim": "The parameter matches strings including '/' characters",
+        "supported": true
+      },
+      {
+        "claim": "The route can capture the whole remaining part of the URL as the value of file_path",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly identifies that {file_path:path} declares a path parameter named file_path that matches any path, including slashes, which aligns with the reference answer and the provided context.",
+    "relevancy": 5
+  },
+  "045a157a362b385d9783fa8765f979cc1a4a418a257dce06bd1747fbe69072b5": {
+    "claims": [
+      {
+        "claim": "The generic path `/users/{user_id}` also matches the literal URL `/users/me`.",
+        "supported": true
+      },
+      {
+        "claim": "FastAPI evaluates path operations in the order they are declared.",
+        "supported": true
+      },
+      {
+        "claim": "If the `/users/{user_id}` route is defined before the specific `/users/me` route, the request for the current user is handled by the generic route.",
+        "supported": true
+      },
+      {
+        "claim": "The `user_id` parameter receives the value `\"me\"` in this scenario.",
+        "supported": true
+      },
+      {
+        "claim": "Declaring the fixed path `/users/me` first prevents this from happening.",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly identifies that path operations are evaluated in order and that the specific route `/users/me` must be declared before the generic route `/users/{user_id}` to avoid the generic route matching the specific path. This aligns perfectly with the reference answer and the provided context.",
+    "relevancy": 5
+  },
+  "ccbcb41d882bd529bae3557b883973345794921386861966aafc9449b8f1ad68": {
+    "claims": [
+      {
+        "claim": "FastAPI looks at the type and name of each function argument to decide where the value comes from.",
+        "supported": true
+      },
+      {
+        "claim": "If a function argument's name matches a placeholder in the route path, FastAPI treats that argument as a path parameter.",
+        "supported": true
+      },
+      {
+        "claim": "FastAPI extracts the value of a path parameter from the URL path.",
+        "supported": true
+      },
+      {
+        "claim": "If a function argument is declared as a Pydantic model, FastAPI assumes the whole request body should be parsed into that model.",
+        "supported": true
+      },
+      {
+        "claim": "FastAPI passes the resulting object (parsed from the body) to the function.",
+        "supported": true
+      },
+      {
+        "claim": "Any other arguments that are not part of the path and are not a body model are automatically interpreted as query parameters.",
+        "supported": true
+      },
+      {
+        "claim": "FastAPI is smart enough to distinguish path parameters from query parameters based on the context.",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant's answer accurately reflects the reference answer and the provided context. It correctly identifies that path parameters are determined by name matching, request body by Pydantic model types, and query parameters by default for other scalar types.",
+    "relevancy": 5
+  },
+  "73ba360fe2b1a68a57bfd970e7113c6b2e7be2dac90f42e509131d51cb2e7455": {
+    "claims": [
+      {
+        "claim": "The minimal FastAPI application code is: from fastapi import FastAPI; app = FastAPI(); @app.get(\"/\") async def root(): return {\"message\": \"Hello World\"}",
+        "supported": true
+      },
+      {
+        "claim": "The code should be saved to a file (e.g., main.py)",
+        "supported": true
+      },
+      {
+        "claim": "The app can be run with the FastAPI development server",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant provided the exact code snippet from the documentation which matches the reference answer's description (import FastAPI, create app instance, decorate function with @app.get, return dict).",
+    "relevancy": 5
+  },
+  "f9742ea9b7f53f1bbd378a53166d90ec8fb159b0241e965b8b908ffe46e83a7d": {
+    "claims": [
+      {
+        "claim": "A boolean query parameter is interpreted as True when the URL contains the value '1'",
+        "supported": true
+      },
+      {
+        "claim": "A boolean query parameter is interpreted as True when the URL contains the value 'true'",
+        "supported": true
+      },
+      {
+        "claim": "A boolean query parameter is interpreted as True when the URL contains the value 'on'",
+        "supported": true
+      },
+      {
+        "claim": "A boolean query parameter is interpreted as True when the URL contains the value 'yes'",
+        "supported": true
+      },
+      {
+        "claim": "The interpretation of these values is case-insensitive",
+        "supported": true
+      },
+      {
+        "claim": "Any other case variation of these strings is also treated as True",
+        "supported": true
+      },
+      {
+        "claim": "All other values are interpreted as False",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly lists the specific values (1, true, on, yes) and notes that case variations are accepted, which matches the reference answer and the provided context.",
+    "relevancy": 5
+  },
+  "5010f9cb69c8781a640e664ce225d35feb665ff3d773a532b9163f3245326e7b": {
+    "claims": [
+      {
+        "claim": "You can view the automatic interactive documentation by opening your browser to the /docs endpoint",
+        "supported": true
+      },
+      {
+        "claim": "The URL http://127.0.0.1:8000/docs shows the Swagger UI interactive docs",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly identifies the /docs endpoint and the specific URL, matching the reference answer and the provided context.",
+    "relevancy": 5
+  },
+  "dd4ace2ba11d8e0ed09ad64094235ae076c7a4edce473df346a3e3732d128d7b": {
+    "claims": [
+      {
+        "claim": "You can limit a query parameter to a set of predefined values by using an Enum.",
+        "supported": true
+      },
+      {
+        "claim": "You can use an Enum for query parameters just as you would with a path parameter.",
+        "supported": true
+      },
+      {
+        "claim": "FastAPI treats the enum the same way for validation and documentation.",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly identifies that Enums can be used to restrict query parameters to fixed values, which aligns with the reference answer and the context provided in source [3].",
+    "relevancy": 5
+  },
+  "4a5b7f2460366ee66333061e5b86cb6d9e9c1ef3466d13ad385b09d84b9eeec9": {
+    "claims": [
+      {
+        "claim": "The example sets `skip` to a default of `0`",
+        "supported": true
+      },
+      {
+        "claim": "The example sets `limit` to a default of `10`",
+        "supported": true
+      }
+    ],
+    "faithfulness": 1.0,
+    "unsupported_claims": [],
+    "correctness": "yes",
+    "correctness_score": 1.0,
+    "correctness_reason": "The assistant correctly identifies the default values for both parameters as stated in the context and matching the reference answer.",
+    "relevancy": 5
+  }
+}

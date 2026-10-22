@@ -1,9 +1,20 @@
-"""Tests for rag.py. Search and the LLM are replaced with fakes (monkeypatch), so these
+"""Tests for rag.py. Retrieval and the LLM are replaced with fakes (monkeypatch), so these
 check only the glue: numbering, prompt layout, and the empty-index shortcut."""
 
 import pytest
 
 from docpilot import config, rag
+
+
+def fake_retrieve(hits):
+    """Stands in for pipeline.retrieve: fixed hits, and the stage times it would record."""
+
+    def retrieve(question, client, settings, timings):
+        timings.update({"embed_query": 1.0, "search": 1.0, "rerank": 1.0})
+        return hits
+
+    return retrieve
+
 
 HITS = [
     {"text": "Use Query(default=None).", "source": "fastapi/query.md", "score": 0.81},
@@ -27,8 +38,7 @@ def test_ask_sends_context_and_question_to_the_llm(monkeypatch: pytest.MonkeyPat
         sent["system"], sent["user"] = system, user
         return "Make it optional with Query(default=None) [1]."
 
-    monkeypatch.setattr(rag, "embed_query", lambda question: [0.0] * config.EMBEDDING_DIM)
-    monkeypatch.setattr(rag, "search", lambda client, name, vector, top_k: HITS[:top_k])
+    monkeypatch.setattr(rag, "retrieve", fake_retrieve(HITS))
     monkeypatch.setattr(rag, "chat", fake_chat)
 
     result = rag.ask("How do I make a query parameter optional?", None, None)
@@ -44,8 +54,7 @@ def test_empty_index_returns_not_found_without_llm_call(monkeypatch: pytest.Monk
     def chat_must_not_run(*args, **kwargs):
         raise AssertionError("the LLM was called with no context")
 
-    monkeypatch.setattr(rag, "embed_query", lambda question: [0.0] * config.EMBEDDING_DIM)
-    monkeypatch.setattr(rag, "search", lambda client, name, vector, top_k: [])
+    monkeypatch.setattr(rag, "retrieve", fake_retrieve([]))
     monkeypatch.setattr(rag, "chat", chat_must_not_run)
 
     result = rag.ask("anything", None, None)
@@ -56,13 +65,12 @@ def test_empty_index_returns_not_found_without_llm_call(monkeypatch: pytest.Monk
 
 
 def test_ask_times_every_stage(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(rag, "embed_query", lambda question: [0.0] * config.EMBEDDING_DIM)
-    monkeypatch.setattr(rag, "search", lambda client, name, vector, top_k: HITS)
+    monkeypatch.setattr(rag, "retrieve", fake_retrieve(HITS))
     monkeypatch.setattr(rag, "chat", lambda client, system, user: "answer [1]")
 
     timings = rag.ask("question", None, None)["timings_ms"]
 
-    assert list(timings) == ["embed_query", "search", "llm", "total"]
+    assert list(timings) == ["embed_query", "search", "rerank", "llm", "total"]
     assert all(ms >= 0 for ms in timings.values())
     assert timings["total"] >= timings["llm"]
 
@@ -74,8 +82,12 @@ def test_system_prompt_contains_the_exact_not_found_phrase() -> None:
 
 def test_ask_searches_the_collection_it_is_given(monkeypatch: pytest.MonkeyPatch) -> None:
     searched = []
-    monkeypatch.setattr(rag, "embed_query", lambda question: [0.0] * config.EMBEDDING_DIM)
-    monkeypatch.setattr(rag, "search", lambda client, name, v, k: searched.append(name) or [])
+
+    def spy(question, client, settings, timings):
+        searched.append(settings.collection)
+        return []
+
+    monkeypatch.setattr(rag, "retrieve", spy)
 
     rag.ask("q", None, None)  # default: the API's collection from config.py
     rag.ask("q", None, None, collection="docpilot_hier200")  # an eval testing a strategy

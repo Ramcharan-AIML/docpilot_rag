@@ -8,9 +8,9 @@ Update this file at the end of every session. Newest session log entry goes on t
 
 | Item | Value |
 |---|---|
-| Current phase | Phase 2 gate (all steps done; PR to main + tag `phase-2` pending) |
-| Current step | Phase 2 gate: C5 skipped (D-049); interview notes drafted (mentor) |
-| Next step | learner: commit, PR phase-2-chunking -> main (both checks green), merge, tag `phase-2`; then Phase 3 (read teaching/phase_3_retrieval.md) |
+| Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
+| Current step | 3.10 done: app uses hybrid + reranker via retrieve() (D-058); scope cut for 3-day deadline |
+| Next step | Phase 6 light guardrails, then Phase 7 core: Docker, Prometheus + Grafana, CI/CD, AWS S3 (D-058) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -61,22 +61,23 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 2.8 | More corpora + golden set v1 | done 2026-10-20 (D-045): Pydantic, Docker, Wikipedia x3, interview notes; golden v1 = 65 items; C0-v1 dev R@5 0.780 |
 | 2.9 | Index per strategy, run evals, per-type breakdown | done 2026-10-20: fixes A/B/C, 11-config matrix (D-046), winner FT-200 (D-047): dev R@5 0.805 / MRR 0.701; test R@5 0.882 vs C0 0.941 (ranking gain only) |
 | 2.10 | CI retrieval eval gate (fixture corpus) required on `main` | done 2026-10-20 (D-048): baseline R@5 1.000 / MRR 0.870; red-PR demo #2 (units bug) failed as expected; "required" impossible while private (D-035) |
-| Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | in progress 2026-10-20: C1-C4 + controls done, C5 skipped (D-049), FT-200 chosen, interview notes drafted (mentor); learner: PR to main + tag |
+| Gate | C1 to C5 rows filled, strategy chosen; tag `phase-2` | done 2026-10-20: PR #3 merged to main (test, eval-gate green), tag `phase-2` pushed; C5 skipped (D-049); interview answers = mentor drafts (homework: rewrite) |
 
 ### Phase 3: Retrieval upgrade
 | Step | What | Status |
 |---|---|---|
-| 3.1 | Docker primer; Qdrant in Docker | not started |
-| 3.1b | SeaweedFS + boto3 object storage; MLflow server | not started |
-| 3.2 | Sparse (BM25) vectors | not started |
-| 3.3 | Manual RRF | not started |
-| 3.4 | Qdrant server-side fusion | not started |
-| 3.5 | Reranker + CPU latency | not started |
-| 3.6 | Query transforms | not started |
-| 3.7 | Embedding model comparison | not started |
-| 3.8 | Metadata filtering | not started |
-| 3.9 | Generation eval harness v0 (faithfulness, relevancy, abstention) | not started |
-| Gate | C6 to C8 rows; tag `phase-3` | not started |
+| 3.1 | Docker primer; Qdrant in Docker | done 2026-10-21 (D-050): qdrant v1.19.1 (amd64+arm64), scores identical to local; search p50 7.6 ms via 127.0.0.1 (localhost = 2 s IPv6 trap) |
+| 3.1b | SeaweedFS + boto3 object storage; MLflow server | done 2026-10-21 (D-051): docs round-trip byte-identical, index from S3 copy + snapshot restore give identical scores, 32 runs + artifacts on the MLflow server; named volumes (OneDrive folder: 621 MB / 91 s snapshot -> 2 MB / 0.3 s) |
+| 3.2 | Sparse (BM25) vectors | built 2026-10-21 (D-052): lab3_bm25.py by hand, FastEmbed BM25 + named vectors; clean C-sparse (`2457017`): R@1 0.537, R@5 0.805, MRR 0.658 |
+| 3.3 | Manual RRF | done 2026-10-22 (D-053): C6-k60 R@5 0.829 vs dense 0.805, R@3 0.805 vs 0.732, R@1 0.585 vs 0.634; k=10 worse by 1 |
+| 3.4 | Qdrant server-side fusion | done 2026-10-22 (D-054): same top 5 as manual 10/10 (Qdrant k=61 = our 60); C6-server R@5 0.829, p50 12.3 vs 24.8 ms; ties random |
+| 3.5 | Reranker + CPU latency | done 2026-10-22 (D-055): C7-mini-r20 R@5 0.878, MRR 0.725, rerank p50 485 ms; bge-base r20 R@5 0.854 at 6.4 s |
+| 3.6 | Query transforms | done 2026-10-22 (D-056): multi/hyde/stepback/decompose all R@5 0.878 = C7; none kept (+1 s LLM each, 1 question at most) |
+| 3.7 | Embedding model comparison | built, not run (deadline, D-057); bge-small kept |
+| 3.8 | Metadata filtering | skipped (D-058): 453 chunks, misses are tables |
+| 3.9 | Generation eval harness v0 (faithfulness, relevancy, abstention) | done 2026-10-22 (D-057): G-best faithfulness 1.0, correctness 1.0, abstention 1.0 (10 judged + 5 unanswerable, qwen judge) |
+| 3.10 | `retrieval/pipeline.py` front door, used by the app | done 2026-10-22 (D-058): ask() + API use hybrid + MiniLM reranker; models warmed at startup |
+| Gate | C6 to C8 rows; tag `phase-3` | rows done (C6, C7, C8, G-best); FINAL-test (`c1fb7dd`): R@1 0.647, R@5 0.941, MRR 0.765; PR merge + tag 2026-10-22; spot-check verdicts pending |
 
 ### Phase 4: Agentic RAG with LangGraph
 | Step | What | Status |
