@@ -170,6 +170,28 @@ a valid, honest outcome, and good interview material.
 rewritten query to a file, so later eval runs reuse the exact same rewrites (free and
 deterministic).
 
+### 5b. The simple version (step 3.6, 2026-10-22)
+
+**What it does:** before we search, the LLM changes the question into better search words.
+Then we search with the **original question AND the new text**, and mix the lists with RRF
+(like dense + sparse in 3.3). The reranker still judges against the **original** question.
+
+**Why the original is always kept:** a bad rewrite can then only add noise; it cannot throw
+away what the plain search already found.
+
+**HyDE trap:** the fake answer is a **passage**, not a question, so it is embedded like a
+chunk (no BGE question prefix). Using the question prefix on it would be a quiet bug.
+
+**What we built**
+
+| File | What it does |
+|---|---|
+| `src/docpilot/retrieval/query_transforms.py` | the 4 prompts and `transform()`; cleans the LLM's lines |
+| `src/docpilot/retrieval/hybrid.py` | `multi_search()`: one Qdrant hybrid search per text, RRF over the lists |
+| `evals/transform_cache.py` | saves each LLM output in `evals/cache/`; waits and retries on Groq rate limits |
+| `evals/run_retrieval_eval.py` | option `--transform multi / hyde / stepback / decompose` |
+| `tests/test_query_transforms.py` | 8 tests with a fake LLM (no API key needed) |
+
 ---
 
 ## 6. Choosing an embedding model with data
@@ -181,6 +203,31 @@ quality (Recall@5, MRR) against cost (index time, query latency, RAM, vector siz
 **Classic bug:** each model family expects different prefixes (BGE instruction, `query:` /
 `passage:` for e5, `search_query:` / `search_document:` for nomic). Use the wrong one and
 scores drop quietly. Verify each model card.
+
+### 6b. The simple version (step 3.7, 2026-10-22)
+
+**What it does:** the embedding model turns text into numbers (the "meaning" vector). We
+try 5 models on **exactly the same 453 chunks** and the same questions, and see which one
+finds the right chunk most often, and what it costs.
+
+**Fair test:** we read the chunks back from the app's collection (no re-chunking), use
+**dense search only** (hybrid + reranker would hide part of the difference), and give each
+model its own prefixes from its model card.
+
+| Short name | Model | Size | Prefix (question / chunk) |
+|---|---|---|---|
+| bge-small (now) | BAAI/bge-small-en-v1.5 | 133 MB, 384 numbers | BGE instruction / none |
+| bge-base | BAAI/bge-base-en-v1.5 | 438 MB, 768 | BGE instruction / none |
+| bge-m3 | BAAI/bge-m3 | 2.3 GB, 1024 | none / none |
+| e5-base | intfloat/e5-base-v2 | 438 MB, 768 | `query: ` / `passage: ` |
+| nomic | nomic-ai/nomic-embed-text-v1.5 | 547 MB, 768 | `search_query: ` / `search_document: ` |
+
+**What we measure:** Recall@5 and MRR (quality); vector size, index time, question
+embedding time and RAM (cost). We switch only if the gain is worth the cost.
+
+**What we built:** `evals/compare_embedders.py` (the comparison), `all_payloads()` in
+`store/qdrant_store.py` (reads the chunks back), `tests/test_compare_embedders.py` (pins
+and prefix rules are checked).
 
 ---
 

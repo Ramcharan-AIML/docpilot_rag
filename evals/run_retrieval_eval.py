@@ -9,12 +9,13 @@ from collections import defaultdict
 from pathlib import Path
 
 from docpilot import config
-from docpilot.embedding.dense import embed_query
+from docpilot.embedding.dense import embed_passage, embed_query
 from docpilot.embedding.sparse import embed_sparse_query
 from docpilot.ingestion.chunkers.parent_child import lift_to_parents, load_parents
 from docpilot.ingestion.manifest import load_manifest
 from docpilot.retrieval.fusion import DEFAULT_RRF_K
-from docpilot.retrieval.hybrid import DEFAULT_CANDIDATES, hybrid_search_manual
+from docpilot.retrieval.hybrid import DEFAULT_CANDIDATES, hybrid_search_manual, multi_search
+from docpilot.retrieval.query_transforms import PROMPT_VERSION, TRANSFORMS, search_texts
 from docpilot.retrieval.reranker import rerank
 from docpilot.store.qdrant_store import get_client, search, search_hybrid, search_sparse
 from evals.common import base_record, load_golden_file, load_split, save_result, to_json
@@ -22,12 +23,14 @@ from evals.matching import MIN_OVERLAP, relevance_list
 from evals.metrics import (
     mean,
     ndcg_at_k,
+    percentile,
     recall_at_k,
     reciprocal_rank,
     strict_recall_at_k,
 )
 from evals.timing import StageTimes
 from evals.tracking import log_record
+from evals.transform_cache import TransformCache
 
 # Fetch 10 so we can report @1, @3 and @5 from one search. ask() still uses TOP_K (4).
 SEARCH_K = 10
@@ -75,7 +78,11 @@ def print_table(record: dict) -> None:
     print(f"\nsearch latency (warm, n={latency['n']}): ", end="")
     print(f"p50 {latency['p50']} ms, p95 {latency['p95']} ms")
     for stage, times in record["stage_latency_ms"].items():
-        print(f"  {stage:8} p50 {times['p50']:>8} ms   p95 {times['p95']:>8} ms")
+        print(f"  {stage:9} p50 {times['p50']:>8} ms   p95 {times['p95']:>8} ms")
+    if "transform_llm_ms" in record:
+        llm = record["transform_llm_ms"]
+        print(f"  LLM call (first, paid) p50 {llm['p50']} ms, p95 {llm['p95']} ms; ", end="")
+        print(f"new calls this run {llm['new_calls_this_run']}, 429 retries {llm['retries_429']}")
 
 
 def main() -> None:
@@ -101,9 +108,14 @@ def main() -> None:
     # Step 3.5: rerank the top N search results with the cross-encoder (0 = no reranker).
     parser.add_argument("--rerank", type=int, default=0, help="candidates to rerank, e.g. 30")
     parser.add_argument("--reranker", default=config.RERANKER, choices=sorted(config.RERANKERS))
+    # Step 3.6: let the LLM rewrite the question first (cached in evals/cache/).
+    parser.add_argument("--transform", default="none", choices=["none", *TRANSFORMS])
     parser.add_argument("--golden", type=Path, help="score this golden file, not --split")
     parser.add_argument("--output", type=Path, help="save the result here; skip MLflow")
     args = parser.parse_args()
+    if args.transform != "none" and args.retriever != "hybrid-server":
+        parser.error("--transform needs --retriever hybrid-server")
+    cache = TransformCache(args.transform) if args.transform != "none" else None
 
     golden = load_golden_file(args.golden) if args.golden else load_split(args.split)
     split = args.golden.stem if args.golden else args.split
@@ -132,13 +144,32 @@ def main() -> None:
     try:
         for item in items:
             question = item["question"]
-            # Stage 1, embed: the question becomes the vector(s) this searcher needs.
+            # Stage 0 (step 3.6), transform: rewrites from the cache, or one LLM call.
+            texts = [(question, False)]
+            if cache is not None:
+                with times.measure("transform"):
+                    entry = cache.get(question)
+                texts = search_texts(args.transform, question, entry["texts"])
+            # Stage 1, embed: the question (and rewrites) become the vectors needed.
             with times.measure("embed"):
                 vector = embed_query(question) if args.retriever != "sparse" else None
                 sparse_query = embed_sparse_query(question) if args.retriever != "dense" else None
+                queries = [(vector, sparse_query)]
+                for text, is_passage in texts[1:]:
+                    dense = embed_passage(text) if is_passage else embed_query(text)
+                    queries.append((dense, embed_sparse_query(text)))
             # Stage 2, search (+ fusion for hybrid, + parent lookup for parent-child).
             with times.measure("search"):
-                if args.retriever in ("hybrid", "hybrid-server"):
+                if cache is not None:
+                    hits = multi_search(
+                        client,
+                        args.collection,
+                        queries,
+                        fetch_k,
+                        candidates=args.candidates,
+                        rrf_k=args.rrf_k,
+                    )
+                elif args.retriever in ("hybrid", "hybrid-server"):
                     hybrid = hybrid_search_manual if args.retriever == "hybrid" else search_hybrid
                     hits = hybrid(
                         client,
@@ -189,6 +220,26 @@ def main() -> None:
         )
     if args.retriever.startswith("hybrid"):
         record["settings"].update({"rrf_k": args.rrf_k, "candidates": args.candidates})
+    if cache is not None:
+        # LLM time = the first (paid) call per question, kept in the cache; a cached run
+        # itself takes about 0 ms for this stage.
+        llm_ms = [cache.get(item["question"])["llm_ms"] for item in items]
+        record["settings"].update(
+            {
+                "transform": args.transform,
+                "transform_prompt_version": PROMPT_VERSION,
+                "llm_provider": config.LLM_PROVIDER,
+                "llm_model": config.LLM_MODEL,
+                "llm_calls_per_question": 1,
+            }
+        )
+        record["transform_llm_ms"] = {
+            "n": len(llm_ms),
+            "p50": percentile(llm_ms, 50),
+            "p95": percentile(llm_ms, 95),
+            "new_calls_this_run": cache.new_calls,
+            "retries_429": sum(cache.get(item["question"])["retries_429"] for item in items),
+        }
     record["overall"] = aggregate(rows)
     record["per_type"] = {name: aggregate(group) for name, group in sorted(by_type.items())}
     record["per_domain"] = {name: aggregate(group) for name, group in sorted(by_domain.items())}

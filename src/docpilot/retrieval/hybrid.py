@@ -8,7 +8,7 @@ dicts, so this file calls the store directly.
 from qdrant_client import QdrantClient
 
 from docpilot.retrieval.fusion import DEFAULT_RRF_K, reciprocal_rank_fusion
-from docpilot.store.qdrant_store import search, search_sparse
+from docpilot.store.qdrant_store import search, search_hybrid, search_sparse
 
 DEFAULT_CANDIDATES = 50  # per searcher; a chunk missing from both top 50s cannot come back
 
@@ -50,3 +50,28 @@ def hybrid_search_manual(
         hit["sparse_rank"] = sparse_ranks.get(key)
         hits.append(hit)
     return hits
+
+
+def multi_search(
+    client: QdrantClient,
+    name: str,
+    queries: list[tuple[list[float], dict]],
+    top_k: int,
+    candidates: int = DEFAULT_CANDIDATES,
+    rrf_k: int = DEFAULT_RRF_K,
+) -> list[dict]:
+    """Step 3.6: one Qdrant hybrid search per (dense, sparse) query, then RRF over the lists.
+
+    Used by query transforms: the question and its rewrites each give a ranked list; a
+    chunk found by several of them rises, like a chunk found by both searchers in 3.3.
+    """
+    lists = [
+        search_hybrid(client, name, dense, sparse, top_k, candidates=candidates, rrf_k=rrf_k)
+        for dense, sparse in queries
+    ]
+    by_key: dict[str, dict] = {}
+    for hits in lists:
+        for hit in hits:
+            by_key.setdefault(hit_key(hit), hit)
+    fused = reciprocal_rank_fusion([[hit_key(h) for h in hits] for hits in lists], k=rrf_k)
+    return [{**by_key[key], "score": score} for key, score in fused[:top_k]]

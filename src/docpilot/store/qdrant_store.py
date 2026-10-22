@@ -157,3 +157,16 @@ def to_hits(response) -> list[dict]:
         hit["score"] = point.score
         hits.append(hit)
     return hits
+
+
+def all_payloads(client: QdrantClient, name: str) -> list[dict]:
+    """Every point's payload (the chunk fields), page by page. Step 3.7 re-embeds the SAME
+    chunks with other models, so the comparison changes only the model."""
+    payloads, offset = [], None
+    while True:
+        points, offset = client.scroll(
+            collection_name=name, limit=256, offset=offset, with_payload=True, with_vectors=False
+        )
+        payloads.extend(dict(point.payload or {}) for point in points)
+        if offset is None:  # no next page
+            return payloads
