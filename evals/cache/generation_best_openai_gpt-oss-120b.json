@@ -1,0 +1,62 @@
+{
+  "How do I make a query parameter optional?": {
+    "answer": "To make a query parameter optional, give it a default value of `None` in the function signature. For example:\n\n```python\n@app.get(\"/items/{item_id}\")\nasync def read_item(item_id: str, q: str | None = None):\n    ...\n```\n\nBecause `q` is declared with `= None`, FastAPI treats it as an optional query parameter and will set it to `None` when the client does not provide it【1】. The same pattern is described in the “Optional parameters” section, which states that you can declare optional query parameters by setting their default to `None`【4】.",
+    "llm_ms": 1342.4
+  },
+  "What status code does FastAPI return on validation failure?": {
+    "answer": "FastAPI responds with an HTTP 422 (Unprocessable Entity) status code when a request fails validation [3].",
+    "llm_ms": 774.9
+  },
+  "What does `{file_path:path}` mean in a route?": {
+    "answer": "`{file_path:path}` defines a **path‑parameter** named `file_path`.  \nThe `:path` suffix tells FastAPI that this parameter should match an arbitrary path string (including “/” characters), so the route can capture the whole remaining part of the URL as the value of `file_path`【1】.",
+    "llm_ms": 921.6
+  },
+  "My route for the current user keeps getting caught by the route that takes a user ID. Why?": {
+    "answer": "The generic path `/users/{user_id}` also matches the literal URL `/users/me`.  \nFastAPI evaluates path operations in the order they are declared, so if the\n`/users/{user_id}` route is defined before the specific `/users/me` route, the\nrequest for the current user is handled by the generic route and the\n`user_id` parameter receives the value `\"me\"` [1][2]. Declaring the fixed path\n`/users/me` first prevents this from happening.",
+    "llm_ms": 990.4
+  },
+  "How does FastAPI decide if a function parameter is a path parameter, a query parameter or the request body?": {
+    "answer": "FastAPI looks at the **type and name** of each function argument to decide where the value comes from:\n\n* **Path parameters** – If a function argument’s name matches a placeholder in the route path (e.g., `{item_id}`), FastAPI treats that argument as a path parameter and extracts its value from the URL path [1]​, [2]​.\n\n* **Request‑body parameters** – If a function argument is declared as a Pydantic model (or other body‑compatible type), FastAPI assumes the whole request body should be parsed into that model and passes the resulting object to the function [1]​.\n\n* **Query parameters** – Any other arguments that are not part of the path and are not a body model are automatically interpreted as query parameters [4]​ (FastAPI “is smart enough” to distinguish them, as shown with `q` in the example) [2]​.\n\nSo FastAPI decides based on:\n1. name matching a path placeholder → path parameter,\n2. being a Pydantic model type → request body,\n3. everything else → query parameter.",
+    "llm_ms": 1420.1
+  },
+  "Show me the code for a minimal FastAPI app.": {
+    "answer": "Here is the minimal FastAPI application shown in the documentation:\n\n```python\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n\n@app.get(\"/\")\nasync def root():\n    return {\"message\": \"Hello World\"}\n```\n\nSave this code to a file (e.g., `main.py`) and run it with the FastAPI development server. [2]",
+    "llm_ms": 1035.1
+  },
+  "Which values in the URL make a `bool` query parameter `True`?": {
+    "answer": "A boolean query parameter is interpreted as **True** when the URL contains any of the following values (case‑insensitive):\n\n* `1`\n* `true`\n* `on`\n* `yes`\n\nAny other case variation of these strings (e.g., `True`, `TRUE`, `On`, `YES`, etc.) is also treated as **True**; all other values are interpreted as **False**【3】.",
+    "llm_ms": 1139.7
+  },
+  "Where can I see the automatic interactive documentation for my API?": {
+    "answer": "You can view the automatic interactive documentation by opening your browser to the **/docs** endpoint, e.g.:\n\n**http://127.0.0.1:8000/docs** – this shows the Swagger UI interactive docs【1†L1-L4】. (It is also mentioned again in the documentation section as the place to see the automatic interactive API docs【3†L1-L4】).",
+    "llm_ms": 1153.0
+  },
+  "Can I restrict a query parameter to fixed values the same way as a path parameter?": {
+    "answer": "Yes. You can limit a query parameter to a set of predefined values by using an `Enum` just as you would with a path parameter — FastAPI treats the enum the same way for validation and documentation【3】.",
+    "llm_ms": 1012.1
+  },
+  "What default values do `skip` and `limit` have in the query parameters example?": {
+    "answer": "The example sets `skip` to a default of `0` and `limit` to a default of `10` [2].",
+    "llm_ms": 995.3
+  },
+  "How do I connect FastAPI to a PostgreSQL database?": {
+    "answer": "I could not find this in the documents.",
+    "llm_ms": 755.0
+  },
+  "How do I add JWT authentication to an endpoint?": {
+    "answer": "I could not find this in the documents.",
+    "llm_ms": 640.9
+  },
+  "How do I limit how much memory a Docker container can use?": {
+    "answer": "I could not find this in the documents.",
+    "llm_ms": 590.6
+  },
+  "What is the formula of the BLEU score used for machine translation?": {
+    "answer": "I could not find this in the documents.",
+    "llm_ms": 409.4
+  },
+  "How did you deploy DocPilot to Kubernetes on AWS?": {
+    "answer": "I could not find this in the documents.",
+    "llm_ms": 591.7
+  }
+}
