@@ -100,6 +100,7 @@ def main() -> None:
     )
     # Step 3.5: rerank the top N search results with the cross-encoder (0 = no reranker).
     parser.add_argument("--rerank", type=int, default=0, help="candidates to rerank, e.g. 30")
+    parser.add_argument("--reranker", default=config.RERANKER, choices=sorted(config.RERANKERS))
     parser.add_argument("--golden", type=Path, help="score this golden file, not --split")
     parser.add_argument("--output", type=Path, help="save the result here; skip MLflow")
     args = parser.parse_args()
@@ -113,7 +114,7 @@ def main() -> None:
     embed_query("warm-up")
     embed_sparse_query("warm-up")
     if args.rerank:
-        rerank("warm-up", [{"text": "warm-up"}], keep=1)
+        rerank("warm-up", [{"text": "warm-up"}], keep=1, name=args.reranker)
 
     # Parent-child (plan 2.6.3): score the PARENT text, the text the LLM will read. Found
     # in the collection's manifest, so it cannot be forgotten on the command line.
@@ -157,7 +158,7 @@ def main() -> None:
             # Stage 3, rerank: the cross-encoder re-orders the N candidates, keeps the top 10.
             if args.rerank:
                 with times.measure("rerank"):
-                    hits = rerank(question, hits[: args.rerank], keep=SEARCH_K)
+                    hits = rerank(question, hits[: args.rerank], SEARCH_K, args.reranker)
             rows.append(score_item(item, hits))
     finally:
         client.close()
@@ -182,8 +183,8 @@ def main() -> None:
         record["settings"].update(
             {
                 "rerank_candidates": args.rerank,
-                "reranker": config.RERANKER_MODEL,
-                "reranker_revision": config.RERANKER_REVISION,
+                "reranker": config.RERANKERS[args.reranker][0],
+                "reranker_revision": config.RERANKERS[args.reranker][1],
             }
         )
     if args.retriever.startswith("hybrid"):

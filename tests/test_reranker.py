@@ -19,7 +19,7 @@ class FakeCrossEncoder:
 
 @pytest.fixture(autouse=True)
 def fake_model(monkeypatch):
-    monkeypatch.setattr(reranker, "get_reranker", lambda: FakeCrossEncoder())
+    monkeypatch.setattr(reranker, "get_reranker", lambda name: FakeCrossEncoder())
 
 
 def test_best_scored_chunk_moves_to_the_top():

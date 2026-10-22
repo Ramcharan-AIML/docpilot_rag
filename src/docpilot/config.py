@@ -71,10 +71,14 @@ CONTEXT_CACHE = PROJECT_ROOT / "data" / "processed" / "context_cache.jsonl"
 
 # --- retrieval ---
 TOP_K = 4
-# Reranker (step 3.5, D-055): a cross-encoder reads question + chunk together. Model card
-# and revision checked on Hugging Face 2026-10-22 (MIT licence, 1.1 GB, max 512 tokens).
-RERANKER_MODEL = "BAAI/bge-reranker-base"
-RERANKER_REVISION = "2cfc18c9415c912f9d8155881c133215df768a70"
+# Rerankers (step 3.5, D-055): a cross-encoder reads question + chunk together. Short name
+# -> (model, pinned revision). Model cards checked on Hugging Face 2026-10-22; both read at
+# most 512 tokens. bge-base: MIT, 1.1 GB. minilm: Apache-2.0, 91 MB, trained on MS MARCO.
+RERANKERS = {
+    "bge-base": ("BAAI/bge-reranker-base", "2cfc18c9415c912f9d8155881c133215df768a70"),
+    "minilm": ("cross-encoder/ms-marco-MiniLM-L6-v2", "233902d25c440f23af6f7d6e94d2946bac0bee0a"),
+}
+RERANKER = "bge-base"  # the default until D-055 picks one with data
 RERANKER_MAX_TOKENS = 512
 # The collection the app, 03_ask.py and the evals use by default. Since D-047 (step 2.9):
 # FT-200 = fixed 200 tokens, overlap 25, cleaned, includes resolved. Build it with

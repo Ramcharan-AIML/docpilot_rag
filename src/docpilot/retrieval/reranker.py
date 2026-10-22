@@ -13,17 +13,18 @@ from sentence_transformers import CrossEncoder  # API checked on 6.1.0 (2026-10-
 from docpilot import config
 
 
-@lru_cache(maxsize=1)
-def get_reranker() -> CrossEncoder:
-    """Load once (about 1.1 GB the first time, into the Hugging Face cache), then reuse."""
+@lru_cache(maxsize=2)
+def get_reranker(name: str = config.RERANKER) -> CrossEncoder:
+    """Load a reranker from config.RERANKERS once (downloaded the first time), then reuse."""
+    model, revision = config.RERANKERS[name]
     return CrossEncoder(
-        config.RERANKER_MODEL,
-        revision=config.RERANKER_REVISION,  # pinned, like the embedding model
+        model,
+        revision=revision,  # pinned, like the embedding model
         max_length=config.RERANKER_MAX_TOKENS,  # longer pairs are cut, not an error
     )
 
 
-def rerank(question: str, hits: list[dict], keep: int) -> list[dict]:
+def rerank(question: str, hits: list[dict], keep: int, name: str = config.RERANKER) -> list[dict]:
     """The `keep` best hits by reranker score, best first.
 
     Copies the hits (the caller's list is not changed). Each hit gets "rerank_score" and
@@ -32,7 +33,7 @@ def rerank(question: str, hits: list[dict], keep: int) -> list[dict]:
     if not hits:
         return []
     pairs = [(question, hit["text"]) for hit in hits]
-    scores = get_reranker().predict(pairs)  # one score per (question, chunk) pair
+    scores = get_reranker(name).predict(pairs)  # one score per (question, chunk) pair
     reranked = []
     for search_rank, (hit, score) in enumerate(zip(hits, scores, strict=True), start=1):
         reranked.append({**hit, "rerank_score": float(score), "search_rank": search_rank})
