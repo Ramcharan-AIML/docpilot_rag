@@ -7,7 +7,12 @@ import pytest
 from docpilot.ingestion.chunkers.base import Chunk
 from docpilot.retrieval.fusion import reciprocal_rank_fusion
 from docpilot.retrieval.hybrid import hybrid_search_manual
-from docpilot.store.qdrant_store import add_chunks, create_fresh_collection, get_client
+from docpilot.store.qdrant_store import (
+    add_chunks,
+    create_fresh_collection,
+    get_client,
+    search_hybrid,
+)
 
 
 def test_first_in_both_lists_wins():
@@ -73,3 +78,26 @@ def test_hybrid_finds_what_only_one_searcher_finds(tmp_path: Path):
     assert {hit["chunk_number"] for hit in hits} == {0, 2}
     assert hits[0]["dense_rank"] == 1 and hits[0]["sparse_rank"] is None  # tie: dense first
     assert hits[1]["sparse_rank"] == 1
+
+
+def test_server_fusion_gives_the_same_scores_as_manual(tmp_path: Path):
+    # Step 3.4: our k=60 must equal Qdrant's k=61 (Qdrant uses 1/(k + rank - 1)).
+    # Local mode runs qdrant-client's Python copy of the same formula as the server.
+    client = get_client(tmp_path / "qdrant")
+    try:
+        create_fresh_collection(client, "t", dimension=4)
+        chunks = [Chunk(text=f"text {i}", source="a.md", chunk_number=i) for i in range(3)]
+        vectors = [[1.0, 0.0, 0.0, 0.0], [0.6, 0.8, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0]]
+        sparse = [
+            {"indices": [1], "values": [1.0]},
+            {"indices": [1, 7], "values": [1.0, 1.0]},
+            {"indices": [7], "values": [1.0]},
+        ]
+        add_chunks(client, "t", chunks, vectors, sparse)
+        args = ("t", [1.0, 0.0, 0.0, 0.0], {"indices": [7], "values": [1.0]})
+        manual = hybrid_search_manual(client, *args, top_k=3, candidates=3, rrf_k=60)
+        server = search_hybrid(client, *args, top_k=3, candidates=3, rrf_k=60)
+    finally:
+        client.close()
+    assert [h["chunk_number"] for h in server] == [h["chunk_number"] for h in manual]
+    assert [h["score"] for h in server] == pytest.approx([h["score"] for h in manual])

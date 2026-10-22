@@ -17,7 +17,7 @@ from docpilot.ingestion.manifest import load_manifest
 from docpilot.rag import elapsed_ms
 from docpilot.retrieval.fusion import DEFAULT_RRF_K
 from docpilot.retrieval.hybrid import DEFAULT_CANDIDATES, hybrid_search_manual
-from docpilot.store.qdrant_store import get_client, search, search_sparse
+from docpilot.store.qdrant_store import get_client, search, search_hybrid, search_sparse
 from evals.common import base_record, load_golden_file, load_split, save_result, to_json
 from evals.matching import MIN_OVERLAP, relevance_list
 from evals.metrics import (
@@ -89,7 +89,10 @@ def main() -> None:
     # saved to a chosen file and NOT logged to MLflow (a gate run is a check, not a result).
     # Step 3.2: which search answers. dense = meaning (BGE); sparse = keywords (BM25).
     # Step 3.3: hybrid = both, merged with hand-written RRF (retrieval/hybrid.py).
-    parser.add_argument("--retriever", default="dense", choices=["dense", "sparse", "hybrid"])
+    # Step 3.4: hybrid-server = the same, but Qdrant does the fusion in one call.
+    parser.add_argument(
+        "--retriever", default="dense", choices=["dense", "sparse", "hybrid", "hybrid-server"]
+    )
     parser.add_argument("--rrf-k", type=int, default=DEFAULT_RRF_K, help="hybrid only")
     parser.add_argument(
         "--candidates", type=int, default=DEFAULT_CANDIDATES, help="hybrid only: per searcher"
@@ -118,12 +121,13 @@ def main() -> None:
     rows, search_times = [], []
     try:
         for item in items:
-            if args.retriever == "hybrid":
+            if args.retriever in ("hybrid", "hybrid-server"):
                 # Embed both first, so the timer measures search + fusion only.
                 vector = embed_query(item["question"])
                 sparse_query = embed_sparse_query(item["question"])
+                hybrid = hybrid_search_manual if args.retriever == "hybrid" else search_hybrid
                 start = time.perf_counter()
-                hits = hybrid_search_manual(
+                hits = hybrid(
                     client,
                     args.collection,
                     vector,
@@ -163,7 +167,7 @@ def main() -> None:
             "retriever": args.retriever,
         }
     )
-    if args.retriever == "hybrid":
+    if args.retriever.startswith("hybrid"):
         record["settings"].update({"rrf_k": args.rrf_k, "candidates": args.candidates})
     record["overall"] = aggregate(rows)
     record["per_type"] = {name: aggregate(group) for name, group in sorted(by_type.items())}

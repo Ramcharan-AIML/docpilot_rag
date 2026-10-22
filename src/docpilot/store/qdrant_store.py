@@ -119,6 +119,36 @@ def search_sparse(client: QdrantClient, name: str, sparse_query: dict, top_k: in
     return to_hits(response)
 
 
+def search_hybrid(
+    client: QdrantClient,
+    name: str,
+    dense_vector: list[float],
+    sparse_query: dict,
+    top_k: int,
+    candidates: int,
+    rrf_k: int,
+) -> list[dict]:
+    """Hybrid search in ONE call (step 3.4): Qdrant runs both searches and the RRF itself.
+
+    `rrf_k` means the same as in retrieval/fusion.py: 1 / (k + rank). Qdrant's own formula
+    is 1 / (k + rank - 1), so we send k + 1. Checked on Qdrant v1.19.1 on 2026-10-22: its
+    k=61 gave the same scores as our k=60. Qdrant's default k is 2, NOT 60 (D-054).
+    """
+    response = client.query_points(
+        collection_name=name,
+        prefetch=[
+            models.Prefetch(query=dense_vector, using=DENSE, limit=candidates),
+            models.Prefetch(
+                query=models.SparseVector(**sparse_query), using=SPARSE, limit=candidates
+            ),
+        ],
+        query=models.RrfQuery(rrf=models.Rrf(k=rrf_k + 1)),
+        limit=top_k,
+        with_payload=True,
+    )
+    return to_hits(response)
+
+
 def to_hits(response) -> list[dict]:
     """Qdrant points -> plain dicts (payload + score); the rest of the code sees no Qdrant."""
     hits = []
