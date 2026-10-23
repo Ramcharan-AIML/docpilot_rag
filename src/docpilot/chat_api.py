@@ -9,13 +9,19 @@ POST   /api/chats/{id}/files               upload; returns at once ("processing"
 GET    /api/chats/{id}/files               file chips; the UI polls until "ready"
 DELETE /api/chats/{id}/files/{file_id}     remove one file and its vectors
 POST   /api/chats/{id}/messages            ask; the answer STREAMS back (Server-Sent Events)
+
+Privacy (A1, D-063): every chat call needs the header X-Visitor-Id (a random id the
+browser makes once). A visitor sees only their own chats; anyone else's chat is a 404, as
+if it did not exist. This is privacy, not security: there is no password.
 """
 
 import json
 import logging
+import re
 import shutil
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -39,9 +45,26 @@ class RenameRequest(BaseModel):
     title: str = Field(min_length=1, max_length=store.TITLE_CHARS)
 
 
-def existing_chat(chat_id: str) -> dict:
+# A browser UUID is 36 characters ("3f9c...-...-e1"). Allow 16-64 letters, digits and "-"
+# so a stray value (empty, a huge string, SQL) is refused before it touches the database.
+VISITOR_ID = re.compile(r"^[A-Za-z0-9-]{16,64}$")
+
+
+def visitor(x_visitor_id: Annotated[str, Header()] = "") -> str:
+    """FastAPI reads the X-Visitor-Id header into x_visitor_id (it maps _ to -)."""
+    if not VISITOR_ID.fullmatch(x_visitor_id):
+        raise HTTPException(status_code=400, detail="Missing or bad visitor id.")
+    return x_visitor_id
+
+
+Visitor = Annotated[str, Depends(visitor)]
+
+
+def existing_chat(chat_id: str, owner: str) -> dict:
+    """404 for a chat that does not exist AND for someone else's chat: a stranger cannot
+    even learn that the chat exists (a 403 would tell them)."""
     chat = store.get_chat(chat_id)
-    if chat is None:
+    if chat is None or chat["owner"] != owner:
         raise HTTPException(status_code=404, detail="Chat not found.")
     return chat
 
@@ -52,31 +75,31 @@ def health() -> dict:
 
 
 @router.post("/chats")
-def new_chat() -> dict:
-    return store.create_chat()
+def new_chat(owner: Visitor) -> dict:
+    return store.create_chat(owner)
 
 
 @router.get("/chats")
-def all_chats() -> list[dict]:
-    return store.list_chats()
+def all_chats(owner: Visitor) -> list[dict]:
+    return store.list_chats(owner)
 
 
 @router.get("/chats/{chat_id}")
-def one_chat(chat_id: str) -> dict:
-    chat = existing_chat(chat_id)
+def one_chat(chat_id: str, owner: Visitor) -> dict:
+    chat = existing_chat(chat_id, owner)
     return {**chat, "messages": store.get_messages(chat_id), "files": store.list_files(chat_id)}
 
 
 @router.patch("/chats/{chat_id}")
-def rename(chat_id: str, body: RenameRequest) -> dict:
-    existing_chat(chat_id)
+def rename(chat_id: str, body: RenameRequest, owner: Visitor) -> dict:
+    existing_chat(chat_id, owner)
     store.rename_chat(chat_id, body.title)
     return store.get_chat(chat_id)
 
 
 @router.delete("/chats/{chat_id}")
-def remove_chat(chat_id: str, request: Request) -> dict:
-    existing_chat(chat_id)
+def remove_chat(chat_id: str, request: Request, owner: Visitor) -> dict:
+    existing_chat(chat_id, owner)
     delete_where(request.app.state.qdrant, config.UPLOADS_COLLECTION, "chat_id", chat_id)
     shutil.rmtree(config.UPLOADS_DIR / chat_id, ignore_errors=True)
     store.delete_chat(chat_id)
@@ -84,9 +107,9 @@ def remove_chat(chat_id: str, request: Request) -> dict:
 
 
 @router.post("/chats/{chat_id}/files", status_code=202)
-def upload(chat_id: str, file: UploadFile, request: Request) -> dict:
+def upload(chat_id: str, file: UploadFile, request: Request, owner: Visitor) -> dict:
     """202 Accepted: the file is saved and checked now, indexed in the background."""
-    existing_chat(chat_id)
+    existing_chat(chat_id, owner)
     try:
         path, name, source, pages = save_upload(file.filename or "", file.file.read(), chat_id)
     except UploadError as error:
@@ -97,13 +120,14 @@ def upload(chat_id: str, file: UploadFile, request: Request) -> dict:
 
 
 @router.get("/chats/{chat_id}/files")
-def files(chat_id: str) -> list[dict]:
-    existing_chat(chat_id)
+def files(chat_id: str, owner: Visitor) -> list[dict]:
+    existing_chat(chat_id, owner)
     return store.list_files(chat_id)
 
 
 @router.delete("/chats/{chat_id}/files/{file_id}")
-def remove_file(chat_id: str, file_id: str, request: Request) -> dict:
+def remove_file(chat_id: str, file_id: str, request: Request, owner: Visitor) -> dict:
+    existing_chat(chat_id, owner)
     file = store.get_file(file_id)
     if file is None or file["chat_id"] != chat_id:
         raise HTTPException(status_code=404, detail="File not found.")
@@ -114,11 +138,13 @@ def remove_file(chat_id: str, file_id: str, request: Request) -> dict:
 
 
 @router.post("/chats/{chat_id}/messages")
-def message(chat_id: str, body: MessageRequest, request: Request) -> StreamingResponse:
+def message(
+    chat_id: str, body: MessageRequest, request: Request, owner: Visitor
+) -> StreamingResponse:
     """Server-Sent Events: one "data: {json}" line per event, so text appears as it is
     written. Why SSE and not WebSockets: one direction (server -> browser) is all we need,
     and SSE is plain HTTP."""
-    existing_chat(chat_id)
+    existing_chat(chat_id, owner)
     qdrant, llm = request.app.state.qdrant, request.app.state.llm
 
     def events():

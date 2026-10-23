@@ -175,3 +175,18 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   around month 5 (D-018). Plan: `implementation_plan/5_phase_7_live_link.md`.
 - **Alternatives:** m7i-flex.large 8 GB (about 2.5 months of credits); Oracle first
   (capacity/signup risk before the deadline); free PaaS (they sleep).
+
+## D-063: public-mode safety (Stage A of Phase 7) (2026-10-23, filled step by step)
+
+- **A1 private chats per visitor:** the browser makes a random visitor id once
+  (`crypto.randomUUID()`, getRandomValues fallback on plain HTTP; kept in localStorage,
+  in memory if storage is blocked) and sends `X-Visitor-Id` on every `/api/chats` call
+  (one `call()` helper in `web/src/api.js`). `chats.owner` column, migrated on start with
+  `ALTER TABLE` (old chats get owner "" = hidden from everyone), index on owner. Every chat
+  endpoint: someone else's chat = **404** (not 403, which would confirm it exists). Bad or
+  missing id (not 16-64 of `A-Za-z0-9-`) = 400. `/api/health` needs no id.
+- **Why not:** cookies (would work; a header is easier to see and test, a small change
+  later); IP address (shared by many, changes); login (days of work, Stage D); a typed
+  name (two people pick the same one).
+- **Honest limit:** privacy, not security: the id is a bearer token with no password.
+- **No new dependency.**

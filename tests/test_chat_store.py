@@ -1,5 +1,8 @@
 """Tests for the SQLite chat store, on a temp database file."""
 
+import sqlite3
+from contextlib import closing
+
 import pytest
 
 from docpilot import config
@@ -69,3 +72,25 @@ def test_rename_is_cut_to_the_title_limit() -> None:
     chat = store.create_chat()
     store.rename_chat(chat["id"], "x" * 200)
     assert len(store.get_chat(chat["id"])["title"]) == store.TITLE_CHARS
+
+
+def test_list_chats_shows_one_owner_only() -> None:
+    mine = store.create_chat("visitor-a")
+    store.create_chat("visitor-b")
+    assert [chat["id"] for chat in store.list_chats("visitor-a")] == [mine["id"]]
+    assert store.get_chat(mine["id"])["owner"] == "visitor-a"
+
+
+def test_old_database_gets_the_owner_column(tmp_path) -> None:
+    # A database made before A1 (D-063): chats without an owner column, one chat inside.
+    old = tmp_path / "old.db"
+    with closing(sqlite3.connect(old)) as db, db:
+        db.execute(
+            "CREATE TABLE chats (id TEXT PRIMARY KEY, title TEXT NOT NULL,"
+            " created_at TEXT NOT NULL, updated_at TEXT NOT NULL)"
+        )
+        db.execute("INSERT INTO chats VALUES ('c1', 'Old chat', 't', 't')")
+    store.init_db(old)
+    store.init_db(old)  # running it twice is safe (the server runs it on every start)
+    assert store.get_chat("c1", old)["owner"] == ""  # kept, but no visitor sees it
+    assert store.list_chats("visitor-a", old) == []

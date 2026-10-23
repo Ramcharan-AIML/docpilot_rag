@@ -30,9 +30,13 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(chat_api.jobs, "submit", lambda row, path, q: submitted.append(row))
     monkeypatch.setattr(api.app.state, "qdrant", FakeQdrant(), raising=False)
     monkeypatch.setattr(api.app.state, "llm", None, raising=False)
-    test_client = TestClient(api.app)
+    test_client = TestClient(api.app, headers={"X-Visitor-Id": VISITOR_A})
     test_client.submitted = submitted
     return test_client
+
+
+VISITOR_A = "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa"
+OTHER = {"X-Visitor-Id": "bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb"}  # visitor B
 
 
 def test_chat_create_list_get_rename_delete(client) -> None:
@@ -106,3 +110,46 @@ def test_message_validation(client) -> None:
     assert client.post(url, json={"question": ""}).status_code == 422
     assert client.post(url, json={"question": "q", "library": "other"}).status_code == 422
     assert client.post("/api/chats/nope/messages", json={"question": "q"}).status_code == 404
+
+
+# --- A1: private chats per visitor ---
+
+
+def test_visitor_b_cannot_see_or_touch_visitor_a_chat(client, monkeypatch) -> None:
+    def fake_turn(*args):
+        yield {"type": "done", "answer": "", "status": "ok", "sources": [], "timings": {}}
+
+    monkeypatch.setattr(chat_api, "run_turn", fake_turn)
+    chat = client.post("/api/chats").json()  # made by visitor A
+    url = f"/api/chats/{chat['id']}"
+    file = client.post(f"{url}/files", files={"file": ("a.md", b"# A", "text/markdown")}).json()
+    upload = {"file": ("b.md", b"# B", "text/markdown")}
+
+    assert client.get("/api/chats", headers=OTHER).json() == []  # list
+    assert client.get(url, headers=OTHER).status_code == 404  # open
+    assert client.patch(url, json={"title": "x"}, headers=OTHER).status_code == 404  # rename
+    assert client.get(f"{url}/files", headers=OTHER).status_code == 404  # file chips
+    assert client.post(f"{url}/files", files=upload, headers=OTHER).status_code == 404
+    assert client.delete(f"{url}/files/{file['id']}", headers=OTHER).status_code == 404
+    ask = client.post(f"{url}/messages", json={"question": "q"}, headers=OTHER)
+    assert ask.status_code == 404
+    assert client.delete(url, headers=OTHER).status_code == 404  # delete
+
+    # Visitor A still has everything, untouched.
+    assert client.get(url).json()["title"] == "New chat"
+    assert [f["id"] for f in client.get(f"{url}/files").json()] == [file["id"]]
+    assert api.app.state.qdrant.deleted == []  # B deleted no vectors
+
+
+def test_each_visitor_lists_only_their_own_chats(client) -> None:
+    mine = client.post("/api/chats").json()
+    theirs = client.post("/api/chats", headers=OTHER).json()
+    assert [c["id"] for c in client.get("/api/chats").json()] == [mine["id"]]
+    assert [c["id"] for c in client.get("/api/chats", headers=OTHER).json()] == [theirs["id"]]
+
+
+@pytest.mark.parametrize("bad", ["", "short", "x" * 65, "a' OR '1'='1' --------"])
+def test_missing_or_bad_visitor_id_is_refused(client, bad) -> None:
+    response = client.get("/api/chats", headers={"X-Visitor-Id": bad})
+    assert response.status_code == 400
+    assert client.get("/api/health", headers={"X-Visitor-Id": bad}).status_code == 200
