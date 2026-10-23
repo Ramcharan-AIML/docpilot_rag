@@ -1,0 +1,11 @@
+# The front door (Phase 7 B3, D-065). Teaching: docs/production/04_teach_https_dns_caddy.md
+# DOMAIN comes from the environment: "localhost" on the laptop (Caddy makes its own local
+# certificate), the DuckDNS name on the server (a free Let's Encrypt certificate, renewed
+# automatically).
+{$DOMAIN} {
+	# smaller replies (the React JavaScript shrinks about 3x); streaming answers still
+	# flush at once (Caddy flushes text/event-stream immediately)
+	encode gzip
+	# "app" = the app container's name on the Compose network (Docker's own DNS)
+	reverse_proxy app:8000
+}

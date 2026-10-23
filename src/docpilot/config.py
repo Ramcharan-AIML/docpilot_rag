@@ -69,6 +69,9 @@ SEMANTIC_PERCENTILE = 10
 CONTEXT_PROMPT_VERSION = "ctx-v1"
 CONTEXT_CACHE = PROJECT_ROOT / "data" / "processed" / "context_cache.jsonl"
 
+# BM25 word lists baked into the Docker image (D-064); empty on the laptop = use the cache.
+BM25_MODEL_PATH = os.getenv("BM25_MODEL_PATH", "")
+
 # --- retrieval ---
 TOP_K = 4
 # Rerankers (step 3.5, D-055): a cross-encoder reads question + chunk together. Short name
@@ -134,6 +137,9 @@ MAX_FILES_PER_CHAT = 3 if PUBLIC_MODE else 50
 # 30 s, then get the "busy" message. On the laptop too: it costs nothing there.
 MAX_CONCURRENT_ANSWERS = 2
 QUEUE_WAIT_SECONDS = 30
+# A6: public mode deletes chats (rows, files, vectors) idle for this many days, hourly.
+CHAT_IDLE_DAYS = 7
+CLEANUP_EVERY_SECONDS = 3600
 if PUBLIC_MODE:
     MAX_UPLOAD_PAGES = 300  # 301 pages took 94 s to index on the laptop (D-062)
     MAX_UPLOAD_MB = 20

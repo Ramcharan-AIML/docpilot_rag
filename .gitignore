@@ -70,3 +70,20 @@ data/uploads/
 # React UI (D-061): installed packages and build output are rebuilt by npm
 web/node_modules/
 web/dist/
+
+# ---------------------------------------------------------------
+# Personal learning and tracking notes (learner's choice, 2026-10-23):
+# kept on the laptop only, not part of the product on GitHub
+# ---------------------------------------------------------------
+# docs/interview/
+# docs/teaching/
+# docs/project_guide/
+# docs/interview_notes.md
+# docs/decisions.md
+# docs/2_decisions.md
+# docs/3_decisions.md
+# docs/progress.md
+# docs/2_progress.md
+# docs/3_progress.md
+# docs/failure_log_phase1.md
+# docs/CHAT_CONTEXT.md

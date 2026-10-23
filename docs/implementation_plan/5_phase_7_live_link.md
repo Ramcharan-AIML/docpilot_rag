@@ -96,10 +96,10 @@ starts with a short explanation. After the step, the real result goes into the p
 
 | Before step | Learn | Primer file | Status |
 |---|---|---|---|
-| A1-A7 | Public-app safety: sessions vs accounts, rate limiting, concurrency, health vs readiness | `primer_public_app_safety.md` | **new** |
-| B1-B6 | **Docker images**: image vs container, layers and cache, multi-stage builds, `.dockerignore`, volumes, health checks, memory limits, image registries | `primer_docker_images.md` | **new** |
-| B3, C6 | **HTTPS, DNS, reverse proxy**: what a domain is, DNS records, TLS certificates, Let's Encrypt, why Caddy | `primer_https_dns_caddy.md` | **new** |
-| B5 | **CI/CD and container registries**: build pipelines, GHCR, image tags, `GITHUB_TOKEN` permissions | `primer_cicd_ghcr.md` | **new** |
+| A1-A7 | Public-app safety: sessions vs accounts, rate limiting, concurrency, health vs readiness | `docs/production/02_teach_public_app_safety.md` | done |
+| B1-B6 | **Docker images**: image vs container, layers and cache, multi-stage builds, `.dockerignore`, volumes, health checks, memory limits, image registries | `docs/production/03_teach_docker_images.md` | **new** |
+| B3, C6 | **HTTPS, DNS, reverse proxy**: what a domain is, DNS records, TLS certificates, Let's Encrypt, why Caddy | `docs/production/` (teach file) | **new** |
+| B5 | **CI/CD and container registries**: build pipelines, GHCR, image tags, `GITHUB_TOKEN` permissions | `docs/production/` (teach file) | **new** |
 | B8 | **Prometheus + Grafana**: metrics vs logs, counters / gauges / histograms, PromQL, dashboards | `primer_prometheus_grafana.md` | exists (update with our metrics) |
 | B8 | Monitoring an AI app: latency per stage, refusals, blocks | `primer_rag_monitoring.md` | exists |
 | C0-C10 | **AWS**: regions, IAM (users, roles, policies, MFA), EC2, EBS, Elastic IP, security groups, S3, SSM (Session Manager + Parameter Store), CloudShell, Budgets, the free plan's rules | `primer_aws.md` + `2_primer_aws.md` | exist (add a part 3: free plan, CloudShell, SSM, our exact setup) |
@@ -191,7 +191,7 @@ disk forever. The number of days is a setting.
 
 # Stage B: containers (no AWS needed)
 
-Teaching first: `docs/teaching/primer_docker_images.md` (new, short): image vs container,
+Teaching first: `docs/production/03_teach_docker_images.md` (new, short; learner rule 2026-10-23: all production teaching lives in `docs/production/`): image vs container,
 layers and cache, multi-stage builds, `.dockerignore`, why "models baked in" means no cold
 start, environment variables, volumes, health checks, memory limits.
 
@@ -492,6 +492,9 @@ In the order of `phase_7_production.md` ... `4_phase_7_production.md`, now on a 
 | A1 Private chats per visitor | done 2026-10-23 (313 tests; two-browser check passed) |
 | A2 Abuse limits | built 2026-10-23 from measured tokens (322 tests); values changed from the plan, see D-063; live check skipped by the learner |
 | A3 Concurrency cap + A4 busy message | built 2026-10-23 (326 tests: full queue, fake 429, seat freed) |
+| A5 uploads on disk + A6 cleanup + A7 /ready | done 2026-10-23 (332 tests; A5 on Docker Qdrant; A7 checked live) |
+| B1 `.dockerignore` + B2 Dockerfile | done 2026-10-23 (D-064); 1.86 GB; offline start + no .env checked |
+| B3 compose.prod + Caddyfile | built 2026-10-23 (D-065); configs validated; laptop run pending |
 | A2 Abuse limits | not started |
 | A3 Concurrency cap | not started |
 | A4 "Busy" message | not started |

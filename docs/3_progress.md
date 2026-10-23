@@ -12,7 +12,7 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
 - New mentor session takes over from "Phase_Guardrails". PR #6 merged; branch `production`.
 - Learner keeps personal notes off GitHub later (cleanup on main before sharing the link;
   `.gitignore` lines written but commented out by the learner for now).
-- Primer `teaching/primer_public_app_safety.md` (all of Stage A) written before building.
+- Primer `production/02_teach_public_app_safety.md` (moved from teaching/) (all of Stage A) written before building.
 - A1 built: `chats.owner` + migration, `X-Visitor-Id` on every chat call, 404 for others,
   400 for a bad id. 313 tests pass (8 new), ruff clean, React build OK.
 - Learner's check: predicted Incognito would show the same chats (wrong: own localStorage =
@@ -27,6 +27,12 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
   80/day, uploads 10/day/IP, 3 files/chat. 322 tests. Live check skipped by the learner.
 - A3+A4: 2 answer seats (BoundedSemaphore), "Waiting in line" stage event, Groq 429 =
   busy message (stream) / 503 (`/ask`). 326 tests pass, React build OK.
+- Learner asked for `docs/production/01_production_log.md`: one simple tracking file for
+  every production step (picture, files, small words, results, commands; no add/commit/
+  push). Written for A0-A4, kept up to date from now on.
+- A5 (uploads collection `memory=cold` + payload indexes; verified on Docker Qdrant
+  1.19.1 with a temp collection), A6 (`chat/cleanup.py`, hourly, public mode, 7 days), A7
+  (`/ready`). 332 tests pass. The running :8000 server was old code (404 on /ready).
 
 ### 2026-10-23, session 42: React chat app (D-061)
 

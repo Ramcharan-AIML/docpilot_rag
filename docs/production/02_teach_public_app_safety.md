@@ -203,6 +203,8 @@ Health = alive (restart if not). Ready = able to serve (send traffic only if yes
 
 | Step | Result | Date |
 |---|---|---|
+| A5 | Qdrant 1.19 uses `memory: cold` (not the old `on_disk`); a temp collection on the Docker server showed dense, sparse and payload all cold + chat_id/source indexes | 2026-10-23 |
+| A6+A7 | cleanup deletes only chats idle > 7 days (rows, files, vectors); /ready 200 vs 503 when Qdrant is down; unit tests | 2026-10-23 |
 | A2 | Limits set from MEASURED tokens (1,149 median per answer, n=5); unit tests only, live check skipped | 2026-10-23 |
 | A3+A4 | 2 seats; full queue shows "Waiting in line" then the busy message; a fake Groq 429 shows the busy message and frees the seat; unit tests only | 2026-10-23 |
 | A1 | Normal window and Incognito = two visitors, each sees only their own chats; old chats (owner "") hidden from both. Learner predicted Incognito would share chats (wrong). Gotcha: the first test hit an old server started before the change; restart fixed it. | 2026-10-23 |

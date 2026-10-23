@@ -12,12 +12,13 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from openai import RateLimitError
 from pydantic import BaseModel, Field
 
 from docpilot import config, limits
-from docpilot.chat import store
+from docpilot.chat import cleanup, store
 from docpilot.chat_api import client_ip, refuse_if_limited
 from docpilot.chat_api import router as chat_router
 from docpilot.guardrails.input_guard import MAX_QUESTION_CHARS
@@ -65,7 +66,11 @@ async def lifespan(app: FastAPI):
     # Step 3.10: load the 3 models now (BGE, BM25, MiniLM reranker), not on the first
     # question: otherwise the first user waits seconds for loading (a "cold start").
     warm_up_models()
+    app.state.models_ready = True  # A7: /ready reports it
+    stop_cleanup = cleanup.start(app.state.qdrant)  # A6: hourly, public mode only
     yield  # the app serves requests while we are paused here
+    if stop_cleanup:
+        stop_cleanup.set()
     app.state.qdrant.close()  # runs once at shutdown (local mode: releases the folder lock)
 
 
@@ -77,6 +82,28 @@ app.include_router(chat_router)
 def health() -> dict:
     """Cheap "is the API up?" check (Docker and Prometheus use it in Phase 7)."""
     return {"status": "ok"}
+
+
+@app.get("/ready")
+def ready() -> JSONResponse:
+    """A7: "can it ANSWER right now?", not just "is the process alive?" (/health).
+
+    Lights on (/health) vs the cook is in and the fridge is full (/ready). Docker restarts
+    a dead process; a monitor (UptimeRobot) and I check /ready. No LLM call here: it
+    would spend the Groq quota on every check.
+    """
+    checks = {"models": bool(getattr(app.state, "models_ready", False))}
+    try:
+        checks["qdrant"] = True
+        checks["library"] = app.state.qdrant.collection_exists(config.COLLECTION_NAME)
+    except Exception:  # Qdrant down or unreachable
+        checks["qdrant"] = checks["library"] = False
+    checks["llm_configured"] = bool(config.LLM_MODEL)
+    ok = all(checks.values())
+    # 503 = "not ready yet": a load balancer or monitor treats it as down.
+    return JSONResponse(
+        {"status": "ready" if ok else "not_ready", "checks": checks}, 200 if ok else 503
+    )
 
 
 @app.post("/ask", response_model=AskResponse)

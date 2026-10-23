@@ -231,6 +231,33 @@ def test_ask_endpoint_busy_is_503(client, one_seat, monkeypatch) -> None:
     assert response.status_code == 503
 
 
+# --- A7: readiness ---
+
+
+def test_ready_when_models_qdrant_library_and_llm_are_there(client, monkeypatch) -> None:
+    monkeypatch.setattr(api.app.state, "models_ready", True, raising=False)
+    monkeypatch.setattr(config, "LLM_MODEL", "some-model")
+    response = client.get("/ready")
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ready",
+        "checks": {"models": True, "qdrant": True, "library": True, "llm_configured": True},
+    }
+
+
+def test_not_ready_when_qdrant_is_down(client, monkeypatch) -> None:
+    def down(name):
+        raise ConnectionError("qdrant unreachable")
+
+    monkeypatch.setattr(api.app.state, "models_ready", True, raising=False)
+    monkeypatch.setattr(config, "LLM_MODEL", "some-model")
+    monkeypatch.setattr(api.app.state.qdrant, "collection_exists", down)
+    response = client.get("/ready")
+    assert response.status_code == 503
+    assert response.json()["checks"]["qdrant"] is False
+    assert client.get("/health").status_code == 200  # alive, just not ready
+
+
 @pytest.mark.parametrize("bad", ["", "short", "x" * 65, "a' OR '1'='1' --------"])
 def test_missing_or_bad_visitor_id_is_refused(client, bad) -> None:
     response = client.get("/api/chats", headers={"X-Visitor-Id": bad})

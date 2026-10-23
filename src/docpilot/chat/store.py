@@ -100,6 +100,14 @@ def list_chats(owner: str = "", path: Path | None = None) -> list[dict]:
         return [dict(row) for row in rows]
 
 
+def idle_chats(before: str, path: Path | None = None) -> list[str]:
+    """Ids of chats with no activity since `before` (ISO time). The same ISO format with
+    UTC everywhere means plain text order = time order."""
+    with closing(connect(path)) as db:
+        rows = db.execute("SELECT id FROM chats WHERE updated_at < ?", (before,))
+        return [row["id"] for row in rows]
+
+
 def get_chat(chat_id: str, path: Path | None = None) -> dict | None:
     with closing(connect(path)) as db:
         row = db.execute("SELECT * FROM chats WHERE id = ?", (chat_id,)).fetchone()

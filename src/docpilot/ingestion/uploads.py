@@ -146,7 +146,7 @@ def ingest_file(
     # collection has no fixed corpus to average over).
     sparse_vectors = embed_sparse_documents(texts, average_length(texts))
 
-    ensure_collection(client, collection, config.EMBEDDING_DIM)
+    ensure_collection(client, collection, config.EMBEDDING_DIM, cold=True)  # A5: on disk
     delete_source(client, collection, source)  # a re-upload replaces the old version
     add_chunks(client, collection, chunks, vectors, sparse_vectors, {"chat_id": chat_id})
     return {"chunks": len(chunks), "seconds": round(time.perf_counter() - started, 1)}

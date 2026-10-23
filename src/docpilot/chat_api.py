@@ -18,7 +18,6 @@ if it did not exist. This is privacy, not security: there is no password.
 import json
 import logging
 import re
-import shutil
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, UploadFile
@@ -27,11 +26,11 @@ from openai import RateLimitError
 from pydantic import BaseModel, Field
 
 from docpilot import config, limits
-from docpilot.chat import jobs, store
+from docpilot.chat import cleanup, jobs, store
 from docpilot.chat.service import run_turn
 from docpilot.guardrails.input_guard import MAX_QUESTION_CHARS
 from docpilot.ingestion.uploads import UploadError, save_upload
-from docpilot.store.qdrant_store import delete_source, delete_where
+from docpilot.store.qdrant_store import delete_source
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")
@@ -113,9 +112,7 @@ def rename(chat_id: str, body: RenameRequest, owner: Visitor) -> dict:
 @router.delete("/chats/{chat_id}")
 def remove_chat(chat_id: str, request: Request, owner: Visitor) -> dict:
     existing_chat(chat_id, owner)
-    delete_where(request.app.state.qdrant, config.UPLOADS_COLLECTION, "chat_id", chat_id)
-    shutil.rmtree(config.UPLOADS_DIR / chat_id, ignore_errors=True)
-    store.delete_chat(chat_id)
+    cleanup.delete_everything(chat_id, request.app.state.qdrant)  # same code as A6 cleanup
     return {"deleted": chat_id}
 
 

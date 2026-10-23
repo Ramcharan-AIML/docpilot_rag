@@ -214,3 +214,67 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   so a threading semaphore is the right kind); a job queue like Celery + Redis (a broker to
   run; Stage D); no cap (20 reranker runs at once on 2 GB = out of memory).
 - **No new dependency** (`httpx` for the fake 429 in tests is already pinned, D-034).
+- **A5 uploads on disk:** `create_collection(cold=True)` for `docpilot_uploads`: dense
+  vectors, sparse index and payload `memory=cold` (Qdrant 1.19 replaced the deprecated
+  `on_disk` flags with `memory`: cold / cached / pinned; checked in qdrant-client 1.19.1
+  and on qdrant.tech storage docs, 2026-10-23) + KEYWORD payload indexes on `chat_id` and
+  `source` (kept in RAM, so filters never read cold payload). Checked on the Docker Qdrant
+  1.19.1 with a temporary collection: all three `cold`, both indexes present. Main library
+  unchanged (RAM, answers every question). The laptop's existing uploads collection keeps
+  its old settings (created before); the server's is new.
+- **A6 cleanup:** `chat/cleanup.py`: hourly daemon thread (public mode only) deletes chats
+  with `updated_at` older than 7 days: vectors, then files, then rows (a failed step leaves
+  the row, so the next round retries). The delete button uses the same
+  `delete_everything()`. Why not cron / Celery beat: extra moving parts for one job.
+- **A7 readiness:** `GET /ready` = 200 only if models warmed up, Qdrant answers, the main
+  collection exists and an LLM model is configured; else 503 with the failed check. No LLM
+  call (would spend quota). `/health` stays "process alive".
+
+## D-064: the server Docker image (Phase 7 B1-B2) (2026-10-23)
+
+- **Images (Docker Hub, checked 2026-10-23, amd64 + arm64):** `node:22.23.4-bookworm-slim`
+  (build stage only), `python:3.13.17-slim-bookworm` (same minor as the laptop's 3.13.2).
+- **CPU-only torch 2.14.1** from download.pytorch.org/whl/cpu (cp313 manylinux x86_64 and
+  aarch64 wheels checked); then `requirements-server.txt` with `-c requirements-lock.txt`.
+- **`requirements-server.txt` (new file):** the runtime pins minus docling-slim and
+  opencv (the app never imports them: checked `sys.modules` after importing
+  `docpilot.api`), plus **pypdfium2==5.14.0** named directly (was only a Docling
+  sub-dependency; same version as the lock). Not a new library, a new direct pin.
+- **Models baked** by running `warm_up_models()` during the build; `HF_HUB_OFFLINE=1` after.
+  Code runs from `/app/src` (`PYTHONPATH`) so `PROJECT_ROOT=/app` as on the laptop.
+- **Non-root** user `docpilot` (uid 1000); `HEALTHCHECK` on `/health` with Python (no curl
+  in slim); `.dockerignore` keeps `.env`, data, docs, tests, evals, .git out.
+- **Why not:** `python:3.13` full (compilers we don't need), alpine (musl: ML wheels
+  missing), default torch (CUDA, GBs), downloading models at start (slow, depends on HF),
+  `pip install -e .` in the image (an editable install is a dev tool; PYTHONPATH is enough).
+- **To measure in B6:** image size, RAM, start-up time. torchvision is NOT installed
+  (transformers treats it as optional): models load without it (checked offline).
+- **Offline bug found and fixed (2026-10-23):** `docker run --network none` -> BM25 failed:
+  fastembed 0.8.1's cache check requires `mock.file` and `tamil.txt`, absent from the
+  Qdrant/bm25 repo, so with `HF_HUB_OFFLINE=1` it refused the complete cache (the laptop
+  hid it by re-checking online at every start). Fix: `config.BM25_MODEL_PATH` (env) ->
+  `SparseTextEmbedding(specific_model_path=...)`; the image symlinks the snapshot to
+  `/app/.cache/bm25`. Laptop unchanged (empty). After: all 3 models load offline; `/app`
+  has no `.env`; user `docpilot`.
+- **`scripts/check_file_lengths.py`:** skips tracked files missing on disk (a moved file
+  crashed it before the move was staged).
+- **Measured (learner, 2026-10-23):** image 1.86 GB (predicted 1.5): torch CPU 873 MB,
+  packages 638 MB, models 226 MB, base ~120 MB, code + UI 0.6 MB.
+
+## D-065: production stack = Caddy + app + Qdrant in one Compose file (Phase 7 B3) (2026-10-23)
+
+- **`docker-compose.prod.yml`** (project `docpilot-prod`, separate from the laptop stack):
+  `caddy:2.11.7-alpine` (Docker Hub checked 2026-10-23, amd64 + arm64) on 80/443(+udp);
+  `app` from `${APP_IMAGE}` (GHCR on the server, `docpilot:dev` on the laptop) with
+  `env_file: .env` + overrides `QDRANT_URL=http://qdrant:6333`, `PUBLIC_MODE=1`,
+  `FORWARDED_ALLOW_IPS=*`, MLflow/S3 endpoints empty; `qdrant:v1.19.1`. Only Caddy has
+  ports. Named volumes for certificates, app data, Qdrant. `restart: unless-stopped`.
+  `mem_limit` 128m / 1400m / 600m = first guesses, set from B6 measurements.
+- **`deploy/Caddyfile`:** `{$DOMAIN} { encode gzip ; reverse_proxy app:8000 }`. Caddy docs
+  (2026-10-23): `text/event-stream` responses are flushed immediately (streaming works);
+  X-Forwarded-For is set by default. Validated with `caddy validate`.
+- **`FORWARDED_ALLOW_IPS=*` is safe only because port 8000 is not published**; uvicorn's
+  proxy headers are on by default and read that variable.
+- **Why not:** Nginx + certbot (more parts for HTTPS), Traefik (more to learn), AWS ALB +
+  ACM (about $16+/month, Rule 17), uvicorn TLS (manual certificates), MLflow/SeaweedFS on
+  the server (laptop tools; RAM is scarce).
