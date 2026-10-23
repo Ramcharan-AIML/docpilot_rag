@@ -16,6 +16,7 @@ MAX_LINES = 500
 ALLOWED = {
     "docs/PROJECT_DOCUMENTATION.md",
     "docs/teaching/phase_6_guardrails_explained.md",
+    "docs/project_guide/01_complete_workflow.md",  # learner asked for one big file (2026-10-23)
     "web/package-lock.json",
 }
 TEXT_SUFFIXES = {".py", ".md", ".txt", ".toml", ".yml", ".yaml", ".json", ".jsonl", ".cfg"}

@@ -5,6 +5,7 @@ Start here. Every session begins with `progress.md`.
 | I want to... | Open |
 |---|---|
 | Know where we are and what is next | [progress.md](progress.md) |
+| **Understand the whole project as it is NOW** (workflow, architecture diagrams, 5-minute interview story) | [project_guide/01_complete_workflow.md](project_guide/01_complete_workflow.md), [02_architecture.md](project_guide/02_architecture.md), [03_interview_story.md](project_guide/03_interview_story.md) |
 | Read the step-by-step story of what was done | [USER_GUIDE.md](USER_GUIDE.md), then [2_USER_GUIDE.md](2_USER_GUIDE.md) (from step 1a.3), then [3_USER_GUIDE.md](3_USER_GUIDE.md) (gates, Phase 2), then [4_USER_GUIDE.md](4_USER_GUIDE.md) (from step 3.3) |
 | Continue in a new chat without losing context | [CHAT_CONTEXT.md](CHAT_CONTEXT.md) |
 | See the rules Claude Code loads every session | [../CLAUDE.md](../CLAUDE.md) |
