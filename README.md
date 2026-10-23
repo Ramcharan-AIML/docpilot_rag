@@ -21,7 +21,7 @@ interview notes: 20 documents, 453 chunks.
 | 3 | Better retrieval: Docker, keyword search, hybrid search, reranking, ... | **in progress** (steps 3.1 to 3.6, 3.9, 3.10 done) |
 | 4 | Agentic RAG with LangGraph | dropped for the deadline (future work) |
 | 5 | Multi-agent, tools, MCP server, human review | dropped for the deadline (future work) |
-| 6 | Guardrails and security tests | next (light version) |
+| 6 | Guardrails and security tests | done (light version, D-059) |
 | 7 | Production: Docker, Prometheus + Grafana, CI/CD, AWS S3 with Terraform | next (core) |
 | 8 | Stretch goals (GraphRAG-lite, DSPy, ColBERT, ...) | dropped (future work) |
 
@@ -63,8 +63,9 @@ Full table: [evals/ABLATION.md](evals/ABLATION.md).
 
 ## What comes next (plan for submission, D-058)
 
-**Phase 6: guardrails (light).** Plain-Python input guard (prompt injection, empty or too
-long input) and output guard (must cite or refuse), measured on a small attack set.
+**Phase 6: guardrails (light), done (D-059).** Plain-Python input guard, untrusted-context
+boxes, cite-or-refuse output guard with a canary; red team: attacks that worked 2/18 ->
+0/18, false blocks 0/84. Full story: `docs/teaching/phase_6_guardrails_explained.md`.
 
 **Phase 7: production (core).**
 - Docker image for the API (models baked in), full Docker Compose stack.

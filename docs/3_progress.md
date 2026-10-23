@@ -7,6 +7,21 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
 
 ## Session log
 
+### 2026-10-22, session 40: Phase 6 light guardrails, built and measured (D-059)
+
+- Learner asked for the whole of Phase 6 at once, then ONE explanation file (any length)
+  plus an interview file, written only after the runs. No commits by the mentor.
+- Built `guardrails/` (input, context, output), `rag.ask(guarded=True)`, API `status` +
+  `timings_ms`, red-team set (18) + `evals/run_redteam.py`, generation eval `--guarded`;
+  +51 tests (252). Fixed during build: first input pattern blocked "What is the system
+  prompt in an LLM app?" (and would block "override the default rules"); gpt-oss cites
+  as `【1】` and `【1†L1-L4】` (seen in cache); stacked-poison bug in the runner.
+- RT-v1 (`81e119d+dirty`): attacks 2/18 -> 0/18; input 8, model 10, output 0; false
+  blocks 0/84 + 0/10; guard p50 0.012 / 0.042 ms. G-guard: faithfulness 1.0, correctness
+  1.0, 1 false refusal (q-003, model under the stricter prompt), LLM p50 998 ms.
+- Docs: phase_6_guardrails_explained.md (one file, allowed long), phase_6_interview.md
+  rewritten with real numbers, ABLATION safety table, USER_GUIDE section 53.
+
 ### 2026-10-22, session 39: Phase 3 gate (FINAL-test), final results sheet, handoff
 
 - docs/interview/final_results.md (best numbers + 5 resume lines), teaching

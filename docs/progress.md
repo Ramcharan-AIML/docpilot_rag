@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
-| Current step | 3.10 done: app uses hybrid + reranker via retrieve() (D-058); scope cut for 3-day deadline |
-| Next step | Phase 6 light guardrails, then Phase 7 core: Docker, Prometheus + Grafana, CI/CD, AWS S3 (D-058) |
+| Current step | Phase 6 light guardrails done (D-059): attacks 2/18 -> 0/18, false blocks 0/84; code not yet committed |
+| Next step | Learner commits + PR; then UI choice (Streamlit recommended), then Phase 7 core: Docker, Prometheus + Grafana, CI/CD, AWS S3 |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -105,14 +105,14 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 ### Phase 6: Guardrails and security
 | Step | What | Status |
 |---|---|---|
-| 6.1 | Red-team set v0 | not started |
-| 6.2 | Plain-Python input guards | not started |
-| 6.3 | Untrusted-context handling + poisoned doc | not started |
-| 6.4 | Plain-Python output guards | not started |
-| 6.5 | Tool guards | not started |
-| 6.6 | Presidio | not started |
-| 6.7 | NeMo / Guardrails AI / Llama Guard comparison | not started |
-| Gate | C11 + safety table; tag `phase-6` | not started |
+| 6.1 | Red-team set v0 | done 2026-10-22 (18 attacks, 6 categories, `evals/redteam/attacks.jsonl`) |
+| 6.2 | Plain-Python input guards | done (0/84 golden false blocks) |
+| 6.3 | Untrusted-context handling + poisoned doc | done (`<document>` boxes + escaping; poisoned chunk forced to rank 1, not a separate collection) |
+| 6.4 | Plain-Python output guards | done (cite-or-refuse, canary, key redaction) |
+| 6.5 | Tool guards | dropped (no tools: agents dropped, D-058) |
+| 6.6 | Presidio | dropped for the deadline (future work) |
+| 6.7 | NeMo / Guardrails AI / Llama Guard comparison | dropped for the deadline (future work) |
+| Gate | safety table (ABLATION.md) + G-guard row done; commit, PR, tag `phase-6` by learner | in progress |
 
 ### Phase 7: Production
 | Step | What | Status |

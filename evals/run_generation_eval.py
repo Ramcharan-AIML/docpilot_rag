@@ -1,6 +1,7 @@
 """Generation eval (step 3.9, D-014): is the final ANSWER good, not just the search?
 
 Run: python -m evals.run_generation_eval --retrieval best --n 20 --config-id G-best
+Phase 6: add --guarded (guarded prompt + <document> boxes + output guard; own cache file).
 For the first N answerable dev questions + every unanswerable one:
 1. retrieve chunks (best = hybrid + MiniLM rerank; dense = the Phase 1/2 app),
 2. the generator LLM answers (the app's prompt, rag.generate),
@@ -19,6 +20,8 @@ import time
 from openai import RateLimitError
 
 from docpilot import config
+from docpilot.guardrails.context_guard import wrap_chunks
+from docpilot.guardrails.output_guard import check_output
 from docpilot.llm.client import chat, get_llm_client
 from docpilot.rag import build_context, generate
 from docpilot.retrieval.pipeline import BEST, DENSE_ONLY, retrieve
@@ -57,8 +60,15 @@ def load_cache(path) -> dict:
 
 
 def save_cache(path, data: dict) -> None:
+    """One entry per line: fully indented, the judge cache passed 500 lines (2026-10-22,
+    Phase 6), breaking the file-length rule. Still plain JSON, so load_cache is unchanged."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    rows = [
+        f"  {json.dumps(key, ensure_ascii=False)}: {json.dumps(value, ensure_ascii=False)}"
+        for key, value in data.items()
+    ]
+    text = "{\n" + ",\n".join(rows) + "\n}\n" if rows else "{}\n"
+    path.write_text(text, encoding="utf-8")
 
 
 def safe(name: str) -> str:
@@ -72,13 +82,19 @@ def main() -> None:
     parser.add_argument("--judge", default=DEFAULT_JUDGE)
     parser.add_argument("--config-id", default="G-best")
     parser.add_argument("--ablation", action="store_true")
+    parser.add_argument(
+        "--guarded", action="store_true", help="Phase 6 guards on (default: the G-best setup)"
+    )
     args = parser.parse_args()
 
     dev = load_split("dev")
     answerable = [item for item in dev if item["should_answer"]][: args.n]
     items = answerable + [item for item in dev if not item["should_answer"]]
     settings = SETTINGS[args.retrieval]
-    gen_path = CACHE_DIR / f"generation_{args.retrieval}_{safe(config.LLM_MODEL)}.json"
+    # The cache is keyed by question only, so a different prompt needs its own file:
+    # otherwise guarded runs would silently reuse answers made with the old prompt.
+    suffix = "_guarded-v1" if args.guarded else ""
+    gen_path = CACHE_DIR / f"generation_{args.retrieval}_{safe(config.LLM_MODEL)}{suffix}.json"
     judge_path = CACHE_DIR / f"judge_{safe(args.judge)}_{JUDGE_VERSION}.json"
     answers, judgements = load_cache(gen_path), load_cache(judge_path)
     llm = get_llm_client()
@@ -89,14 +105,19 @@ def main() -> None:
         for number, item in enumerate(items, start=1):
             question = item["question"]
             hits = retrieve(question, client, settings)
-            context = build_context(hits)
+            # The judge must see exactly the context the generator saw.
+            context = wrap_chunks(hits) if args.guarded else build_context(hits)
             if question not in answers:  # one paid generator call per question, ever
                 start = time.perf_counter()
-                answer = with_retries(generate, question, hits, llm)
+                answer = with_retries(generate, question, hits, llm, args.guarded)
                 llm_ms = round((time.perf_counter() - start) * 1000, 1)
                 answers[question] = {"answer": answer, "llm_ms": llm_ms}
                 save_cache(gen_path, answers)
             answer = answers[question]["answer"]
+            guard_reason = ""
+            if args.guarded:  # what the user would really see after the output guard
+                verdict = check_output(answer, len(hits))
+                answer, guard_reason = verdict.text, verdict.reason
             abstained = said_not_found(answer)
             row = {
                 "id": item["id"],
@@ -105,6 +126,7 @@ def main() -> None:
                 "abstained": abstained,
                 "abstention_correct": abstained != item["should_answer"],
                 "answer": answer,
+                "guard_reason": guard_reason,
                 "llm_ms": answers[question]["llm_ms"],
                 "sources": [f"{h['source']}#{h['chunk_number']}" for h in hits],
             }
@@ -141,6 +163,7 @@ def main() -> None:
             "judge": args.judge,
             "judge_version": JUDGE_VERSION,
             "n_answerable": len(answerable),
+            "guarded": args.guarded,
         }
     )
     record["overall"] = {
@@ -154,6 +177,10 @@ def main() -> None:
         "abstention_accuracy": round(mean([row["abstention_correct"] for row in rows]), 3),
         "false_refusals": sum(row["abstained"] for row in answerable_rows),
         "missed_refusals": sum(not row["abstained"] for row in unanswerable),
+        # Phase 6: answers the output guard replaced (no citation, bad citation, leak).
+        "output_guard_blocks": sum(
+            row["guard_reason"] in ("no_citation", "bad_citation", "prompt_leak") for row in rows
+        ),
         "llm_p50_ms": percentile([row["llm_ms"] for row in rows], 50),
         "llm_p95_ms": percentile([row["llm_ms"] for row in rows], 95),
     }
