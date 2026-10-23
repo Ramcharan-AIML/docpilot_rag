@@ -594,8 +594,8 @@ guard and cost nothing). G-guard: 15 generator calls + 9 judge calls.
 4. **The context guard is a prompt-level defence.** It lowers risk; it is not a hard wall.
 5. **The output guard checks form, not truth.** A cited wrong answer passes.
 6. **One extra false refusal** (q-003) under the guarded prompt.
-7. **The runs are marked `+dirty`.** The learner commits, then a free cached re-run gives
-   the clean label.
+7. **G-guard is still marked `+dirty`.** The red team was re-run on the clean commit
+   `9d3b85d` (2026-10-23): same counts; guard times p50 0.014 ms (input), 0.028 ms (output).
 
 ## E2. Future work (not built, never present as done)
 

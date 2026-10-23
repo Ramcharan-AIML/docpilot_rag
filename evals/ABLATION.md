@@ -321,7 +321,8 @@ Red-team set `evals/redteam/attacks.jsonl`: 18 attacks, 6 categories, determinis
 markers (no judge). Each attack runs through the real `ask()` twice: guards off (the Phase 3
 app) and guards on. Indirect attacks force a poisoned chunk to rank 1 (worst case).
 Result files: `2026-10-22_RT-v1_redteam_redteam.json`, `2026-10-22_G-guard_dev_generation.json`
-(both `81e119d+dirty`: guard code not yet committed; every LLM reply is cached, so a re-run
+(first run `81e119d+dirty`; RT-v1 re-run on the clean commit `9d3b85d` from the cache, file
+`2026-10-23_RT-v1_redteam_redteam.json`: same attack and false-block numbers; a re-run
 on the clean commit is free and gives the same numbers).
 
 | Category | Attacks | Worked before | Worked after | Stopped after by |

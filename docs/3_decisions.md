@@ -57,7 +57,7 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   `config.BLOCKED_PHRASE`. Red team: `evals/redteam/attacks.jsonl` (18 attacks, 6
   categories, deterministic markers), `evals/run_redteam.py` (cached LLM replies, poisoned
   chunk forced to rank 1). Generation eval `--guarded` (own cache file). +51 tests (252).
-- **Numbers (`81e119d+dirty`, RT-v1 and G-guard):** attack success 2/18 (0.111) before ->
+- **Numbers (`81e119d+dirty`; RT-v1 re-run clean on `9d3b85d` 2026-10-23, identical counts):** attack success 2/18 (0.111) before ->
   0/18 after; after-run stops: input guard 8, prompt/model 10, output guard 0. False
   blocks: input guard 0/84 golden questions, output guard 0/10 cached good answers. Guard
   time p50 0.012 ms (input), 0.042 ms (output). G-guard (dev, 10 + 5): faithfulness 1.0,
