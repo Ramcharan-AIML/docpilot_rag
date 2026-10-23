@@ -152,3 +152,26 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   (`/ask`, main library); its upload panel does NOT, because `/upload` was replaced by the
   per-chat `/api/chats/{id}/files`. The React app is the main UI.
 - **Branch:** the learner renames `streamlit-ui` to `frontend-ui`.
+
+## D-062: hosting for an always-on public link: AWS EC2 t3.small now, Oracle later (2026-10-23)
+
+- **Learner's requirements:** pay ₹0; one public link anyone can open; always on (no
+  sleeping, unlike Streamlit Cloud / Render free / Hugging Face free); live before the
+  submission. Wants to learn AWS. Overrides D-061's "AWS = future work".
+- **Checked 2026-10-23 (web):** Render free sleeps after 15 min; HF free CPU sleeps after
+  48 h (and free Docker Spaces may be restricted); AWS free plan (accounts from 2025-07-15):
+  up to $200 credits, ends at 6 months or when credits run out, no charges unless
+  upgraded, account closes at the end; Organizations / Control Tower / IAM Identity Center
+  can convert it to paid; AISPL (India) card check ₹2 refunded; AISPL credit eligibility
+  NOT confirmed. Oracle Always Free A1 cut to 2 OCPU / 12 GB; idle reclaim if CPU,
+  network AND memory all stay under 20% (p95) for 7 days.
+- **Measured (laptop, peak working set):** app with 3 models 776 MB; + a question 890 MB;
+  + a 43-page upload 1,004 MB; a 301-page upload only +31 MB more than 43 pages (batched
+  embedding; time 94 s). Qdrant container 511 MB. Stack estimate 1.6-1.9 GB.
+- **Decision:** AWS EC2 `t3.small` (2 GB) + 2 GB swap, about $20/month of credits (approx.,
+  VERIFY prices) -> about 5-6 months; GHCR, DuckDNS + Caddy, SSM Session Manager (no SSH),
+  Terraform in CloudShell (no stored keys), default VPC for the deadline. Fallback: Oracle
+  Always Free (1 OCPU / 6 GB so memory stays above 20%) if no credits appear. Move to Oracle
+  around month 5 (D-018). Plan: `implementation_plan/5_phase_7_live_link.md`.
+- **Alternatives:** m7i-flex.large 8 GB (about 2.5 months of credits); Oracle first
+  (capacity/signup risk before the deadline); free PaaS (they sleep).

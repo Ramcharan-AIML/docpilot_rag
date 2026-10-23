@@ -17,6 +17,7 @@ ALLOWED = {
     "docs/PROJECT_DOCUMENTATION.md",
     "docs/teaching/phase_6_guardrails_explained.md",
     "docs/project_guide/01_complete_workflow.md",  # learner asked for one big file (2026-10-23)
+    "docs/implementation_plan/5_phase_7_live_link.md",  # learner: one plan file, any length
     "web/package-lock.json",
 }
 TEXT_SUFFIXES = {".py", ".md", ".txt", ".toml", ".yml", ".yaml", ".json", ".jsonl", ".cfg"}
