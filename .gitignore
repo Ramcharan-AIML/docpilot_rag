@@ -63,3 +63,10 @@ Thumbs.db
 mlflow.db
 mlartifacts/
 mlruns/
+
+# User PDF uploads (D-060): personal files, never in git
+data/uploads/
+
+# React UI (D-061): installed packages and build output are rebuilt by npm
+web/node_modules/
+web/dist/

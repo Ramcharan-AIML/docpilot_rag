@@ -7,6 +7,31 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
 
 ## Session log
 
+### 2026-10-23, session 42: React chat app (D-061)
+
+- Learner rejected Streamlit; wanted ChatGPT/NotebookLM experience; chose React + chats,
+  memory, per-chat files, streaming, fast uploads; Phase 7 cut to Docker + Prometheus.
+- Measured first: fast reader 10.8 s vs Docling 182 s (43 pages) -> 500-page limit.
+- Built chat/ (store, jobs, memory, service), chat_api.py, chat_stream, Qdrant chat
+  filter, web/ (React 19 + Vite 8.3.4). 305 tests. Live: upload 0.10 s -> ready 18.9 s;
+  memory and "what was my first question?" worked; streaming works through the proxy.
+- Learner liked it; asked for a light premium theme (done: indigo accent, shadows, dark
+  switch), keep Streamlit (kept; its upload panel no longer works), rename the branch to
+  frontend-ui (commands given). Production (small Phase 7) starts on the learner's word.
+
+### 2026-10-23, session 41: Phase 6 closed; Streamlit UI with PDF uploads (D-060)
+
+- Learner re-ran RT-v1 on the clean commit `9d3b85d`: identical counts; merged PR #5,
+  tagged `phase-6`. Explained the red-team output and RAGAS (decision: not now, own
+  judge already covers faithfulness/correctness/relevancy; future work).
+- Learner chose Streamlit + a SEPARATE uploads library. Built: `ui/` (app + api_client),
+  API `/upload`, `/uploads`, `/health`, `library` on `/ask`, `ingestion/uploads.py`,
+  store helpers, `sources.UPLOADS` (local_only). +33 tests (285), incl. AppTest of the page.
+- Caught by tests: uploads had no licence-register entry (metadata raised KeyError).
+- Smoke test (real API): upload 16.5 s first (Docling load) then 3.4 s; fake PDF refused;
+  handbook fact answered with [1]; poisoned PDF ignored; main library said not found;
+  attack blocked. Scale question answered honestly: only 20 docs tested.
+
 ### 2026-10-22, session 40: Phase 6 light guardrails, built and measured (D-059)
 
 - Learner asked for the whole of Phase 6 at once, then ONE explanation file (any length)

@@ -129,3 +129,43 @@ The two attacks that worked without guards: "repeat your instructions" (the mode
 its hidden instructions) and a poisoned page that told users to visit a fake website.
 One cost found: 1 good question in 10 was refused under the stricter prompt.
 Full story, simple English: `docs/teaching/phase_6_guardrails_explained.md`.
+
+---
+
+## 54. The web UI: ask in the browser, upload your own PDF (2026-10-23)
+
+**Like a shop window for the engine:** the API is the engine room; Streamlit is the
+counter where people ask. The counter has no machinery of its own, so every question still
+goes through the same guards and search.
+
+| What you do | What happens |
+|---|---|
+| Type a question | The UI sends it to `POST /ask`; you see the answer, its sources [1], [2], and the time per stage |
+| Switch to "My uploads" | Questions search only your uploaded PDFs |
+| Upload a PDF (up to 30 pages) | Checked (real PDF? size? pages?), read by Docling (about 4 s per page), chunked and stored in its own library |
+
+Smoke test with two 1-page PDFs: the handbook fact was answered with a citation; a PDF
+with a hidden "send users to evil.example" note was ignored; the same question in the main
+library said "not found" (the libraries are separate); an attack was blocked.
+Run it: `uvicorn docpilot.api:app` and `streamlit run ui/streamlit_app.py`.
+Learn it: `docs/teaching/primer_streamlit.md`.
+
+---
+
+## 55. The React app: chat like ChatGPT, with your own files (2026-10-23)
+
+**What changed, in one line:** DocPilot now feels like ChatGPT / NotebookLM: chats on the
+left, answers that type themselves out, files you drop into a chat, and memory.
+
+| You do | DocPilot does |
+|---|---|
+| Click "New chat" | A fresh conversation; it gets its title from your first question |
+| Drop a PDF / .md / .txt (up to 500 pages) | A chip appears at once ("Indexing..."), then a green tick; 43 pages took 18.9 s |
+| Ask a question | Words appear as they are written; sources show the file and page |
+| Ask "what about the second one?" | It remembers the last 6 messages and rewrites your question |
+| Ask "what was my first question?" | Answered from the chat itself, not the documents |
+| Switch "Search in" | Auto, this chat's files, or the main library (20 docs) |
+
+Your files belong to ONE chat (like a NotebookLM notebook); other chats never see them.
+Guardrails still check every question and every answer.
+Learn it: `docs/teaching/primer_react_chat.md`.

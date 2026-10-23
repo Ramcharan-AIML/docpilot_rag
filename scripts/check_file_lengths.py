@@ -11,7 +11,15 @@ from pathlib import Path
 MAX_LINES = 500
 # D-012: the project documentation stays one file unless the learner asks to split it.
 # D-059: the learner asked for the Phase 6 explanation as ONE file, whatever its length.
-ALLOWED = {"docs/PROJECT_DOCUMENTATION.md", "docs/teaching/phase_6_guardrails_explained.md"}
+# D-061: npm writes package-lock.json (exact versions of every JS package); never edited by
+# hand, like a generated file, so the rule (written for readable files) does not apply.
+ALLOWED = {
+    "docs/PROJECT_DOCUMENTATION.md",
+    "docs/teaching/phase_6_guardrails_explained.md",
+    "docs/project_guide/01_complete_workflow.md",  # learner asked for one big file (2026-10-23)
+    "docs/implementation_plan/5_phase_7_live_link.md",  # learner: one plan file, any length
+    "web/package-lock.json",
+}
 TEXT_SUFFIXES = {".py", ".md", ".txt", ".toml", ".yml", ".yaml", ".json", ".jsonl", ".cfg"}
 
 

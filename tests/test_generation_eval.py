@@ -47,11 +47,11 @@ def fakes(monkeypatch):
     def fake_hits(n):
         return [{"text": f"t{i}", "source": "a.md", "chunk_number": i} for i in range(n)]
 
-    def fake_hybrid(client, name, dense, sparse, top_k, candidates, rrf_k):
+    def fake_hybrid(client, name, dense, sparse, top_k, candidates, rrf_k, query_filter=None):
         calls["hybrid_top_k"] = top_k
         return fake_hits(top_k)
 
-    def fake_dense(client, name, vector, top_k):
+    def fake_dense(client, name, vector, top_k, query_filter=None):
         calls["dense_top_k"] = top_k
         return fake_hits(top_k)
 

@@ -6,6 +6,7 @@ setting in .env, not code.
 """
 
 import os
+from collections.abc import Iterator
 
 from openai import OpenAI  # the library only; no OpenAI account is used
 
@@ -58,3 +59,24 @@ def chat(client: OpenAI, system: str, user: str, model: str | None = None) -> st
         # no answer. Fail loudly: an empty string would be counted as a wrong answer.
         raise RuntimeError(f"Empty answer from {model} (finish_reason={choice.finish_reason!r})")
     return answer
+
+
+def chat_stream(client: OpenAI, system: str, user: str, model: str | None = None) -> Iterator[str]:
+    """Like chat(), but yields the answer piece by piece as the model writes it (D-061).
+
+    The user sees the first words after the first token, not after the whole answer:
+    the total time is the same, the WAIT feels much shorter (time to first token).
+    """
+    model = model or config.LLM_MODEL
+    if not model:
+        raise RuntimeError("LLM_MODEL is empty. Set it in .env (see docs/decisions.md D-028).")
+    stream = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        temperature=0,
+        stream=True,
+    )
+    for event in stream:
+        # Some events carry no text (role header, reasoning, the final usage event).
+        if event.choices and event.choices[0].delta.content:
+            yield event.choices[0].delta.content

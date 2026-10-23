@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
-| Current step | Phase 6 light guardrails done (D-059): attacks 2/18 -> 0/18, false blocks 0/84; code not yet committed |
-| Next step | Learner commits + PR; then UI choice (Streamlit recommended), then Phase 7 core: Docker, Prometheus + Grafana, CI/CD, AWS S3 |
+| Current step | React chat app (D-061): chats, memory, per-chat files, streaming, fast background uploads; branch streamlit-ui, not committed |
+| Next step | Phase 7 live link (D-062): `implementation_plan/5_phase_7_live_link.md`, Stage A1 (private chats per visitor) |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 
@@ -112,7 +112,7 @@ Status values: `not started`, `in progress`, `done`, `blocked`.
 | 6.5 | Tool guards | dropped (no tools: agents dropped, D-058) |
 | 6.6 | Presidio | dropped for the deadline (future work) |
 | 6.7 | NeMo / Guardrails AI / Llama Guard comparison | dropped for the deadline (future work) |
-| Gate | safety table (ABLATION.md) + G-guard row done; commit, PR, tag `phase-6` by learner | in progress |
+| Gate | safety table (ABLATION.md) + G-guard row; PR #5 merged, tag `phase-6` | done 2026-10-23 |
 
 ### Phase 7: Production
 | Step | What | Status |

@@ -16,7 +16,7 @@ from docpilot.embedding.sparse import embed_sparse_query
 from docpilot.retrieval.fusion import DEFAULT_RRF_K
 from docpilot.retrieval.hybrid import DEFAULT_CANDIDATES
 from docpilot.retrieval.reranker import rerank
-from docpilot.store.qdrant_store import search, search_hybrid
+from docpilot.store.qdrant_store import chat_filter, search, search_hybrid
 
 
 @dataclass(frozen=True)
@@ -28,6 +28,7 @@ class RetrievalSettings:
     candidates_per_searcher: int = DEFAULT_CANDIDATES
     rrf_k: int = DEFAULT_RRF_K
     collection: str = config.COLLECTION_NAME
+    chat_id: str = ""  # D-061: search only this chat's uploaded files ("" = no filter)
 
 
 BEST = RetrievalSettings()  # the Phase 3 winner
@@ -54,6 +55,7 @@ def retrieve(
     # Search returns more than top_k when the reranker will choose among them.
     fetch = max(settings.rerank_candidates, settings.top_k)
     start = time.perf_counter()
+    only = chat_filter(settings.chat_id)
     if settings.hybrid:
         hits = search_hybrid(
             client,
@@ -63,9 +65,10 @@ def retrieve(
             fetch,
             candidates=settings.candidates_per_searcher,
             rrf_k=settings.rrf_k,
+            query_filter=only,
         )
     else:
-        hits = search(client, settings.collection, vector, fetch)
+        hits = search(client, settings.collection, vector, fetch, query_filter=only)
     lap("search", start)
 
     if settings.rerank_candidates:

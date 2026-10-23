@@ -39,6 +39,27 @@ def create_fresh_collection(client: QdrantClient, name: str, dimension: int) -> 
     """Delete the collection if it exists, then create it empty. Makes re-runs repeatable."""
     if client.collection_exists(name):
         client.delete_collection(name)
+    create_collection(client, name, dimension)
+    # Workaround, found by a test on 2026-10-12 (qdrant-client 1.19.1, local mode, Windows):
+    # delete_collection leaves storage.sqlite on disk and create_collection loads the OLD
+    # points back. Delete every point (an empty filter matches all), then check.
+    client.delete(
+        collection_name=name, points_selector=models.FilterSelector(filter=models.Filter())
+    )
+    leftover = client.count(name, exact=True).count
+    if leftover:
+        raise RuntimeError(f"Collection {name!r} still has {leftover} points after reset")
+
+
+def ensure_collection(client: QdrantClient, name: str, dimension: int) -> None:
+    """Create the collection only if it is missing; never delete (D-060: the uploads
+    collection grows one file at a time)."""
+    if not client.collection_exists(name):
+        create_collection(client, name, dimension)
+
+
+def create_collection(client: QdrantClient, name: str, dimension: int) -> None:
+    """The one place that defines our collection layout: dense + sparse named vectors."""
     client.create_collection(
         collection_name=name,
         # size must equal the embedding length (384); COSINE matches how BGE was trained
@@ -49,15 +70,31 @@ def create_fresh_collection(client: QdrantClient, name: str, dimension: int) -> 
         # half of BM25 a single chunk cannot know (embedding/sparse.py has the other half).
         sparse_vectors_config={SPARSE: models.SparseVectorParams(modifier=models.Modifier.IDF)},
     )
-    # Workaround, found by a test on 2026-10-12 (qdrant-client 1.19.1, local mode, Windows):
-    # delete_collection leaves storage.sqlite on disk and create_collection loads the OLD
-    # points back. Delete every point (an empty filter matches all), then check.
-    client.delete(
-        collection_name=name, points_selector=models.FilterSelector(filter=models.Filter())
-    )
-    leftover = client.count(name, exact=True).count
-    if leftover:
-        raise RuntimeError(f"Collection {name!r} still has {leftover} points after reset")
+
+
+def delete_where(client: QdrantClient, name: str, key: str, value: str) -> None:
+    """Remove every point whose payload `key` equals `value` (one file, or one whole chat).
+
+    Re-uploading a shorter file must not leave its old extra chunks behind (point ids are
+    source#number, so only the first ones would be overwritten).
+    """
+    if client.collection_exists(name):
+        selector = models.FilterSelector(filter=field_filter(key, value))
+        client.delete(collection_name=name, points_selector=selector)
+
+
+def delete_source(client: QdrantClient, name: str, source: str) -> None:
+    delete_where(client, name, "source", source)
+
+
+def chunks_per_source(client: QdrantClient, name: str) -> dict[str, int]:
+    """{source: chunk count} for a collection; {} if it does not exist yet."""
+    if not client.collection_exists(name):
+        return {}
+    counts: dict[str, int] = {}
+    for payload in all_payloads(client, name):
+        counts[payload["source"]] = counts.get(payload["source"], 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def make_point_id(chunk: Chunk) -> str:
@@ -74,10 +111,12 @@ def add_chunks(
     chunks: list[Chunk],
     vectors: list[list[float]],
     sparse_vectors: list[dict] | None = None,
+    extra_payload: dict | None = None,
 ) -> None:
     """Store each chunk's vectors, with its text and source as the payload (the "label").
 
     `sparse_vectors` (BM25, step 3.2) are optional: {"indices": [...], "values": [...]}.
+    `extra_payload` is added to every point, e.g. {"chat_id": ...} for uploads (D-061).
     """
     if not chunks:
         return
@@ -89,16 +128,39 @@ def add_chunks(
         if sparse_vectors is not None:
             named[SPARSE] = models.SparseVector(**sparse_vectors[number])
         # Every Chunk field becomes payload (step 2.5): filter and cite by metadata later.
-        payload = asdict(chunk)
+        payload = {**asdict(chunk), **(extra_payload or {})}
         points.append(models.PointStruct(id=make_point_id(chunk), vector=named, payload=payload))
     # upsert = insert, or overwrite a point with the same id (so a re-run never duplicates)
     client.upsert(collection_name=name, points=points)
 
 
-def search(client: QdrantClient, name: str, query_vector: list[float], top_k: int) -> list[dict]:
+def field_filter(key: str, value: str) -> models.Filter:
+    """Matches points whose payload field `key` equals `value`."""
+    return models.Filter(
+        must=[models.FieldCondition(key=key, match=models.MatchValue(value=value))]
+    )
+
+
+def chat_filter(chat_id: str) -> models.Filter | None:
+    """Only one chat's uploaded files (D-061, NotebookLM style); None = no filter."""
+    return field_filter("chat_id", chat_id) if chat_id else None
+
+
+def search(
+    client: QdrantClient,
+    name: str,
+    query_vector: list[float],
+    top_k: int,
+    query_filter: models.Filter | None = None,
+) -> list[dict]:
     """Meaning search: the top_k closest chunks as plain dicts (text, source, ..., score)."""
     response = client.query_points(
-        collection_name=name, query=query_vector, using=DENSE, limit=top_k, with_payload=True
+        collection_name=name,
+        query=query_vector,
+        using=DENSE,
+        limit=top_k,
+        with_payload=True,
+        query_filter=query_filter,
     )
     return to_hits(response)
 
@@ -127,8 +189,12 @@ def search_hybrid(
     top_k: int,
     candidates: int,
     rrf_k: int,
+    query_filter: models.Filter | None = None,
 ) -> list[dict]:
     """Hybrid search in ONE call (step 3.4): Qdrant runs both searches and the RRF itself.
+
+    `query_filter` limits BOTH searches (e.g. one chat's files), so the RRF never sees
+    chunks from outside the filter.
 
     `rrf_k` means the same as in retrieval/fusion.py: 1 / (k + rank). Qdrant's own formula
     is 1 / (k + rank - 1), so we send k + 1. Checked on Qdrant v1.19.1 on 2026-10-22: its
@@ -137,9 +203,12 @@ def search_hybrid(
     response = client.query_points(
         collection_name=name,
         prefetch=[
-            models.Prefetch(query=dense_vector, using=DENSE, limit=candidates),
+            models.Prefetch(query=dense_vector, using=DENSE, limit=candidates, filter=query_filter),
             models.Prefetch(
-                query=models.SparseVector(**sparse_query), using=SPARSE, limit=candidates
+                query=models.SparseVector(**sparse_query),
+                using=SPARSE,
+                limit=candidates,
+                filter=query_filter,
             ),
         ],
         query=models.RrfQuery(rrf=models.Rrf(k=rrf_k + 1)),

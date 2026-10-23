@@ -13,7 +13,7 @@ questions live in `docs/interview/`. Read the three together, phase by phase.
 | 4 Agentic RAG | `phase_4_agents.md` | `teaching/phase_4_agents.md` | `interview/phase_4_interview.md` | ~1 week |
 | 5 Multi-agent, tools, MCP, HITL | `phase_5_multiagent_hitl.md` | `teaching/phase_5_multiagent_hitl.md` | `interview/phase_5_interview.md` | 1-1.5 weeks |
 | 6 Guardrails | `phase_6_guardrails.md` | `primer_guardrails.md`, `teaching/phase_6_guardrails.md` | `interview/phase_6_interview.md` | ~1 week |
-| 7 Production: app, CI/CD, AWS, Terraform, k3s, EKS exercise, RAG monitoring, Oracle move | `phase_7_production.md` + `2_`, `3_`, `4_` | `teaching/phase_7_production.md` + `2_`, `primer_aws.md` + `2_`, `primer_terraform.md`, `primer_kubernetes.md`, `primer_rag_monitoring.md` | `interview/phase_7_interview.md` + `2_` | 2.5-3 weeks |
+| 7 Production: app, CI/CD, AWS, Terraform, k3s, EKS exercise, RAG monitoring, Oracle move | **Now: `5_phase_7_live_link.md`** (live link first, D-062); then `phase_7_production.md` + `2_`, `3_`, `4_` | `teaching/phase_7_production.md` + `2_`, `primer_aws.md` + `2_`, `primer_terraform.md`, `primer_kubernetes.md`, `primer_rag_monitoring.md` | `interview/phase_7_interview.md` + `2_` | 2.5-3 weeks |
 | 8 Stretch | `phase_8_stretch.md` | `teaching/phase_8_stretch.md` | `interview/phase_8_interview.md` | optional |
 
 Total: about **10 to 12 weeks** (the original 8-10, plus about 2 weeks for AWS, Terraform,

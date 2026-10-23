@@ -94,6 +94,25 @@ INGEST_COMMAND = (
     f"python scripts/02_ingest.py {' '.join(INGEST_ARGS)} --collection {COLLECTION_NAME}"
 )
 
+# --- user uploads (D-060, D-061) ---
+# Uploaded files live in their OWN collection, so the measured main library (and every eval
+# number about it) never changes. Each chunk carries its chat_id: a chat searches only its
+# own files (NotebookLM style). Same chunk recipe as the app: 200 tokens, overlap 25.
+UPLOADS_COLLECTION = "docpilot_uploads"
+UPLOADS_DIR = PROJECT_ROOT / "data" / "uploads"  # gitignored: user files never go to git
+UPLOAD_CHUNK_TOKENS = 200
+UPLOAD_OVERLAP_TOKENS = 25
+UPLOAD_SUFFIXES = {".pdf", ".md", ".txt"}
+# D-061: uploads use the fast pypdfium2 text reader, not Docling. Measured 2026-10-23 on the
+# 43-page CoT paper: 10.8 s in total (read 0.13 s, embed 10.5 s) vs 182 s with Docling.
+# About 0.25 s per page, so 500 pages is about 2 minutes, indexed in the background.
+MAX_UPLOAD_PAGES = 500
+MAX_UPLOAD_MB = 50
+
+# --- chats (D-061) ---
+CHAT_DB_PATH = PROJECT_ROOT / "data" / "app.db"  # SQLite: chats, messages, files (gitignored)
+HISTORY_TURNS = 6  # last N messages sent with a follow-up question (memory)
+
 # --- object storage (step 3.1b, D-019, D-051) ---
 # Laptop: SeaweedFS in Docker; .env sets S3_ENDPOINT_URL=http://127.0.0.1:8333 and the two
 # local keys. AWS (Phase 7): leave all three EMPTY, so boto3 talks to real Amazon S3 with the

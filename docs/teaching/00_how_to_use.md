@@ -46,6 +46,8 @@ The implementation plan tells you **what** to build. These notes tell you **why 
 | `primer_mlflow.md` | Phase 2 | experiment tracking; MLflow vs tracing |
 | `primer_object_storage.md` | Phase 3 | S3 ideas, SeaweedFS (MinIO replacement), boto3 |
 | `primer_guardrails.md` | Phase 6 | guardrails from zero: threats, layers, canary, red team, two numbers |
+| `primer_react_chat.md` | Phase 7 (UI) | the React app and ChatGPT-style features: components/state, background indexing, fast reader, chats in SQLite, memory (condense), per-chat files, streaming (SSE) |
+| `primer_streamlit.md` | Phase 7 (UI) | Streamlit from zero: re-run model, session_state, widgets, the UI-calls-API design, uploads, AppTest |
 | `primer_latency.md` | Phase 1 step 1a.8 | latency before and after deployment: p50/p95, per stage, cold vs warm, TTFT, load, how to measure honestly |
 | `primer_rag_monitoring.md` | Phase 7 | monitoring AI on live traffic: scores, groundedness, refusals, drift |
 | `primer_aws.md` + `2_primer_aws.md` | Phase 7 | cloud basics, free plan, IAM, VPC, EC2, S3, ECR, CloudWatch, cost traps, Oracle move |
