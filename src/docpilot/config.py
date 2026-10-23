@@ -119,6 +119,9 @@ LLM_TIMEOUT_SECONDS = 30
 # The exact sentence the model must say when the documents do not contain the answer.
 # Evals search for this text to count abstentions, so it lives in one place.
 NOT_FOUND_PHRASE = "I could not find this in the documents."
+# Phase 6 (D-059): what a blocked request gets. It never says WHICH rule fired:
+# attackers learn from details. The reason is logged on the server instead.
+BLOCKED_PHRASE = "Sorry, I can't help with that. Please ask a question about the documentation."
 
 # --- experiment tracking (D-022, D-036): local MLflow "lab notebook", gitignored ---
 MLFLOW_TRACKING_URI = os.getenv(

@@ -10,7 +10,8 @@ from pathlib import Path
 
 MAX_LINES = 500
 # D-012: the project documentation stays one file unless the learner asks to split it.
-ALLOWED = {"docs/PROJECT_DOCUMENTATION.md"}
+# D-059: the learner asked for the Phase 6 explanation as ONE file, whatever its length.
+ALLOWED = {"docs/PROJECT_DOCUMENTATION.md", "docs/teaching/phase_6_guardrails_explained.md"}
 TEXT_SUFFIXES = {".py", ".md", ".txt", ".toml", ".yml", ".yaml", ".json", ".jsonl", ".cfg"}
 
 

@@ -12,7 +12,7 @@ Unknown = `n/a`. Updated 2026-10-22.
 | Chunks (FT-200: 200 tokens, overlap 25) | 453 |
 | Golden questions (v1) | 65 (dev 46, test 17, plus a 7-question CI set) |
 | Chunking configurations compared | 11 |
-| Automated tests | 201 |
+| Automated tests | 252 |
 
 ## Retrieval: from baseline to final (dev, n=41)
 
@@ -68,6 +68,15 @@ Small sample: "no failures found", not "perfect".
 | Rerank 30 or 50 candidates instead of 20 | no new right chunks, slower |
 | RRF k = 10 vs 60 | 1 question worse: kept 60 |
 
+## Guardrails (Phase 6, D-059)
+
+| Metric | Result |
+|---|---|
+| Red-team attacks that worked, guards off -> on | 2 of 18 -> **0 of 18** |
+| Normal questions wrongly blocked by the input guard | **0 of 84** |
+| Time added by the guards | about 0.05 ms (no extra LLM call) |
+| Cost seen | 1 extra false refusal in 10 answerable dev questions (model under the stricter prompt) |
+
 ## Engineering
 
 - CI eval gate in GitHub Actions: an injected chunking-units bug dropped MRR 0.87 -> 0.50
@@ -94,3 +103,7 @@ Small sample: "no failures found", not "perfect".
 5. Added a **CI eval gate** in GitHub Actions that fails pull requests when retrieval drops
    (caught an injected bug: MRR 0.87 to 0.50), and measured per-stage latency (p50: hybrid
    search 12 ms, reranker 0.49 s, LLM 0.99 s).
+6. Added **layered guardrails** in plain Python (input injection patterns with Unicode
+   normalisation, untrusted-context delimiting against indirect injection, cite-or-refuse
+   output check, canary leak detection) and a **red-team eval**: attack success fell from
+   **2/18 to 0/18** with **0/84 false blocks** on real questions and about 0.05 ms added.
