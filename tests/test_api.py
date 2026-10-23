@@ -1,13 +1,17 @@
-"""Tests for the mini API. ask() is replaced by a fake, so no model, no Qdrant, no API key."""
+"""Tests for POST /ask. ask() is replaced by a fake, so no model, no Qdrant, no API key.
+The chat endpoints are tested in test_chat_api.py."""
 
 import pytest
 from fastapi.testclient import TestClient
 
-from docpilot import api
+from docpilot import api, config
+
+ASKED = []  # (question, collection) of every fake_ask call, to check which library was used
 
 
-def fake_ask(question, qdrant_client, llm_client):
+def fake_ask(question, qdrant_client, llm_client, collection=config.COLLECTION_NAME):
     """Stands in for rag.ask: returns the same shape, instantly."""
+    ASKED.append((question, collection))
     hit = {"source": "fastapi/demo.md", "chunk_number": 3, "score": 0.81, "text": "secret"}
     return {
         "answer": f"fake answer to: {question}",
@@ -18,12 +22,23 @@ def fake_ask(question, qdrant_client, llm_client):
     }
 
 
+class FakeQdrant:
+    """Only what the endpoints call; `existing` = collections that "exist"."""
+
+    def __init__(self, existing=(config.COLLECTION_NAME,)):
+        self.existing = set(existing)
+
+    def collection_exists(self, name):
+        return name in self.existing
+
+
 @pytest.fixture
 def client(monkeypatch):
+    ASKED.clear()
     monkeypatch.setattr(api, "ask", fake_ask)
     # TestClient(app) WITHOUT `with` does not run the lifespan, so nothing real opens.
-    # The endpoint still reads app.state, so give it placeholders.
-    monkeypatch.setattr(api.app.state, "qdrant", None, raising=False)
+    # The endpoints still read app.state, so give them stand-ins.
+    monkeypatch.setattr(api.app.state, "qdrant", FakeQdrant(), raising=False)
     monkeypatch.setattr(api.app.state, "llm", None, raising=False)
     return TestClient(api.app)
 
@@ -41,7 +56,7 @@ def test_valid_question_returns_answer_and_sources(client):
 
 def test_guard_reason_is_never_sent_to_the_client(client, monkeypatch):
     # Which rule fired stays in the server log: attackers learn from details.
-    def blocked_ask(question, qdrant_client, llm_client):
+    def blocked_ask(question, qdrant_client, llm_client, collection=None):
         return {
             "answer": "Sorry...",
             "sources": [],
@@ -68,3 +83,12 @@ def test_too_long_question_is_rejected(client):
 
 def test_missing_field_is_rejected(client):
     assert client.post("/ask", json={"text": "wrong field name"}).status_code == 422
+
+
+def test_health(client):
+    assert client.get("/health").json() == {"status": "ok"}
+
+
+def test_main_library_not_indexed_gives_503(client, monkeypatch):
+    monkeypatch.setattr(api.app.state, "qdrant", FakeQdrant(existing=[]))
+    assert client.post("/ask", json={"question": "q"}).status_code == 503

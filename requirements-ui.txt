@@ -1,0 +1,6 @@
+# The Streamlit UI (D-060): a separate small app that only calls the DocPilot API.
+# Its own file, so the API image does not carry Streamlit and the UI image does not carry
+# torch. Checked on PyPI on 2026-10-23.
+
+streamlit==1.66.1              # web UI in pure Python (1.66.1 = bug-fix release of 1.66.0)
+requests==2.34.2               # HTTP calls to the API; same version as the lock

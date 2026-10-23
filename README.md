@@ -100,6 +100,17 @@ python -m evals.run_retrieval_eval --split dev --retriever hybrid-server   # sco
 python -m pytest -q                    # tests
 ```
 
+**Web app (React, D-061):** chats with memory, files per chat, streaming answers.
+
+```powershell
+cd web ; npm install ; npm run build ; cd ..   # once (needs Node.js 22)
+uvicorn docpilot.api:app                       # then open http://127.0.0.1:8000
+```
+
+While changing the UI: run `npm run dev` in `web/` and open http://127.0.0.1:5173
+(it passes /api to the API on port 8000). Upload PDF / Markdown / text files (up to 500
+pages); they are indexed in the background and only that chat searches them.
+
 ---
 
 ## Stack (all free)

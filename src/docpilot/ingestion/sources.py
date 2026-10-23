@@ -111,3 +111,19 @@ SOURCES: dict[str, SourceInfo] = {
         visibility="public",
     ),
 }
+
+
+# D-060: PDFs a user uploads in the UI. NOT in SOURCES on purpose: SOURCES is the curated,
+# downloaded and evaluated corpus (01_download_docs.py and the golden-set checks loop over it).
+# We do not know an uploaded file's licence, so it never leaves this laptop.
+UPLOADS = SourceInfo(
+    domain="uploads",
+    topic="Files uploaded by the user in the web UI",
+    doc_type="upload",
+    url="uploaded through POST /upload",
+    version="sha256 of the file (in the Docling cache meta)",
+    licence="unknown (user's own file)",
+    licence_url="n/a",
+    checked="2026-10-23",
+    visibility="local_only",
+)

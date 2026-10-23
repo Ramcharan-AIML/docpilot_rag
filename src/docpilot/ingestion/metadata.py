@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from docpilot.ingestion.blocks import FENCE, parse_heading
 from docpilot.ingestion.chunkers.base import Chunk
-from docpilot.ingestion.sources import SOURCES
+from docpilot.ingestion.sources import SOURCES, SourceInfo
 
 
 @dataclass
@@ -67,19 +67,22 @@ def technology_of(source: str) -> str:
     return source.split("/", 1)[0]
 
 
-def add_metadata(chunks: list[Chunk], document_text: str) -> list[Chunk]:
+def add_metadata(
+    chunks: list[Chunk], document_text: str, info: SourceInfo | None = None
+) -> list[Chunk]:
     """Fill the metadata fields of one document's chunks (in place) and return them.
 
     `document_text` must be the text the chunker saw (after cleaning and includes), so
-    each chunk's char_start points to the right place.
+    each chunk's char_start points to the right place. `info` overrides the register
+    lookup (D-060: uploads use sources.UPLOADS, which is not part of the curated corpus).
     """
     lines = scan_lines(document_text)
     for chunk in chunks:
         technology = technology_of(chunk.source)
-        if technology not in SOURCES:
+        if info is None and technology not in SOURCES:
             # Fail loudly: a document without a register entry has no known licence (D-030).
             raise KeyError(f"{chunk.source}: no entry for {technology!r} in ingestion/sources.py")
-        info = SOURCES[technology]
+        info = info or SOURCES[technology]
         chunk.technology = technology
         chunk.domain, chunk.doc_type, chunk.version = info.domain, info.doc_type, info.version
         chunk.heading_path = heading_path_at(lines, chunk.char_start)

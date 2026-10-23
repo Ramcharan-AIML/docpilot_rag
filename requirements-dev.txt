@@ -2,6 +2,7 @@
 # Checked on PyPI on 2026-10-03; see docs/decisions.md.
 
 -r requirements.txt            # everything the product needs, plus:
+-r requirements-ui.txt         # the Streamlit UI, so tests and ruff cover it (D-060)
 
 pytest==9.1.1                  # test runner
 ruff==0.16.10                  # linter + formatter

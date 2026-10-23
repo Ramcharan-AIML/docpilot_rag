@@ -145,8 +145,13 @@ def generate(question: str, hits: list[dict], llm_client: OpenAI, guarded: bool 
     Separate from retrieval so the generation eval (step 3.9) can feed it any hits.
     guarded=True: chunks in <document> boxes + the guarded prompt (Phase 6).
     """
+    system, user = prompts(question, hits, guarded)
+    return chat(llm_client, system, user)
+
+
+def prompts(question: str, hits: list[dict], guarded: bool = True) -> tuple[str, str]:
+    """(system prompt, user prompt) for one answer. The chat's streaming path uses the same
+    prompts (chat/service.py), so a streamed answer is guarded exactly like ask()."""
     if guarded:
-        user_prompt = f"Documents:\n{wrap_chunks(hits)}\n\nQuestion: {question}"
-        return chat(llm_client, GUARDED_SYSTEM_PROMPT, user_prompt)
-    user_prompt = f"Context:\n{build_context(hits)}\n\nQuestion: {question}"
-    return chat(llm_client, SYSTEM_PROMPT, user_prompt)
+        return GUARDED_SYSTEM_PROMPT, f"Documents:\n{wrap_chunks(hits)}\n\nQuestion: {question}"
+    return SYSTEM_PROMPT, f"Context:\n{build_context(hits)}\n\nQuestion: {question}"
