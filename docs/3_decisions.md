@@ -189,4 +189,28 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   later); IP address (shared by many, changes); login (days of work, Stage D); a typed
   name (two people pick the same one).
 - **Honest limit:** privacy, not security: the id is a bearer token with no password.
-- **No new dependency.**
+- **A2 limits (`limits.py`, `PUBLIC_MODE=1` only on the server):** Groq free plan for
+  gpt-oss-120b (learner's console 2026-10-23): 30 RPM, 1K RPD, **8K TPM, 200K TPD**, so
+  tokens run out first. Measured (`scripts/measure_tokens.py`, n=5 dev): one answer 1,149
+  tokens median, 1,272 max; a follow-up turn about 2,400 with the condense call
+  (ESTIMATE). Limits: visitor 3/min + 20/day; IP 3/min + 40/day (a cleared browser does not
+  reset it; shared Wi-Fi gets 2x); whole site 3/min + 80/day; uploads 10/day per IP, 3
+  files/chat, 300 pages, 20 MB. Refused = **429** with a message saying which limit. `/ask`
+  shares the limits. Fixed window, in memory, counted only when every limit allows.
+- **Why not:** Redis (a server to run; Stage D); token bucket (smoother, more code);
+  counting real tokens instead of questions (more exact; needs usage from the stream,
+  later with /metrics); the plan's 10/min + 60/day (written before measuring: 10/min would
+  hit Groq's 8K TPM and fail with errors).
+- **Stage B note:** behind Caddy, uvicorn must run with `--proxy-headers` and trust only
+  Caddy, or every visitor has Caddy's IP and the IP limit becomes a site limit.
+- **A3 concurrency cap:** `threading.BoundedSemaphore(2)` in `limits.py` around every
+  answer (chat stream and `/ask`), on the laptop too. A full queue: the stream first sends
+  `{"type": "stage", "text": "Waiting in line..."}` (the UI shows it), waits up to 30 s, then
+  the busy message. The seat is freed in `finally` (also on Stop / disconnect).
+- **A4 busy message:** `openai.RateLimitError` (Groq 429 after the library's 2 retries) =
+  `{"type": "error", "message": BUSY}` in the stream, 503 on `/ask`; not "Something went
+  wrong" (it is not a bug, the free quota is used up for the minute).
+- **Why not:** asyncio.Semaphore (our endpoints are plain `def` running in a thread pool,
+  so a threading semaphore is the right kind); a job queue like Celery + Redis (a broker to
+  run; Stage D); no cap (20 reranker runs at once on 2 GB = out of memory).
+- **No new dependency** (`httpx` for the fake 429 in tests is already pinned, D-034).

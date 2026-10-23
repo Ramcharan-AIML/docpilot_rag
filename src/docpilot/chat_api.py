@@ -23,9 +23,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
+from openai import RateLimitError
 from pydantic import BaseModel, Field
 
-from docpilot import config
+from docpilot import config, limits
 from docpilot.chat import jobs, store
 from docpilot.chat.service import run_turn
 from docpilot.guardrails.input_guard import MAX_QUESTION_CHARS
@@ -58,6 +59,18 @@ def visitor(x_visitor_id: Annotated[str, Header()] = "") -> str:
 
 
 Visitor = Annotated[str, Depends(visitor)]
+
+
+def client_ip(request: Request) -> str:
+    """The caller's address. Behind Caddy this is Caddy's address unless uvicorn trusts the
+    proxy's X-Forwarded-For header (--proxy-headers, set in Stage B)."""
+    return request.client.host if request.client else "unknown"
+
+
+def refuse_if_limited(message: str | None) -> None:
+    """429 Too Many Requests: the standard code for "slow down"; the UI shows the text."""
+    if message:
+        raise HTTPException(status_code=429, detail=message)
 
 
 def existing_chat(chat_id: str, owner: str) -> dict:
@@ -110,6 +123,10 @@ def remove_chat(chat_id: str, request: Request, owner: Visitor) -> dict:
 def upload(chat_id: str, file: UploadFile, request: Request, owner: Visitor) -> dict:
     """202 Accepted: the file is saved and checked now, indexed in the background."""
     existing_chat(chat_id, owner)
+    if len(store.list_files(chat_id)) >= config.MAX_FILES_PER_CHAT:
+        detail = f"This chat already has {config.MAX_FILES_PER_CHAT} files (the limit)."
+        raise HTTPException(status_code=400, detail=detail)
+    refuse_if_limited(limits.upload_refusal(client_ip(request)))
     try:
         path, name, source, pages = save_upload(file.filename or "", file.file.read(), chat_id)
     except UploadError as error:
@@ -145,15 +162,32 @@ def message(
     written. Why SSE and not WebSockets: one direction (server -> browser) is all we need,
     and SSE is plain HTTP."""
     existing_chat(chat_id, owner)
+    # Checked before the stream starts, so the refusal is a normal 429 response.
+    refuse_if_limited(limits.question_refusal(owner, client_ip(request)))
     qdrant, llm = request.app.state.qdrant, request.app.state.llm
 
+    def send(event: dict) -> str:
+        return f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+
     def events():
+        # A3: wait for one of the 2 answer seats; tell the user why nothing happens yet.
+        if not limits.take_answer_seat(0):
+            yield send({"type": "stage", "text": "Waiting in line: DocPilot is busy"})
+            if not limits.take_answer_seat(config.QUEUE_WAIT_SECONDS):
+                yield send({"type": "error", "message": limits.BUSY})
+                return
         try:
             for event in run_turn(chat_id, body.question, qdrant, llm, body.library):
-                yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
+                yield send(event)
+        except RateLimitError:
+            # A4: Groq still said 429 after the openai library's 2 retries. Not a bug: the
+            # free quota is used up for this minute. A friendly message, not "went wrong".
+            logger.warning("LLM rate limit (429) after retries")
+            yield send({"type": "error", "message": limits.BUSY})
         except Exception:  # e.g. the LLM provider is down: tell the UI instead of hanging
             logger.exception("chat turn failed")
-            error = {"type": "error", "message": "Something went wrong. Please try again."}
-            yield f"data: {json.dumps(error)}\n\n"
+            yield send({"type": "error", "message": "Something went wrong. Please try again."})
+        finally:
+            limits.free_answer_seat()  # also runs when the user presses Stop
 
     return StreamingResponse(events(), media_type="text/event-stream")

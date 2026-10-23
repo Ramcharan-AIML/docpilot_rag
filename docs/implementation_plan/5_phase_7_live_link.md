@@ -489,7 +489,9 @@ In the order of `phase_7_production.md` ... `4_phase_7_production.md`, now on a 
 | Step | Status |
 |---|---|
 | Primer: public-app safety | not started |
-| A1 Private chats per visitor | built 2026-10-23 (313 tests); two-browser check pending |
+| A1 Private chats per visitor | done 2026-10-23 (313 tests; two-browser check passed) |
+| A2 Abuse limits | built 2026-10-23 from measured tokens (322 tests); values changed from the plan, see D-063; live check skipped by the learner |
+| A3 Concurrency cap + A4 busy message | built 2026-10-23 (326 tests: full queue, fake 429, seat freed) |
 | A2 Abuse limits | not started |
 | A3 Concurrency cap | not started |
 | A4 "Busy" message | not started |

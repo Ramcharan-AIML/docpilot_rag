@@ -113,6 +113,31 @@ MAX_UPLOAD_MB = 50
 CHAT_DB_PATH = PROJECT_ROOT / "data" / "app.db"  # SQLite: chats, messages, files (gitignored)
 HISTORY_TURNS = 6  # last N messages sent with a follow-up question (memory)
 
+# --- public mode (Phase 7 A2, D-063) ---
+# PUBLIC_MODE=1 only on the live server: limits on. The laptop stays unlimited.
+PUBLIC_MODE = os.getenv("PUBLIC_MODE", "") == "1"
+# Groq free plan for gpt-oss-120b (learner's console, 2026-10-23): 30 requests/min,
+# 1K requests/day, 8K tokens/min, 200K tokens/day. TOKENS run out first. Measured
+# 2026-10-23 (scripts/measure_tokens.py, n=5 dev questions): one answer = 1,149 tokens
+# median, 1,272 max. A follow-up also runs the condense call: about 2,400 per turn
+# (ESTIMATE, condense not measured). 8K / 2.4K = 3 turns a minute for the WHOLE site;
+# 200K / 2.4K = 83 a day, so the site cap is 80 (a small margin; /ask counts too).
+# (limit, window in seconds) per key; "visitor" = X-Visitor-Id, "ip" = the caller's address.
+QUESTION_LIMITS = {
+    "visitor": [(3, 60), (20, 86_400)],  # one person cannot take the whole day's quota
+    "ip": [(3, 60), (40, 86_400)],  # a new visitor id (cleared browser) does not reset this
+    "site": [(3, 60), (80, 86_400)],  # under Groq's tokens per minute and per day
+}
+UPLOAD_LIMITS = {"ip": [(10, 86_400)]}  # indexing costs CPU; 10 files per address per day
+MAX_FILES_PER_CHAT = 3 if PUBLIC_MODE else 50
+# A3: at most 2 answers at once (each runs the reranker on CPU); others wait in line up to
+# 30 s, then get the "busy" message. On the laptop too: it costs nothing there.
+MAX_CONCURRENT_ANSWERS = 2
+QUEUE_WAIT_SECONDS = 30
+if PUBLIC_MODE:
+    MAX_UPLOAD_PAGES = 300  # 301 pages took 94 s to index on the laptop (D-062)
+    MAX_UPLOAD_MB = 20
+
 # --- object storage (step 3.1b, D-019, D-051) ---
 # Laptop: SeaweedFS in Docker; .env sets S3_ENDPOINT_URL=http://127.0.0.1:8333 and the two
 # local keys. AWS (Phase 7): leave all three EMPTY, so boto3 talks to real Amazon S3 with the

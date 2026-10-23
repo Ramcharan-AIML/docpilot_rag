@@ -7,6 +7,27 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
 
 ## Session log
 
+### 2026-10-23, session 43: Phase 7 Stage A1 private chats (D-063)
+
+- New mentor session takes over from "Phase_Guardrails". PR #6 merged; branch `production`.
+- Learner keeps personal notes off GitHub later (cleanup on main before sharing the link;
+  `.gitignore` lines written but commented out by the learner for now).
+- Primer `teaching/primer_public_app_safety.md` (all of Stage A) written before building.
+- A1 built: `chats.owner` + migration, `X-Visitor-Id` on every chat call, 404 for others,
+  400 for a bad id. 313 tests pass (8 new), ruff clean, React build OK.
+- Learner's check: predicted Incognito would show the same chats (wrong: own localStorage =
+  new id = new visitor); predicted cleared site data = chats gone from view (right; rows
+  stay in the db). First run showed the same 3 old chats in both windows: the API on :8000
+  was the previous session's server started 11:00, BEFORE the change (lesson: restart after
+  a code change). After a restart: two separate visitors, old owner-less chats hidden. PASS.
+- A2: Groq console (learner) for gpt-oss-120b: 30 RPM, 1K RPD, 8K TPM, 200K TPD.
+  `scripts/measure_tokens.py` (learner run, n=5 dev): 1,094-1,272 tokens per answer,
+  median 1,149. Learner did not predict ("go with your assumption"). Limits set from it
+  (plan's 10/min would exceed 8K TPM): visitor 3/min 20/day, IP 3/min 40/day, site 3/min
+  80/day, uploads 10/day/IP, 3 files/chat. 322 tests. Live check skipped by the learner.
+- A3+A4: 2 answer seats (BoundedSemaphore), "Waiting in line" stage event, Groq 429 =
+  busy message (stream) / 503 (`/ask`). 326 tests pass, React build OK.
+
 ### 2026-10-23, session 42: React chat app (D-061)
 
 - Learner rejected Streamlit; wanted ChatGPT/NotebookLM experience; chose React + chats,

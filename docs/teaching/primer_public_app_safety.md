@@ -97,11 +97,19 @@ visitor sees them. Safe by default: privacy wins over convenience.
 **Real-life example:** a free water tap in a park. Without a rule, one person fills 50
 bottles and the queue behind them gets nothing. Rule: 2 bottles per person per visit.
 
-| Limit | Value | Why |
+**Measure first.** Groq's free plan (your console, 2026-10-23) for gpt-oss-120b:
+30 requests/min, 1K requests/day, **8K tokens/min, 200K tokens/day**. One answer used
+1,149 tokens (median of 5, max 1,272). A follow-up also runs the "rewrite" call: about
+2,400 tokens (estimate). So the WORD bucket empties first: 8K / 2.4K = **3 turns a minute
+for the whole site**, 200K / 2.4K = 83 a day. The plan's guess (10/min) would have
+crashed into Groq's limit.
+
+| Limit | Value (built) | Why |
 |---|---|---|
-| Questions per visitor | 10 / minute, 60 / day | one person cannot drain Groq |
-| Whole site | a daily cap below Groq's free limit (VERIFY on the day) | fail politely, not suddenly |
-| Files per chat | 3 | disk and indexing time |
+| Per visitor | 3 / minute, 20 / day | one person cannot drain the day |
+| Per IP address | 3 / minute, 40 / day | clearing the browser (new visitor id) does not reset it |
+| Whole site | 3 / minute, 80 / day | stays under Groq's tokens per minute and per day |
+| Uploads | 10 files / day per IP, 3 per chat | indexing costs CPU |
 | Pages per file | 300 | 301 pages took 94 s to index (measured) |
 | File size | 20 MB | upload time and disk |
 
@@ -195,4 +203,6 @@ Health = alive (restart if not). Ready = able to serve (send traffic only if yes
 
 | Step | Result | Date |
 |---|---|---|
-| A1 | n/a (not run yet) | |
+| A2 | Limits set from MEASURED tokens (1,149 median per answer, n=5); unit tests only, live check skipped | 2026-10-23 |
+| A3+A4 | 2 seats; full queue shows "Waiting in line" then the busy message; a fake Groq 429 shows the busy message and frees the seat; unit tests only | 2026-10-23 |
+| A1 | Normal window and Incognito = two visitors, each sees only their own chats; old chats (owner "") hidden from both. Learner predicted Incognito would share chats (wrong). Gotcha: the first test hit an old server started before the change; restart fixed it. | 2026-10-23 |

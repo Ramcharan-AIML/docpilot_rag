@@ -150,6 +150,7 @@ export default function App() {
         question,
         library,
         (event) => {
+          if (event.type === "stage") updateLast(() => ({ stage: event.text })); // e.g. waiting in line
           if (event.type === "sources") updateLast(() => ({ stage: "Writing the answer" }));
           if (event.type === "token") updateLast((last) => ({ content: last.content + event.text }));
           if (event.type === "done")

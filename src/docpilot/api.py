@@ -11,12 +11,14 @@ Local-mode Qdrant allows ONE process (D-003): stop the API before running 02_ing
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
+from openai import RateLimitError
 from pydantic import BaseModel, Field
 
-from docpilot import config
+from docpilot import config, limits
 from docpilot.chat import store
+from docpilot.chat_api import client_ip, refuse_if_limited
 from docpilot.chat_api import router as chat_router
 from docpilot.guardrails.input_guard import MAX_QUESTION_CHARS
 from docpilot.llm.client import get_llm_client
@@ -78,12 +80,23 @@ def health() -> dict:
 
 
 @app.post("/ask", response_model=AskResponse)
-def ask_endpoint(request: AskRequest) -> AskResponse:
+def ask_endpoint(request: AskRequest, http: Request) -> AskResponse:
     # A plain `def` (not async): FastAPI runs it in a thread pool, so the slow
     # model and LLM calls do not freeze the server.
+    # /ask uses the same Groq quota, so it shares the limits (A2); no visitor id here.
+    ip = client_ip(http)
+    refuse_if_limited(limits.question_refusal(f"ask:{ip}", ip))
     if not app.state.qdrant.collection_exists(config.COLLECTION_NAME):
         raise HTTPException(status_code=503, detail="The main library is not indexed yet.")
-    result = ask(request.question, app.state.qdrant, app.state.llm)
+    # A3 + A4: same 2 answer seats as the chat; 503 = "busy, try later" (not our bug).
+    if not limits.take_answer_seat(config.QUEUE_WAIT_SECONDS):
+        raise HTTPException(status_code=503, detail=limits.BUSY)
+    try:
+        result = ask(request.question, app.state.qdrant, app.state.llm)
+    except RateLimitError as error:
+        raise HTTPException(status_code=503, detail=limits.BUSY) from error
+    finally:
+        limits.free_answer_seat()
     return AskResponse(
         answer=result["answer"],
         sources=result["sources"],
