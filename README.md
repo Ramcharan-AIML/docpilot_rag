@@ -10,6 +10,10 @@ quality with measured numbers**. Everything runs on free tools (local models, fr
 interview notes: 20 documents, 453 chunks. The public demo leaves the personal notes out
 (413 chunks) and shows its library on the welcome screen.
 
+**Live demo:** https://docpilot.duckdns.org (AWS EC2 t3.small in Sydney, built with
+Terraform; Caddy + Let's Encrypt HTTPS; free-plan credits, so the link moves to Oracle
+Cloud before 2027-04-24).
+
 ---
 
 ## Where the project is now (2026-10-22)

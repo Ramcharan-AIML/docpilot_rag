@@ -28,7 +28,7 @@ services:
       - caddy_config:/config
     depends_on:
       - app
-    mem_limit: 128m # first guess; set from real numbers in B6
+    mem_limit: 128m # B6 measured peak 24 MiB
     restart: unless-stopped
 
   app:
@@ -50,7 +50,7 @@ services:
       - app_data:/app/data
     depends_on:
       - qdrant
-    mem_limit: 1400m # first guess (laptop peak 1,004 MB with a 43-page upload); B6 sets it
+    mem_limit: 1400m # B6: idle 516 MiB, after a question 681, peak 1,100 during a 258-page upload
     restart: unless-stopped
 
   qdrant:
@@ -58,7 +58,7 @@ services:
     image: qdrant/qdrant:v1.19.1
     volumes:
       - qdrant_data:/qdrant/storage
-    mem_limit: 600m # first guess (laptop container 511 MB with ALL collections); B6 sets it
+    mem_limit: 600m # B6: idle 448 MiB, peak 468 (public library + one 494-chunk upload)
     restart: unless-stopped
 
 volumes:
