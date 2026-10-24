@@ -9,6 +9,7 @@ POST   /api/chats/{id}/files               upload; returns at once ("processing"
 GET    /api/chats/{id}/files               file chips; the UI polls until "ready"
 DELETE /api/chats/{id}/files/{file_id}     remove one file and its vectors
 POST   /api/chats/{id}/messages            ask; the answer STREAMS back (Server-Sent Events)
+GET    /api/library                        what the demo library contains (UI panel, D-066)
 
 Privacy (A1, D-063): every chat call needs the header X-Visitor-Id (a random id the
 browser makes once). A visitor sees only their own chats; anyone else's chat is a 404, as
@@ -30,7 +31,8 @@ from docpilot.chat import cleanup, jobs, store
 from docpilot.chat.service import run_turn
 from docpilot.guardrails.input_guard import MAX_QUESTION_CHARS
 from docpilot.ingestion.uploads import UploadError, save_upload
-from docpilot.store.qdrant_store import delete_source
+from docpilot.library import describe
+from docpilot.store.qdrant_store import chunks_per_source, delete_source
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")
@@ -38,7 +40,9 @@ router = APIRouter(prefix="/api")
 
 class MessageRequest(BaseModel):
     question: str = Field(min_length=1, max_length=MAX_QUESTION_CHARS)
-    library: str | None = Field(default=None, pattern="^(files|main)$")  # None = automatic
+    # The demo-library toggle (D-066): "main" = on, "off" = off. A chat with files always
+    # searches its files (the lock, chat/service.py), whatever is sent here.
+    library: str | None = Field(default=None, pattern="^(files|main|off)$")
 
 
 class RenameRequest(BaseModel):
@@ -84,6 +88,20 @@ def existing_chat(chat_id: str, owner: str) -> dict:
 @router.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+_library_cache: list[dict] = []
+
+
+@router.get("/library")
+def library(request: Request) -> list[dict]:
+    """The demo library's documents for the UI panel (D-066). No visitor id needed: it is
+    the same for everyone. Cached once it is non-empty (the library changes only when a
+    new snapshot is seeded, which restarts the app anyway)."""
+    if not _library_cache:
+        counts = chunks_per_source(request.app.state.qdrant, config.COLLECTION_NAME)
+        _library_cache.extend(describe(counts))
+    return _library_cache
 
 
 @router.post("/chats")

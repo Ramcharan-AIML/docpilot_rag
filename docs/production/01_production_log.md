@@ -36,7 +36,8 @@ the door, a "kitchen busy" sign, a store room, night cleaning, and an OPEN/CLOSE
 | A6 cleanup | cleaning at night | built, unit tests |
 | A7 ready check | OPEN / CLOSED sign | done, checked live |
 | B1-B2 Docker image | the packed lunch box | done: 1.86 GB, offline + no-.env checks pass |
-| B3 prod stack + Caddy | the shop's front door with a lock | in progress |
+| B3 prod stack + Caddy | the shop's front door with a lock | done, ran on the laptop (see `2_production_log.md`) |
+| B4 onwards | | logged in `2_production_log.md` |
 
 ---
 

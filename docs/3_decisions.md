@@ -278,3 +278,38 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
 - **Why not:** Nginx + certbot (more parts for HTTPS), Traefik (more to learn), AWS ALB +
   ACM (about $16+/month, Rule 17), uvicorn TLS (manual certificates), MLflow/SeaweedFS on
   the server (laptop tools; RAM is scarce).
+
+## D-066: public demo library, library switch with a lock, seed snapshot (Phase 7 B4) (2026-10-24)
+
+- **Learner's request:** no personal notes on the website; show professionally which docs
+  the site has; a "demo library" switch that turns off and LOCKS once a file is uploaded
+  (until a new chat); a helpful message instead of a bare "not found".
+- **Mentor's advice taken:** keep a demo library (rejected "no library, upload first": a
+  recruiter without a file would see an empty app; all measured numbers are on this
+  library; D-030 says DocPilot is a docs assistant, not a chat-with-any-file tool).
+- **Interview notes `local_only`** in `ingestion/sources.py` (laptop library and evals
+  unchanged). `scripts/make_public_snapshot.py` copies the main collection minus
+  `local_only` technologies into a temp collection (vectors copied, no re-embedding),
+  snapshots it to `data/snapshots/docpilot_public_<date>.snapshot` + `.sha256`. Run
+  2026-10-24: 453 chunks, 40 left out, **413 kept**, 3.1 MB.
+- **`docpilot.store.seed`** (in the image): restores the file into an EMPTY Qdrant via
+  `recover_from_uploaded_snapshot` (qdrant-client's own API: `POST .../snapshots/upload`,
+  `priority=snapshot`, checksum checked by Qdrant); skips if the library exists (`--force`
+  replaces). Checked on the laptop's prod stack: restored 413, second run skipped,
+  `/ready` = ready. The S3 + presigned-URL path (`snapshots.restore_collection`) stays for
+  backups.
+- **Lock (`chat/service.pick_library`):** a chat with any non-failed file searches only its
+  files; otherwise the switch decides (`main` / `off`). `off` with no files = `no_library`
+  message, a file still indexing = `indexing` message; both before any LLM call.
+  "Not found" answers keep `NOT_FOUND_PHRASE` first (prompts + output guard use it) and add
+  a hint (library: what it covers + "attach your own file"; files: "searched only your
+  files").
+- **`GET /api/library`** (`library.py`): built from the live collection's chunk counts +
+  the register (titles, licences), so the panel cannot list what the site lacks. Checked
+  through Caddy: FastAPI 4 docs, Pydantic 3, Docker 5, CoT paper 1, Wikipedia 3; no notes.
+- **UI:** `LibraryPanel` cards on the welcome screen (title, kind badge, documents,
+  licence link); composer pill switch "Demo library" / locked "Your files only".
+- **Why not:** a second public collection kept in the laptop Qdrant (more to maintain;
+  the snapshot is the one artifact); deleting notes after restore on the server (they
+  would still travel inside the file); mixing files + library in one search (unclear
+  citations).

@@ -138,4 +138,4 @@ from outside.
 
 | Step | Result | Date |
 |---|---|---|
-| B3 on the laptop | n/a (not run yet) | |
+| B3 on the laptop | app healthy; `https://localhost/` = 200 with `Via: 1.1 Caddy`; `/ready` = not_ready only because `library` is false (new empty Qdrant volume, B4 fills it) | 2026-10-24 |

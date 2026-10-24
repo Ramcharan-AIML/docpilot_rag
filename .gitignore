@@ -66,6 +66,8 @@ mlruns/
 
 # User PDF uploads (D-060): personal files, never in git
 data/uploads/
+# Library snapshots (D-066): data, rebuilt by scripts/make_public_snapshot.py
+data/snapshots/
 
 # React UI (D-061): installed packages and build output are rebuilt by npm
 web/node_modules/

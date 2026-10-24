@@ -51,6 +51,7 @@ async function parse(response) {
   return response.json();
 }
 
+export const getLibrary = () => call("/library").then(parse); // the demo library panel (D-066)
 export const listChats = () => call("/chats").then(parse);
 export const createChat = () => call("/chats", { method: "POST" }).then(parse);
 export const getChat = (id) => call(`/chats/${id}`).then(parse);
@@ -79,7 +80,7 @@ export async function streamMessage(id, question, library, onEvent, signal) {
   const response = await call(`/chats/${id}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, library: library === "auto" ? null : library }),
+    body: JSON.stringify({ question, library }), // "main" | "off" | "files" (D-066)
     signal, // lets the Stop button cancel the request
   });
   if (!response.ok) await parse(response); // throws with the server's message

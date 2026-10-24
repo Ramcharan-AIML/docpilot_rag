@@ -7,6 +7,16 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
 
 ## Session log
 
+### 2026-10-24, session 44: B3 run, demo library UI, B4 seed (D-065, D-066)
+
+- B3 ran on the laptop (learner): app healthy, `https://localhost` 200 via Caddy, `/ready`
+  not ready only because the new Qdrant volume was empty.
+- Learner chose a demo library with a switch + lock (mentor advised against "no library").
+  Built panel, switch, lock, messages; interview notes `local_only`. 340 tests.
+- B4: public snapshot 413 of 453 chunks (40 notes out), 3.1 MB; seeded into the prod
+  stack (2nd run skipped); `/ready` ready; `/api/library` lists 5 sources, no notes.
+- All Phase 7 detail lives in `docs/production/` (learner rule).
+
 ### 2026-10-23, session 43: Phase 7 Stage A1 private chats (D-063)
 
 - New mentor session takes over from "Phase_Guardrails". PR #6 merged; branch `production`.

@@ -31,13 +31,30 @@ from docpilot.llm.client import chat_stream
 from docpilot.rag import elapsed_ms, prompts
 from docpilot.retrieval.pipeline import BEST, retrieve
 
+# D-066: what the user reads when nothing matches. The answer still STARTS with
+# NOT_FOUND_PHRASE (the prompts and the output guard use that exact sentence).
+LIBRARY_HINT = (
+    " The demo library covers FastAPI, Pydantic, Docker and RAG / LLM papers. To ask about"
+    " something else, attach your own PDF, Markdown or text file (the paperclip)."
+)
+FILES_HINT = " I searched only the files in this chat."
+NO_LIBRARY = (
+    "The demo library is switched off and this chat has no files yet. Attach a PDF, Markdown"
+    " or text file (the paperclip), or switch the demo library on."
+)
+STILL_INDEXING = "Your file is still being prepared. Ask again when it shows a green tick."
+
 
 def pick_library(chat_id: str, library: str | None) -> str:
-    """ "files" (this chat's ready uploads) or "main". Default: files if the chat has any."""
-    if library in ("files", "main"):
-        return library
-    has_files = any(f["status"] == "ready" for f in store.list_files(chat_id))
-    return "files" if has_files else "main"
+    """Where this turn searches (D-066): "files", "main" or "off".
+
+    The lock: once a chat has uploaded files (not failed ones), it searches ONLY them, so
+    an answer never mixes a personal file with the demo library. A new chat starts with
+    the library again. Without files, the toggle decides: "off" = nothing to search.
+    """
+    if any(f["status"] != "failed" for f in store.list_files(chat_id)):
+        return "files"
+    return "off" if library == "off" else "main"
 
 
 def public_source(hit: dict) -> dict:
@@ -82,6 +99,16 @@ def run_turn(
         yield finish(chat_id, config.BLOCKED_PHRASE, "blocked_input", [], timings)
         return
 
+    # Before any LLM call: nothing to search = a clear instruction, not a wasted Groq call.
+    where = pick_library(chat_id, library)
+    if where == "off":
+        yield finish(chat_id, NO_LIBRARY, "no_library", [], timings)
+        return
+    if where == "files" and not any(f["status"] == "ready" for f in store.list_files(chat_id)):
+        yield finish(chat_id, STILL_INDEXING, "indexing", [], timings)
+        return
+    hint = FILES_HINT if where == "files" else LIBRARY_HINT
+
     start = time.perf_counter()
     question, about_chat = condense(verdict.text, history, llm_client)
     if history:
@@ -107,7 +134,7 @@ def run_turn(
         yield finish(chat_id, config.BLOCKED_PHRASE, "blocked_input", [], timings)
         return
 
-    if pick_library(chat_id, library) == "files":
+    if where == "files":
         settings = replace(BEST, collection=config.UPLOADS_COLLECTION, chat_id=chat_id)
     else:
         settings = BEST
@@ -116,7 +143,7 @@ def run_turn(
     yield {"type": "sources", "sources": sources, "question": question}
     if not hits:
         timings["total"] = elapsed_ms(total)
-        yield finish(chat_id, config.NOT_FOUND_PHRASE, "not_found", [], timings)
+        yield finish(chat_id, config.NOT_FOUND_PHRASE + hint, "not_found", [], timings)
         return
 
     system, user = prompts(question, hits, guarded=True)
@@ -136,6 +163,6 @@ def run_turn(
     if not verdict.allowed:
         yield finish(chat_id, verdict.text, "blocked_output", [], timings)
     elif verdict.reason == "not_found":
-        yield finish(chat_id, verdict.text, "not_found", [], timings)
+        yield finish(chat_id, verdict.text + hint, "not_found", [], timings)
     else:
         yield finish(chat_id, verdict.text, "ok", sources, timings)

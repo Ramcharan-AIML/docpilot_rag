@@ -494,7 +494,9 @@ In the order of `phase_7_production.md` ... `4_phase_7_production.md`, now on a 
 | A3 Concurrency cap + A4 busy message | built 2026-10-23 (326 tests: full queue, fake 429, seat freed) |
 | A5 uploads on disk + A6 cleanup + A7 /ready | done 2026-10-23 (332 tests; A5 on Docker Qdrant; A7 checked live) |
 | B1 `.dockerignore` + B2 Dockerfile | done 2026-10-23 (D-064); 1.86 GB; offline start + no .env checked |
-| B3 compose.prod + Caddyfile | built 2026-10-23 (D-065); configs validated; laptop run pending |
+| B3 compose.prod + Caddyfile | done 2026-10-24 (D-065); ran on the laptop through Caddy |
+| UI: demo library panel + switch + lock (learner request) | done 2026-10-24 (D-066) |
+| B4 seed index (public snapshot, interview notes left out) | done 2026-10-24 (D-066): 413 chunks restored, /ready ready |
 | A2 Abuse limits | not started |
 | A3 Concurrency cap | not started |
 | A4 "Busy" message | not started |

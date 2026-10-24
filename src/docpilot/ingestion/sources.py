@@ -23,6 +23,7 @@ class SourceInfo:
     licence_url: str
     checked: str  # date the licence and version were checked (YYYY-MM-DD)
     visibility: str  # "public" | "local_only" (non-open material never leaves the laptop)
+    title: str = ""  # the name visitors see in the web UI's library panel (D-066)
 
 
 DOMAINS = ("docs", "learning", "interview")
@@ -39,6 +40,7 @@ SOURCES: dict[str, SourceInfo] = {
         licence_url="https://github.com/fastapi/fastapi/blob/master/LICENSE",
         checked="2026-10-12",
         visibility="public",
+        title="FastAPI",
     ),
     "pydantic": SourceInfo(
         domain="docs",
@@ -50,6 +52,7 @@ SOURCES: dict[str, SourceInfo] = {
         licence_url="https://github.com/pydantic/pydantic/blob/main/LICENSE",
         checked="2026-10-20",
         visibility="public",
+        title="Pydantic",
     ),
     "docker": SourceInfo(
         domain="docs",
@@ -61,6 +64,7 @@ SOURCES: dict[str, SourceInfo] = {
         licence_url="https://github.com/docker/docs/blob/main/LICENSE",
         checked="2026-10-20",
         visibility="public",
+        title="Docker",
     ),
     # --- Group B: open-licence AI/ML learning material ---
     "cot": SourceInfo(
@@ -73,6 +77,7 @@ SOURCES: dict[str, SourceInfo] = {
         licence_url="https://creativecommons.org/licenses/by/4.0/",
         checked="2026-10-20",
         visibility="public",
+        title="Chain-of-Thought paper",
     ),
     "wikipedia": SourceInfo(
         domain="learning",
@@ -85,8 +90,11 @@ SOURCES: dict[str, SourceInfo] = {
         licence_url="https://creativecommons.org/licenses/by-sa/4.0/",
         checked="2026-10-20",
         visibility="public",
+        title="Wikipedia articles",
     ),
-    # --- Group C: interview prep (the learner's own notes = own work, public) ---
+    # --- Group C: interview prep (the learner's own notes) ---
+    # local_only since 2026-10-24 (D-066): the learner keeps personal notes off the public
+    # site; the laptop library still has them (evals unchanged), the live snapshot does not.
     "interview": SourceInfo(
         domain="interview",
         topic="Learner's interview notes: phases 0-3 (Markdown) + phase 1 (Word)",
@@ -96,7 +104,8 @@ SOURCES: dict[str, SourceInfo] = {
         licence="own work (project author)",
         licence_url="docs/interview/README.md",
         checked="2026-10-20",
-        visibility="public",
+        visibility="local_only",
+        title="Interview notes",
     ),
     # --- CI only: the eval gate's fixture corpus (step 2.10), never in the real index ---
     "ci_fixture": SourceInfo(
@@ -109,6 +118,7 @@ SOURCES: dict[str, SourceInfo] = {
         licence_url="tests/fixtures/README.md",
         checked="2026-10-20",
         visibility="public",
+        title="Lumen (CI fixture)",
     ),
 }
 

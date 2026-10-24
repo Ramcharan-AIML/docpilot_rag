@@ -7,7 +7,8 @@ quality with measured numbers**. Everything runs on free tools (local models, fr
 
 **Documents indexed (v1):** FastAPI, Pydantic and Docker docs, three Wikipedia articles
 (RAG, word embeddings, IR evaluation measures), the Chain-of-Thought paper (PDF), and the author's own
-interview notes: 20 documents, 453 chunks.
+interview notes: 20 documents, 453 chunks. The public demo leaves the personal notes out
+(413 chunks) and shows its library on the welcome screen.
 
 ---
 
