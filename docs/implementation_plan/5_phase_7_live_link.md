@@ -497,6 +497,7 @@ In the order of `phase_7_production.md` ... `4_phase_7_production.md`, now on a 
 | B3 compose.prod + Caddyfile | done 2026-10-24 (D-065); ran on the laptop through Caddy |
 | UI: demo library panel + switch + lock (learner request) | done 2026-10-24 (D-066) |
 | B4 seed index (public snapshot, interview notes left out) | done 2026-10-24 (D-066): 413 chunks restored, /ready ready |
+| B5 image.yml -> GHCR | built 2026-10-24 (D-067); actionlint clean; first run after the merge to main |
 | A2 Abuse limits | not started |
 | A3 Concurrency cap | not started |
 | A4 "Busy" message | not started |

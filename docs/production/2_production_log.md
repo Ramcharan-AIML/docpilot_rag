@@ -143,3 +143,50 @@ curl.exe -k https://localhost/api/library                             # -> the 5
 ```
 `run --rm` = start a ONE-OFF extra container from the app image, run the command, delete
 it. `-v ...:/seed:ro` = show my laptop's snapshot folder inside it, read-only.
+
+**My check (2026-10-24):** opened https://localhost: the library cards, the switch and
+the lock look good. PASS.
+
+---
+
+## Step B5: CD - GitHub builds the image and stores it in GHCR (2026-10-24) - built
+
+**Teach first:** `05_teach_cicd_ghcr.md` (CI vs CD, registries, SHA tags, rollback,
+GITHUB_TOKEN, least privilege, layer cache, interview questions).
+
+**Problem:** the AWS server must download a finished image. Building it on my laptop is
+not repeatable and not linked to a commit.
+
+**Simple picture: a bakery.** CI checks every batch of dough (tests). CD packs the bread
+that passed and puts it on the delivery shelf (GHCR). The van (deploy) is me, for now.
+
+**What we built:** `.github/workflows/image.yml`
+```text
+merge a PR into main -> ci.yml (tests + eval gate)
+   -> only if GREEN: image.yml
+        checkout THAT commit -> Buildx -> log in to ghcr.io with GITHUB_TOKEN
+        -> build linux/amd64 -> push :sha-xxxxxxx and :latest
+```
+
+**Key choices:**
+| Choice | Why |
+|---|---|
+| `workflow_run` + "only if success" | no image from broken code |
+| `GITHUB_TOKEN` + `packages: write` only | no secret to create; least privilege |
+| tag `sha-<commit>` | the server pins exact code; rollback = previous tag |
+| actions pinned (e.g. `login-action@v4.6.0`) | nobody else's change can silently change my pipeline. v4.7.0 was 1 day old: skipped |
+| `cache type=gha` | code-only changes do not reinstall torch |
+| amd64 only | t3.small is Intel/AMD; ARM later for Oracle |
+
+**Checks so far:** `actionlint 1.7.12` (run in Docker) = no problems in `image.yml` and
+`ci.yml`. The real run happens after the merge to main.
+
+**Important commands (I run these):**
+```powershell
+gh pr create --base main --head production --title "Phase 7: public-safe app, Docker image, prod stack, demo library, CD" --body "Stage A, B1-B5 (D-063..D-067). Details: docs/production/."
+gh pr checks --watch                         # wait for test + eval-gate + GitGuardian
+gh pr merge --merge                          # merge into main -> CI on main -> image.yml
+gh run list --workflow image.yml --limit 3   # find the image run
+gh run watch                                 # follow it live (pick the image run)
+docker pull ghcr.io/ramcharan-aiml/docpilot:latest   # after making the package public
+```

@@ -313,3 +313,24 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   the snapshot is the one artifact); deleting notes after restore on the server (they
   would still travel inside the file); mixing files + library in one search (unclear
   citations).
+
+## D-067: CD = image build in GitHub Actions, pushed to GHCR (Phase 7 B5) (2026-10-24)
+
+- **`.github/workflows/image.yml`:** `workflow_run` after workflow `ci` completes on `main`,
+  runs only if it SUCCEEDED, checks out `workflow_run.head_sha` (the tested commit); plus
+  `workflow_dispatch`. `permissions: contents: read, packages: write`; login to `ghcr.io`
+  with `GITHUB_TOKEN` (GitHub docs, checked 2026-10-24). Tags `sha-<short>` (servers pin
+  this) + `latest` via metadata-action `context: git` (adds the OCI `source` label linking
+  the package to the repo). `linux/amd64` only. Layer cache `type=gha,mode=max`.
+  `concurrency: image`, timeout 45 min.
+- **Pinned actions (GitHub releases, 2026-10-24):** checkout v7.0.1, setup-buildx v4.4.1,
+  login **v4.6.0** (v4.7.0 published 2026-10-23: too new), metadata v6.2.0, build-push
+  v7.4.0. `actionlint 1.7.12` (Docker, release older than 14 days): no problems in both
+  workflows.
+- **Why not:** Docker Hub (pull limits, extra account + token), ECR (cost after the free
+  allowance, AWS keys in GitHub), building on the laptop (not reproducible, no commit
+  link), `latest` on the server (no rollback), arm64 now (QEMU emulation of torch installs
+  is very slow; added for Oracle), build on every PR (minutes for no artifact; CI already
+  tests the code).
+- **Manual step:** a new GHCR package is private by default; the learner makes it public
+  once (no secrets inside: `.dockerignore`, B1 check), so the server pulls without a token.
