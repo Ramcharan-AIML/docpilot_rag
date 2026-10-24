@@ -190,3 +190,23 @@ gh run list --workflow image.yml --limit 3   # find the image run
 gh run watch                                 # follow it live (pick the image run)
 docker pull ghcr.io/ramcharan-aiml/docpilot:latest   # after making the package public
 ```
+
+**First real run (2026-10-24):**
+| What | Result |
+|---|---|
+| PR #7 production -> main | GitGuardian, eval-gate (1m55s), test (2m25s): all green; merged |
+| `ci` on main (push) | success |
+| `image` started by itself after CI | yes: the `workflow_run` trigger works |
+| `image` build | **FAILED** at the tag step: "Cannot infer ref from detached HEAD" |
+
+**Why it failed (simple):** to build EXACTLY the commit CI tested, the workflow checks out
+that commit by its id. Git then is "on a commit, not on a branch" (a **detached HEAD**:
+like opening a book at page 214 without knowing which chapter). `metadata-action` in
+`context: git` mode wants to know the branch, so it stopped.
+
+**Fix:** a small step reads the commit id itself (`git rev-parse HEAD`) and we write the
+tag `sha-<first 7 characters>` ourselves. Same result, no branch needed. actionlint: clean.
+
+**Lesson:** a pipeline is code too: it can only be fully tested by running it. The
+first run found a mix of two settings (checkout by commit + git context) that the linter
+cannot see. I predicted 3 minutes; it failed after about 15 seconds of the build job.
