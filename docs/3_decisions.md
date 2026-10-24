@@ -334,3 +334,8 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   tests the code).
 - **Manual step:** a new GHCR package is private by default; the learner makes it public
   once (no secrets inside: `.dockerignore`, B1 check), so the server pulls without a token.
+- **First run failed (2026-10-24, run 40065210124):** the trigger worked (ci on main green ->
+  image started), but metadata-action `context: git` stopped with "Cannot infer ref from
+  detached HEAD" (checkout of a commit id = no branch). Fix: a step writes the full and
+  short commit from `git rev-parse HEAD`; tags `type=raw,value=sha-<short>` + `latest`;
+  label `org.opencontainers.image.revision=<full>`. actionlint clean again.

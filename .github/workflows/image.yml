@@ -45,17 +45,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Tags: sha-<commit> (the server pins THIS) + latest. context: git = take the commit
-      # from the checkout above. Also adds labels, e.g. org.opencontainers.image.source,
-      # which links the package to this repository.
+      # The commit we checked out, in full and as the usual 7-character short form.
+      # (First run, 2026-10-24: metadata-action's "context: git" failed with "Cannot infer
+      # ref from detached HEAD", because checking out a commit id is not a branch. So we
+      # write the sha tag ourselves from the exact commit.)
+      - id: commit
+        run: |
+          full="$(git rev-parse HEAD)"
+          echo "full=$full" >> "$GITHUB_OUTPUT"
+          echo "short=${full::7}" >> "$GITHUB_OUTPUT"
+
+      # Tags: sha-<commit> (the server pins THIS) + latest. Also adds labels, e.g.
+      # org.opencontainers.image.source, which links the package to this repository;
+      # the revision label is set to the exact commit too.
       - id: meta
         uses: docker/metadata-action@v6.2.0
         with:
-          context: git
           images: ghcr.io/ramcharan-aiml/docpilot # lowercase: a Docker rule
           tags: |
-            type=sha,format=short
+            type=raw,value=sha-${{ steps.commit.outputs.short }}
             type=raw,value=latest
+          labels: |
+            org.opencontainers.image.revision=${{ steps.commit.outputs.full }}
 
       # linux/amd64 only: the AWS t3.small is Intel/AMD. ARM (Oracle, later) would build
       # through an emulator and take very long. type=gha = keep layers in GitHub's cache,
