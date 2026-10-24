@@ -7,7 +7,8 @@ quality with measured numbers**. Everything runs on free tools (local models, fr
 
 **Documents indexed (v1):** FastAPI, Pydantic and Docker docs, three Wikipedia articles
 (RAG, word embeddings, IR evaluation measures), the Chain-of-Thought paper (PDF), and the author's own
-interview notes: 20 documents, 453 chunks.
+interview notes: 20 documents, 453 chunks. The public demo leaves the personal notes out
+(413 chunks) and shows its library on the welcome screen.
 
 ---
 
@@ -25,8 +26,7 @@ interview notes: 20 documents, 453 chunks.
 | 7 | Production: Docker, Prometheus + Grafana, CI/CD, AWS S3 with Terraform | next (core) |
 | 8 | Stretch goals (GraphRAG-lite, DSPy, ColBERT, ...) | dropped (future work) |
 
-Day-by-day detail: [docs/progress.md](docs/progress.md). The full story in simple English:
-[docs/USER_GUIDE.md](docs/USER_GUIDE.md) and its parts 2 to 4.
+The full story in simple English: [docs/USER_GUIDE.md](docs/USER_GUIDE.md) and its parts 2 to 4.
 
 ---
 
@@ -65,7 +65,7 @@ Full table: [evals/ABLATION.md](evals/ABLATION.md).
 
 **Phase 6: guardrails (light), done (D-059).** Plain-Python input guard, untrusted-context
 boxes, cite-or-refuse output guard with a canary; red team: attacks that worked 2/18 ->
-0/18, false blocks 0/84. Full story: `docs/teaching/phase_6_guardrails_explained.md`.
+0/18, false blocks 0/84.
 
 **Phase 7: production (core).**
 - Docker image for the API (models baked in), full Docker Compose stack.
@@ -117,8 +117,7 @@ pages); they are indexed in the background and only that chat searches them.
 
 Python, sentence-transformers (`BAAI/bge-small-en-v1.5`), FastEmbed BM25, Qdrant, cross-encoder
 rerankers, Groq / Gemini / OpenRouter free models, FastAPI, MLflow, SeaweedFS + boto3,
-Docker Compose, GitHub Actions. Every choice and its "why not X?" is in
-[docs/decisions.md](docs/decisions.md) and [docs/2_decisions.md](docs/2_decisions.md).
+Docker Compose, GitHub Actions.
 
 ## Documentation map
 

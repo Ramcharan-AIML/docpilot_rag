@@ -9,8 +9,8 @@ Update this file at the end of every session. Newest session log entry goes on t
 | Item | Value |
 |---|---|
 | Current phase | Phase 3 (Phase 2 gate closed 2026-10-20: PR #3, tag `phase-2`) |
-| Current step | React chat app (D-061): chats, memory, per-chat files, streaming, fast background uploads; branch streamlit-ui, not committed |
-| Next step | Phase 7 live link (D-062): `implementation_plan/5_phase_7_live_link.md`, Stage A1 (private chats per visitor) |
+| Current step | Phase 7: Stage A, B1-B4 done (D-063..D-066) + demo library UI. Details: `docs/production/2_production_log.md` |
+| Next step | B5 (D-067) built: learner opens PR production -> main, merges, watches image.yml, makes the GHCR package public |
 | Blockers | none (the old "code missing" blocker is closed: steps 1a.1 to 1a.8 are in this repo) |
 | Homework | Rewrite the mentor-drafted Phase 0/1/2 answers in `interview_notes.md` in your own words; practise them aloud |
 

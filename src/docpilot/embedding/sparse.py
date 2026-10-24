@@ -30,9 +30,21 @@ CACHE_DIR = config.PROJECT_ROOT / ".cache" / "fastembed"
 
 @lru_cache(maxsize=4)
 def get_bm25(avg_len: float = DEFAULT_AVG_LEN) -> SparseTextEmbedding:
-    """Load once per average length (it changes the document weights, not the query)."""
+    """Load once per average length (it changes the document weights, not the query).
+
+    BM25_MODEL_PATH (set in the Docker image, D-064): load the word lists from that folder
+    and never check the internet. Needed because fastembed 0.8.1's "already downloaded?"
+    check wants mock.file and tamil.txt, which the Qdrant/bm25 repo does not have: with no
+    internet (HF_HUB_OFFLINE=1) it failed even though every needed file was cached
+    (found 2026-10-23 by starting the image with --network none).
+    """
     return SparseTextEmbedding(
-        model_name=SPARSE_MODEL, cache_dir=str(CACHE_DIR), k=BM25_K1, b=BM25_B, avg_len=avg_len
+        model_name=SPARSE_MODEL,
+        cache_dir=str(CACHE_DIR),
+        k=BM25_K1,
+        b=BM25_B,
+        avg_len=avg_len,
+        specific_model_path=config.BM25_MODEL_PATH or None,  # "" on the laptop = normal
     )
 
 

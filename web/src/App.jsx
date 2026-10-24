@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import Composer from "./components/Composer.jsx";
 import { MenuIcon } from "./components/Icons.jsx";
+import LibraryPanel from "./components/LibraryPanel.jsx";
 import Message from "./components/Message.jsx";
 import Sidebar from "./components/Sidebar.jsx";
 
@@ -30,7 +31,8 @@ export default function App() {
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [files, setFiles] = useState([]);
-  const [library, setLibrary] = useState("auto");
+  const [libraryOn, setLibraryOn] = useState(true); // the demo-library switch (D-066)
+  const [libraryItems, setLibraryItems] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
@@ -53,7 +55,13 @@ export default function App() {
   const refreshChats = useCallback(() => api.listChats().then(setChats).catch((e) => setError(e.message)), []);
   useEffect(() => {
     refreshChats();
+    api.getLibrary().then(setLibraryItems).catch(() => {}); // no panel is fine; chats still work
   }, [refreshChats]);
+
+  // The lock (D-066): a chat with files (not failed ones) answers only from them. The
+  // server enforces it too; the UI just shows it.
+  const locked = files.some((file) => file.status !== "failed");
+  const library = locked ? "files" : libraryOn ? "main" : "off";
 
   // Open a chat: load its saved messages and files.
   useEffect(() => {
@@ -99,7 +107,7 @@ export default function App() {
   function newChat() {
     abort.current?.abort();
     setActiveId(null); // the chat is created on the first message or file (no empty chats)
-    setLibrary("auto");
+    setLibraryOn(true); // a new chat starts with the demo library again
     setSidebarOpen(false);
   }
 
@@ -150,6 +158,7 @@ export default function App() {
         question,
         library,
         (event) => {
+          if (event.type === "stage") updateLast(() => ({ stage: event.text })); // e.g. waiting in line
           if (event.type === "sources") updateLast(() => ({ stage: "Writing the answer" }));
           if (event.type === "token") updateLast((last) => ({ content: last.content + event.text }));
           if (event.type === "done")
@@ -219,7 +228,7 @@ export default function App() {
         onNew={newChat}
         onSelect={(id) => {
           setActiveId(id);
-          setLibrary("auto");
+          setLibraryOn(true);
           setSidebarOpen(false);
         }}
         onRename={rename}
@@ -241,16 +250,16 @@ export default function App() {
               <span className="badge">Cited answers · Guardrails on</span>
               <h2>What do you want to know?</h2>
               <p className="muted">
-                Ask about the built-in library (FastAPI, Pydantic, Docker, RAG papers), or drop a PDF / Markdown
-                file here to chat with it.
+                Ask about the demo library below, or attach your own PDF, Markdown or text file to chat with it.
               </p>
               <div className="examples">
                 {EXAMPLES.map((example) => (
-                  <button key={example} className="example" disabled={busy} onClick={() => send(example)}>
+                  <button key={example} className="example" disabled={busy || !libraryOn} onClick={() => send(example)}>
                     {example}
                   </button>
                 ))}
               </div>
+              <LibraryPanel items={libraryItems} />
             </div>
           ) : (
             <div className="messages">
@@ -269,9 +278,10 @@ export default function App() {
         )}
         <Composer
           files={files}
-          library={library}
+          libraryOn={libraryOn}
+          locked={locked}
           busy={busy}
-          onLibrary={setLibrary}
+          onToggleLibrary={() => setLibraryOn((on) => !on)}
           onSend={send}
           onStop={() => abort.current?.abort()}
           onFiles={addFiles}

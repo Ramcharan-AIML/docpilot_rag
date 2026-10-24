@@ -7,6 +7,43 @@ checklist stay in [progress.md](progress.md)). Newest session on top.
 
 ## Session log
 
+### 2026-10-24, session 44: B3 run, demo library UI, B4 seed (D-065, D-066)
+
+- B3 ran on the laptop (learner): app healthy, `https://localhost` 200 via Caddy, `/ready`
+  not ready only because the new Qdrant volume was empty.
+- Learner chose a demo library with a switch + lock (mentor advised against "no library").
+  Built panel, switch, lock, messages; interview notes `local_only`. 340 tests.
+- B4: public snapshot 413 of 453 chunks (40 notes out), 3.1 MB; seeded into the prod
+  stack (2nd run skipped); `/ready` ready; `/api/library` lists 5 sources, no notes.
+- All Phase 7 detail lives in `docs/production/` (learner rule).
+
+### 2026-10-23, session 43: Phase 7 Stage A1 private chats (D-063)
+
+- New mentor session takes over from "Phase_Guardrails". PR #6 merged; branch `production`.
+- Learner keeps personal notes off GitHub later (cleanup on main before sharing the link;
+  `.gitignore` lines written but commented out by the learner for now).
+- Primer `production/02_teach_public_app_safety.md` (moved from teaching/) (all of Stage A) written before building.
+- A1 built: `chats.owner` + migration, `X-Visitor-Id` on every chat call, 404 for others,
+  400 for a bad id. 313 tests pass (8 new), ruff clean, React build OK.
+- Learner's check: predicted Incognito would show the same chats (wrong: own localStorage =
+  new id = new visitor); predicted cleared site data = chats gone from view (right; rows
+  stay in the db). First run showed the same 3 old chats in both windows: the API on :8000
+  was the previous session's server started 11:00, BEFORE the change (lesson: restart after
+  a code change). After a restart: two separate visitors, old owner-less chats hidden. PASS.
+- A2: Groq console (learner) for gpt-oss-120b: 30 RPM, 1K RPD, 8K TPM, 200K TPD.
+  `scripts/measure_tokens.py` (learner run, n=5 dev): 1,094-1,272 tokens per answer,
+  median 1,149. Learner did not predict ("go with your assumption"). Limits set from it
+  (plan's 10/min would exceed 8K TPM): visitor 3/min 20/day, IP 3/min 40/day, site 3/min
+  80/day, uploads 10/day/IP, 3 files/chat. 322 tests. Live check skipped by the learner.
+- A3+A4: 2 answer seats (BoundedSemaphore), "Waiting in line" stage event, Groq 429 =
+  busy message (stream) / 503 (`/ask`). 326 tests pass, React build OK.
+- Learner asked for `docs/production/01_production_log.md`: one simple tracking file for
+  every production step (picture, files, small words, results, commands; no add/commit/
+  push). Written for A0-A4, kept up to date from now on.
+- A5 (uploads collection `memory=cold` + payload indexes; verified on Docker Qdrant
+  1.19.1 with a temp collection), A6 (`chat/cleanup.py`, hourly, public mode, 7 days), A7
+  (`/ready`). 332 tests pass. The running :8000 server was old code (404 on /ready).
+
 ### 2026-10-23, session 42: React chat app (D-061)
 
 - Learner rejected Streamlit; wanted ChatGPT/NotebookLM experience; chose React + chats,

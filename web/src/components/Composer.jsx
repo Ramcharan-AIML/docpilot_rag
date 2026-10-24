@@ -1,7 +1,41 @@
-// The input area at the bottom: file chips, attach button, "search in" switch, text box,
+// The input area at the bottom: file chips, attach button, demo-library switch, text box,
 // Send / Stop. Enter sends, Shift+Enter makes a new line (like ChatGPT).
 import { useEffect, useRef, useState } from "react";
-import { AlertIcon, CheckIcon, ClipIcon, CloseIcon, FileIcon, SendIcon, StopIcon } from "./Icons.jsx";
+import {
+  AlertIcon,
+  BookIcon,
+  CheckIcon,
+  ClipIcon,
+  CloseIcon,
+  FileIcon,
+  LockIcon,
+  SendIcon,
+  StopIcon,
+} from "./Icons.jsx";
+
+// D-066: ON = answer from the demo library. Once the chat has a file it is LOCKED to that
+// chat's files (no mixing of a personal file with the demo docs); a new chat unlocks it.
+function LibrarySwitch({ on, locked, onToggle }) {
+  if (locked) {
+    return (
+      <span className="library-switch locked" title="This chat answers only from its files. Start a new chat to use the demo library.">
+        <LockIcon /> Your files only
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      className={`library-switch ${on ? "on" : ""}`}
+      title={on ? "Answers come from the demo library" : "Demo library off: attach a file to ask about it"}
+      onClick={onToggle}
+    >
+      <BookIcon /> Demo library <span className="switch-track"><span className="switch-dot" /></span>
+    </button>
+  );
+}
 
 export const ACCEPT = ".pdf,.md,.txt";
 
@@ -34,11 +68,15 @@ function FileChip({ file, onRemove }) {
   );
 }
 
-export default function Composer({ files, library, busy, onLibrary, onSend, onStop, onFiles, onRemoveFile }) {
+export default function Composer({ files, libraryOn, locked, busy, onToggleLibrary, onSend, onStop, onFiles, onRemoveFile }) {
   const [text, setText] = useState("");
   const box = useRef(null);
   const picker = useRef(null);
-  const hasReady = files.some((file) => file.status === "ready");
+  const placeholder = locked
+    ? "Ask about your files…"
+    : libraryOn
+      ? "Ask about FastAPI, Pydantic, Docker, RAG… or attach a file"
+      : "Attach a PDF, Markdown or text file to ask about it…";
 
   // Grow the text box with its content, up to a limit (then it scrolls).
   useEffect(() => {
@@ -68,7 +106,7 @@ export default function Composer({ files, library, busy, onLibrary, onSend, onSt
           ref={box}
           rows={1}
           value={text}
-          placeholder={hasReady ? "Ask about your files…" : "Ask DocPilot, or attach a PDF / Markdown file…"}
+          placeholder={placeholder}
           onChange={(event) => setText(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
@@ -92,16 +130,7 @@ export default function Composer({ files, library, busy, onLibrary, onSend, onSt
               event.target.value = ""; // so the same file can be picked again
             }}
           />
-          <select
-            className="library-select"
-            value={library}
-            onChange={(event) => onLibrary(event.target.value)}
-            title="Where DocPilot searches"
-          >
-            <option value="auto">Auto: {hasReady ? "this chat's files" : "main library"}</option>
-            <option value="files" disabled={!hasReady}>This chat's files</option>
-            <option value="main">Main library (20 docs)</option>
-          </select>
+          <LibrarySwitch on={libraryOn} locked={locked} onToggle={onToggleLibrary} />
           <span className="grow" />
           {busy ? (
             <button className="send stop" title="Stop" onClick={onStop}>

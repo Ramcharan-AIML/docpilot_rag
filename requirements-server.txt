@@ -1,0 +1,20 @@
+# Packages for the SERVER image only (Phase 7 B2, D-064). Same exact pins as requirements.txt.
+# torch is NOT here: the Dockerfile installs the CPU-only build first (no GPU on the server).
+# Left out on purpose: docling-slim and opencv-python-headless. The running app never
+# imports them (checked 2026-10-23: only sentence-transformers, fastembed, boto3 load);
+# they only build the main library, which happens on the laptop.
+# The Dockerfile installs this with `-c requirements-lock.txt`, so every package these
+# pull in gets the same version as on the laptop (where all tests pass).
+sentence-transformers==6.1.0
+numpy==2.5.3
+python-dotenv==1.2.4
+boto3==1.43.116
+fastembed==0.8.1
+qdrant-client==1.19.1
+openai==3.29.0
+fastapi==0.143.1
+uvicorn==0.54.0
+python-multipart==0.0.32
+# The fast PDF reader for uploads (D-061). On the laptop it arrives with Docling; without
+# Docling it must be named here. Same version as the lock (checked 2026-10-23).
+pypdfium2==5.14.0

@@ -1,0 +1,45 @@
+# What `docker build .` must NOT send to the builder (Phase 7 B1, D-064).
+# The image needs only: src/, web/ (to build the UI), requirements-server.txt, Dockerfile.
+# Everything else stays on the laptop: secrets, data, caches, tools, notes.
+
+# --- secrets: NEVER in an image (an image pushed to a registry can be downloaded) ---
+.env
+.env.*
+!.env.example
+
+# --- local environments and caches (rebuilt inside the image) ---
+.venv/
+venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.cache/
+hf_cache/
+web/node_modules/
+web/dist/
+
+# --- data and indexes (the server gets its own: volumes + the snapshot seed, B4) ---
+data/
+qdrant_local/
+qdrant_storage/
+*.db
+*.sqlite
+mlflow.db
+mlruns/
+mlartifacts/
+
+# --- not needed to RUN the app ---
+.git/
+.github/
+docs/
+evals/
+labs/
+tests/
+ui/
+scripts/
+docker/
+infra/
+deploy/
+*.md
+!README.md

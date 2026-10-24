@@ -33,7 +33,8 @@ def too_long(paths: list[str]) -> list[tuple[str, int]]:
     """(path, line count) for every text file over MAX_LINES that is not allowed."""
     problems = []
     for path in paths:
-        if path in ALLOWED or Path(path).suffix not in TEXT_SUFFIXES:
+        # skip missing files: one moved or deleted but not yet staged is still "tracked"
+        if path in ALLOWED or Path(path).suffix not in TEXT_SUFFIXES or not Path(path).exists():
             continue
         with open(path, encoding="utf-8", errors="replace") as file:
             count = sum(1 for _ in file)

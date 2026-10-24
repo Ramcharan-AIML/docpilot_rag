@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS chats (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    updated_at TEXT NOT NULL,
+    owner TEXT NOT NULL DEFAULT ''   -- the visitor id that made it (A1, D-063)
 );
 CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,21 +69,43 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
 def init_db(path: Path | None = None) -> None:
     with closing(connect(path)) as db, db:
         db.executescript(SCHEMA)
+        # Migration (A1): a database made before D-063 has no owner column. Old chats get
+        # owner "" so no visitor sees them: privacy wins over convenience.
+        columns = {row["name"] for row in db.execute("PRAGMA table_info(chats)")}
+        if "owner" not in columns:
+            db.execute("ALTER TABLE chats ADD COLUMN owner TEXT NOT NULL DEFAULT ''")
+        db.execute("CREATE INDEX IF NOT EXISTS chats_owner ON chats(owner)")
 
 
-def create_chat(path: Path | None = None) -> dict:
+def create_chat(owner: str = "", path: Path | None = None) -> dict:
     chat = {"id": uuid.uuid4().hex, "title": NEW_CHAT_TITLE, "created_at": now()}
     chat["updated_at"] = chat["created_at"]
+    chat["owner"] = owner
     with closing(connect(path)) as db, db:  # `with db` = commit, or roll back on error
-        db.execute("INSERT INTO chats VALUES (:id, :title, :created_at, :updated_at)", chat)
+        db.execute(
+            "INSERT INTO chats (id, title, created_at, updated_at, owner)"
+            " VALUES (:id, :title, :created_at, :updated_at, :owner)",
+            chat,
+        )
     return chat
 
 
-def list_chats(path: Path | None = None) -> list[dict]:
-    """Newest activity first, like ChatGPT's sidebar."""
+def list_chats(owner: str = "", path: Path | None = None) -> list[dict]:
+    """One visitor's chats, newest activity first, like ChatGPT's sidebar."""
     with closing(connect(path)) as db:
-        rows = db.execute("SELECT * FROM chats ORDER BY updated_at DESC, created_at DESC")
+        rows = db.execute(
+            "SELECT * FROM chats WHERE owner = ? ORDER BY updated_at DESC, created_at DESC",
+            (owner,),
+        )
         return [dict(row) for row in rows]
+
+
+def idle_chats(before: str, path: Path | None = None) -> list[str]:
+    """Ids of chats with no activity since `before` (ISO time). The same ISO format with
+    UTC everywhere means plain text order = time order."""
+    with closing(connect(path)) as db:
+        rows = db.execute("SELECT id FROM chats WHERE updated_at < ?", (before,))
+        return [row["id"] for row in rows]
 
 
 def get_chat(chat_id: str, path: Path | None = None) -> dict | None:

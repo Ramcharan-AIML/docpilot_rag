@@ -116,3 +116,19 @@ def test_sparse_vectors_must_match_chunks(client: QdrantClient) -> None:
     chunks, vectors = three_chunks()
     with pytest.raises(ValueError):
         add_chunks(client, NAME, chunks, vectors, [{"indices": [1], "values": [1.0]}])
+
+
+def test_cold_collection_still_searches_and_filters(tmp_path: Path) -> None:
+    # A5: the uploads layout (on disk + payload indexes). Local mode accepts the settings;
+    # the real server applies them (checked by hand against Qdrant 1.19.1 in Docker).
+    qdrant = get_client(tmp_path / "cold")
+    try:
+        qdrant_store.ensure_collection(qdrant, "uploads", dimension=4, cold=True)
+        qdrant_store.ensure_collection(qdrant, "uploads", dimension=4, cold=True)  # no error
+        chunks, vectors = three_chunks()
+        add_chunks(qdrant, "uploads", chunks, vectors)
+        hits = search(qdrant, "uploads", [0.0, 0.9, 0.1, 0.0], top_k=1)
+        assert hits[0]["text"] == "text 1"
+        assert search(qdrant, "uploads", [1.0, 0, 0, 0], 3, qdrant_store.chat_filter("x")) == []
+    finally:
+        qdrant.close()

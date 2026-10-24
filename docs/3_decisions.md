@@ -175,3 +175,162 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   around month 5 (D-018). Plan: `implementation_plan/5_phase_7_live_link.md`.
 - **Alternatives:** m7i-flex.large 8 GB (about 2.5 months of credits); Oracle first
   (capacity/signup risk before the deadline); free PaaS (they sleep).
+
+## D-063: public-mode safety (Stage A of Phase 7) (2026-10-23, filled step by step)
+
+- **A1 private chats per visitor:** the browser makes a random visitor id once
+  (`crypto.randomUUID()`, getRandomValues fallback on plain HTTP; kept in localStorage,
+  in memory if storage is blocked) and sends `X-Visitor-Id` on every `/api/chats` call
+  (one `call()` helper in `web/src/api.js`). `chats.owner` column, migrated on start with
+  `ALTER TABLE` (old chats get owner "" = hidden from everyone), index on owner. Every chat
+  endpoint: someone else's chat = **404** (not 403, which would confirm it exists). Bad or
+  missing id (not 16-64 of `A-Za-z0-9-`) = 400. `/api/health` needs no id.
+- **Why not:** cookies (would work; a header is easier to see and test, a small change
+  later); IP address (shared by many, changes); login (days of work, Stage D); a typed
+  name (two people pick the same one).
+- **Honest limit:** privacy, not security: the id is a bearer token with no password.
+- **A2 limits (`limits.py`, `PUBLIC_MODE=1` only on the server):** Groq free plan for
+  gpt-oss-120b (learner's console 2026-10-23): 30 RPM, 1K RPD, **8K TPM, 200K TPD**, so
+  tokens run out first. Measured (`scripts/measure_tokens.py`, n=5 dev): one answer 1,149
+  tokens median, 1,272 max; a follow-up turn about 2,400 with the condense call
+  (ESTIMATE). Limits: visitor 3/min + 20/day; IP 3/min + 40/day (a cleared browser does not
+  reset it; shared Wi-Fi gets 2x); whole site 3/min + 80/day; uploads 10/day per IP, 3
+  files/chat, 300 pages, 20 MB. Refused = **429** with a message saying which limit. `/ask`
+  shares the limits. Fixed window, in memory, counted only when every limit allows.
+- **Why not:** Redis (a server to run; Stage D); token bucket (smoother, more code);
+  counting real tokens instead of questions (more exact; needs usage from the stream,
+  later with /metrics); the plan's 10/min + 60/day (written before measuring: 10/min would
+  hit Groq's 8K TPM and fail with errors).
+- **Stage B note:** behind Caddy, uvicorn must run with `--proxy-headers` and trust only
+  Caddy, or every visitor has Caddy's IP and the IP limit becomes a site limit.
+- **A3 concurrency cap:** `threading.BoundedSemaphore(2)` in `limits.py` around every
+  answer (chat stream and `/ask`), on the laptop too. A full queue: the stream first sends
+  `{"type": "stage", "text": "Waiting in line..."}` (the UI shows it), waits up to 30 s, then
+  the busy message. The seat is freed in `finally` (also on Stop / disconnect).
+- **A4 busy message:** `openai.RateLimitError` (Groq 429 after the library's 2 retries) =
+  `{"type": "error", "message": BUSY}` in the stream, 503 on `/ask`; not "Something went
+  wrong" (it is not a bug, the free quota is used up for the minute).
+- **Why not:** asyncio.Semaphore (our endpoints are plain `def` running in a thread pool,
+  so a threading semaphore is the right kind); a job queue like Celery + Redis (a broker to
+  run; Stage D); no cap (20 reranker runs at once on 2 GB = out of memory).
+- **No new dependency** (`httpx` for the fake 429 in tests is already pinned, D-034).
+- **A5 uploads on disk:** `create_collection(cold=True)` for `docpilot_uploads`: dense
+  vectors, sparse index and payload `memory=cold` (Qdrant 1.19 replaced the deprecated
+  `on_disk` flags with `memory`: cold / cached / pinned; checked in qdrant-client 1.19.1
+  and on qdrant.tech storage docs, 2026-10-23) + KEYWORD payload indexes on `chat_id` and
+  `source` (kept in RAM, so filters never read cold payload). Checked on the Docker Qdrant
+  1.19.1 with a temporary collection: all three `cold`, both indexes present. Main library
+  unchanged (RAM, answers every question). The laptop's existing uploads collection keeps
+  its old settings (created before); the server's is new.
+- **A6 cleanup:** `chat/cleanup.py`: hourly daemon thread (public mode only) deletes chats
+  with `updated_at` older than 7 days: vectors, then files, then rows (a failed step leaves
+  the row, so the next round retries). The delete button uses the same
+  `delete_everything()`. Why not cron / Celery beat: extra moving parts for one job.
+- **A7 readiness:** `GET /ready` = 200 only if models warmed up, Qdrant answers, the main
+  collection exists and an LLM model is configured; else 503 with the failed check. No LLM
+  call (would spend quota). `/health` stays "process alive".
+
+## D-064: the server Docker image (Phase 7 B1-B2) (2026-10-23)
+
+- **Images (Docker Hub, checked 2026-10-23, amd64 + arm64):** `node:22.23.4-bookworm-slim`
+  (build stage only), `python:3.13.17-slim-bookworm` (same minor as the laptop's 3.13.2).
+- **CPU-only torch 2.14.1** from download.pytorch.org/whl/cpu (cp313 manylinux x86_64 and
+  aarch64 wheels checked); then `requirements-server.txt` with `-c requirements-lock.txt`.
+- **`requirements-server.txt` (new file):** the runtime pins minus docling-slim and
+  opencv (the app never imports them: checked `sys.modules` after importing
+  `docpilot.api`), plus **pypdfium2==5.14.0** named directly (was only a Docling
+  sub-dependency; same version as the lock). Not a new library, a new direct pin.
+- **Models baked** by running `warm_up_models()` during the build; `HF_HUB_OFFLINE=1` after.
+  Code runs from `/app/src` (`PYTHONPATH`) so `PROJECT_ROOT=/app` as on the laptop.
+- **Non-root** user `docpilot` (uid 1000); `HEALTHCHECK` on `/health` with Python (no curl
+  in slim); `.dockerignore` keeps `.env`, data, docs, tests, evals, .git out.
+- **Why not:** `python:3.13` full (compilers we don't need), alpine (musl: ML wheels
+  missing), default torch (CUDA, GBs), downloading models at start (slow, depends on HF),
+  `pip install -e .` in the image (an editable install is a dev tool; PYTHONPATH is enough).
+- **To measure in B6:** image size, RAM, start-up time. torchvision is NOT installed
+  (transformers treats it as optional): models load without it (checked offline).
+- **Offline bug found and fixed (2026-10-23):** `docker run --network none` -> BM25 failed:
+  fastembed 0.8.1's cache check requires `mock.file` and `tamil.txt`, absent from the
+  Qdrant/bm25 repo, so with `HF_HUB_OFFLINE=1` it refused the complete cache (the laptop
+  hid it by re-checking online at every start). Fix: `config.BM25_MODEL_PATH` (env) ->
+  `SparseTextEmbedding(specific_model_path=...)`; the image symlinks the snapshot to
+  `/app/.cache/bm25`. Laptop unchanged (empty). After: all 3 models load offline; `/app`
+  has no `.env`; user `docpilot`.
+- **`scripts/check_file_lengths.py`:** skips tracked files missing on disk (a moved file
+  crashed it before the move was staged).
+- **Measured (learner, 2026-10-23):** image 1.86 GB (predicted 1.5): torch CPU 873 MB,
+  packages 638 MB, models 226 MB, base ~120 MB, code + UI 0.6 MB.
+
+## D-065: production stack = Caddy + app + Qdrant in one Compose file (Phase 7 B3) (2026-10-23)
+
+- **`docker-compose.prod.yml`** (project `docpilot-prod`, separate from the laptop stack):
+  `caddy:2.11.7-alpine` (Docker Hub checked 2026-10-23, amd64 + arm64) on 80/443(+udp);
+  `app` from `${APP_IMAGE}` (GHCR on the server, `docpilot:dev` on the laptop) with
+  `env_file: .env` + overrides `QDRANT_URL=http://qdrant:6333`, `PUBLIC_MODE=1`,
+  `FORWARDED_ALLOW_IPS=*`, MLflow/S3 endpoints empty; `qdrant:v1.19.1`. Only Caddy has
+  ports. Named volumes for certificates, app data, Qdrant. `restart: unless-stopped`.
+  `mem_limit` 128m / 1400m / 600m = first guesses, set from B6 measurements.
+- **`deploy/Caddyfile`:** `{$DOMAIN} { encode gzip ; reverse_proxy app:8000 }`. Caddy docs
+  (2026-10-23): `text/event-stream` responses are flushed immediately (streaming works);
+  X-Forwarded-For is set by default. Validated with `caddy validate`.
+- **`FORWARDED_ALLOW_IPS=*` is safe only because port 8000 is not published**; uvicorn's
+  proxy headers are on by default and read that variable.
+- **Why not:** Nginx + certbot (more parts for HTTPS), Traefik (more to learn), AWS ALB +
+  ACM (about $16+/month, Rule 17), uvicorn TLS (manual certificates), MLflow/SeaweedFS on
+  the server (laptop tools; RAM is scarce).
+
+## D-066: public demo library, library switch with a lock, seed snapshot (Phase 7 B4) (2026-10-24)
+
+- **Learner's request:** no personal notes on the website; show professionally which docs
+  the site has; a "demo library" switch that turns off and LOCKS once a file is uploaded
+  (until a new chat); a helpful message instead of a bare "not found".
+- **Mentor's advice taken:** keep a demo library (rejected "no library, upload first": a
+  recruiter without a file would see an empty app; all measured numbers are on this
+  library; D-030 says DocPilot is a docs assistant, not a chat-with-any-file tool).
+- **Interview notes `local_only`** in `ingestion/sources.py` (laptop library and evals
+  unchanged). `scripts/make_public_snapshot.py` copies the main collection minus
+  `local_only` technologies into a temp collection (vectors copied, no re-embedding),
+  snapshots it to `data/snapshots/docpilot_public_<date>.snapshot` + `.sha256`. Run
+  2026-10-24: 453 chunks, 40 left out, **413 kept**, 3.1 MB.
+- **`docpilot.store.seed`** (in the image): restores the file into an EMPTY Qdrant via
+  `recover_from_uploaded_snapshot` (qdrant-client's own API: `POST .../snapshots/upload`,
+  `priority=snapshot`, checksum checked by Qdrant); skips if the library exists (`--force`
+  replaces). Checked on the laptop's prod stack: restored 413, second run skipped,
+  `/ready` = ready. The S3 + presigned-URL path (`snapshots.restore_collection`) stays for
+  backups.
+- **Lock (`chat/service.pick_library`):** a chat with any non-failed file searches only its
+  files; otherwise the switch decides (`main` / `off`). `off` with no files = `no_library`
+  message, a file still indexing = `indexing` message; both before any LLM call.
+  "Not found" answers keep `NOT_FOUND_PHRASE` first (prompts + output guard use it) and add
+  a hint (library: what it covers + "attach your own file"; files: "searched only your
+  files").
+- **`GET /api/library`** (`library.py`): built from the live collection's chunk counts +
+  the register (titles, licences), so the panel cannot list what the site lacks. Checked
+  through Caddy: FastAPI 4 docs, Pydantic 3, Docker 5, CoT paper 1, Wikipedia 3; no notes.
+- **UI:** `LibraryPanel` cards on the welcome screen (title, kind badge, documents,
+  licence link); composer pill switch "Demo library" / locked "Your files only".
+- **Why not:** a second public collection kept in the laptop Qdrant (more to maintain;
+  the snapshot is the one artifact); deleting notes after restore on the server (they
+  would still travel inside the file); mixing files + library in one search (unclear
+  citations).
+
+## D-067: CD = image build in GitHub Actions, pushed to GHCR (Phase 7 B5) (2026-10-24)
+
+- **`.github/workflows/image.yml`:** `workflow_run` after workflow `ci` completes on `main`,
+  runs only if it SUCCEEDED, checks out `workflow_run.head_sha` (the tested commit); plus
+  `workflow_dispatch`. `permissions: contents: read, packages: write`; login to `ghcr.io`
+  with `GITHUB_TOKEN` (GitHub docs, checked 2026-10-24). Tags `sha-<short>` (servers pin
+  this) + `latest` via metadata-action `context: git` (adds the OCI `source` label linking
+  the package to the repo). `linux/amd64` only. Layer cache `type=gha,mode=max`.
+  `concurrency: image`, timeout 45 min.
+- **Pinned actions (GitHub releases, 2026-10-24):** checkout v7.0.1, setup-buildx v4.4.1,
+  login **v4.6.0** (v4.7.0 published 2026-10-23: too new), metadata v6.2.0, build-push
+  v7.4.0. `actionlint 1.7.12` (Docker, release older than 14 days): no problems in both
+  workflows.
+- **Why not:** Docker Hub (pull limits, extra account + token), ECR (cost after the free
+  allowance, AWS keys in GitHub), building on the laptop (not reproducible, no commit
+  link), `latest` on the server (no rollback), arm64 now (QEMU emulation of torch installs
+  is very slow; added for Oracle), build on every PR (minutes for no artifact; CI already
+  tests the code).
+- **Manual step:** a new GHCR package is private by default; the learner makes it public
+  once (no secrets inside: `.dockerignore`, B1 check), so the server pulls without a token.

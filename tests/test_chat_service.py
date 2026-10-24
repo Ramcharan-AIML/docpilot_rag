@@ -128,17 +128,46 @@ def test_uncited_streamed_answer_is_replaced_at_the_end(pipeline) -> None:
     assert done["answer"] == config.NOT_FOUND_PHRASE
 
 
-def test_chat_with_ready_files_searches_only_them(pipeline) -> None:
+def test_chat_with_files_is_locked_to_them(pipeline) -> None:
+    # D-066: once a chat has a file, it searches ONLY its files, whatever the toggle says.
     chat = store.create_chat()
     file = store.add_file(chat["id"], "h.pdf", "uploads/c/h.pdf", pages=1)
-    run(chat["id"], "q1")
-    assert pipeline["settings"].collection == config.COLLECTION_NAME  # still processing
+    done = run(chat["id"], "q1")[-1]
+    assert (done["status"], done["answer"]) == ("indexing", service.STILL_INDEXING)
+    assert "settings" not in pipeline  # no search, no LLM call while the file is prepared
     store.update_file(file["id"], status="ready")
     run(chat["id"], "q2")
     assert pipeline["settings"].collection == config.UPLOADS_COLLECTION
     assert pipeline["settings"].chat_id == chat["id"]
-    run(chat["id"], "q3", library="main")  # the user can still pick the main library
+    run(chat["id"], "q3", library="main")  # the lock: the library cannot come back
+    assert pipeline["settings"].collection == config.UPLOADS_COLLECTION
+
+
+def test_a_failed_upload_does_not_lock_the_chat(pipeline) -> None:
+    chat = store.create_chat()
+    file = store.add_file(chat["id"], "h.pdf", "uploads/c/h.pdf", pages=1)
+    store.update_file(file["id"], status="failed", error="unreadable")
+    run(chat["id"], "q1")
     assert pipeline["settings"].collection == config.COLLECTION_NAME
+
+
+def test_library_off_and_no_files_asks_for_a_file(pipeline) -> None:
+    chat = store.create_chat()
+    done = run(chat["id"], "q1", library="off")[-1]
+    assert (done["status"], done["answer"]) == ("no_library", service.NO_LIBRARY)
+    assert "settings" not in pipeline
+
+
+def test_not_found_tells_how_to_ask_about_other_things(pipeline) -> None:
+    pipeline["reply"] = [config.NOT_FOUND_PHRASE]
+    chat = store.create_chat()
+    done = run(chat["id"], "Who won the 1998 World Cup?")[-1]
+    assert done["status"] == "not_found"
+    assert done["answer"] == config.NOT_FOUND_PHRASE + service.LIBRARY_HINT
+    file = store.add_file(chat["id"], "h.pdf", "uploads/c/h.pdf", pages=1)
+    store.update_file(file["id"], status="ready")
+    done = run(chat["id"], "Who won the 1998 World Cup?")[-1]
+    assert done["answer"] == config.NOT_FOUND_PHRASE + service.FILES_HINT
 
 
 def test_question_about_the_chat_is_answered_from_history(pipeline, monkeypatch) -> None:

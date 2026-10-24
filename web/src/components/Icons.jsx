@@ -57,6 +57,15 @@ export const SunIcon = () => (
 export const MoonIcon = () => (
   <svg {...base} width={16} height={16}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
 );
+export const BookIcon = () => (
+  <svg {...base} width={16} height={16}><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z" /><path d="M4 20a2 2 0 0 0 2 2h13v-4" /></svg>
+);
+export const LockIcon = () => (
+  <svg {...base} width={14} height={14}><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+);
+export const LinkIcon = () => (
+  <svg {...base} width={12} height={12}><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6" /></svg>
+);
 export const LogoIcon = () => (
   <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
     <rect width="32" height="32" rx="8" fill="var(--accent)" />

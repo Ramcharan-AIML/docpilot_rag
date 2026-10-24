@@ -1,0 +1,68 @@
+# DocPilot production stack (Phase 7 B3, D-065): Caddy (HTTPS front door) + app + Qdrant.
+# Teaching: docs/production/04_teach_https_dns_caddy.md
+#
+# Laptop test:  $env:APP_IMAGE="docpilot:dev" ; docker compose -f docker-compose.prod.yml up -d
+# Server:       APP_IMAGE=ghcr.io/ramcharan-aiml/docpilot:<tag>  DOMAIN=<name>.duckdns.org
+# Stop:         docker compose -f docker-compose.prod.yml down      (NEVER "down -v": deletes data)
+#
+# Only Caddy is reachable from outside (ports 80 + 443). The app and Qdrant have NO
+# "ports:" entry: they talk to each other by name on Compose's private network.
+# MLflow and SeaweedFS are NOT here: they are laptop tools, not needed to serve users.
+
+name: docpilot-prod # its own project: separate containers and volumes from the laptop stack
+
+services:
+  caddy:
+    # Exact tag (Docker Hub, checked 2026-10-23; amd64 + arm64). alpine = small.
+    image: caddy:2.11.7-alpine
+    ports:
+      - "80:80" # plain HTTP: Let's Encrypt's ownership check + redirect to HTTPS
+      - "443:443" # HTTPS
+      - "443:443/udp" # HTTP/3 (QUIC); harmless if unused
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro # :ro = read-only inside the container
+      # Certificates live here: a restart must NOT ask Let's Encrypt again (rate limits)
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+    mem_limit: 128m # first guess; set from real numbers in B6
+    restart: unless-stopped
+
+  app:
+    image: ${APP_IMAGE:-ghcr.io/ramcharan-aiml/docpilot:latest}
+    # Secrets (GROQ_API_KEY, LLM_MODEL, ...) come from .env at RUN time, never baked in.
+    # On the server, .env is written from AWS SSM Parameter Store at boot (C4).
+    env_file: .env
+    environment:
+      # "environment" wins over env_file: these must differ from the laptop's .env
+      QDRANT_URL: http://qdrant:6333 # the container's name, not 127.0.0.1
+      PUBLIC_MODE: "1" # A2 limits, A6 cleanup, smaller uploads
+      # uvicorn trusts X-Forwarded-For (the visitor's real IP, set by Caddy) from anyone.
+      # Safe ONLY because the app has no public port: Caddy is the only caller.
+      FORWARDED_ALLOW_IPS: "*"
+      MLFLOW_TRACKING_URI: "" # no MLflow on the server
+      S3_ENDPOINT_URL: "" # laptop SeaweedFS is not reachable; real S3 in Stage C
+    volumes:
+      # chats (SQLite) + uploaded files survive restarts and image upgrades
+      - app_data:/app/data
+    depends_on:
+      - qdrant
+    mem_limit: 1400m # first guess (laptop peak 1,004 MB with a 43-page upload); B6 sets it
+    restart: unless-stopped
+
+  qdrant:
+    # Same version as qdrant-client 1.19.1 and the laptop (D-050).
+    image: qdrant/qdrant:v1.19.1
+    volumes:
+      - qdrant_data:/qdrant/storage
+    mem_limit: 600m # first guess (laptop container 511 MB with ALL collections); B6 sets it
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
+  app_data:
+  qdrant_data:

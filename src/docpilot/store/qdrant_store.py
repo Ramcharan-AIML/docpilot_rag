@@ -51,25 +51,46 @@ def create_fresh_collection(client: QdrantClient, name: str, dimension: int) -> 
         raise RuntimeError(f"Collection {name!r} still has {leftover} points after reset")
 
 
-def ensure_collection(client: QdrantClient, name: str, dimension: int) -> None:
+def ensure_collection(client: QdrantClient, name: str, dimension: int, cold: bool = False) -> None:
     """Create the collection only if it is missing; never delete (D-060: the uploads
     collection grows one file at a time)."""
     if not client.collection_exists(name):
-        create_collection(client, name, dimension)
+        create_collection(client, name, dimension, cold)
 
 
-def create_collection(client: QdrantClient, name: str, dimension: int) -> None:
-    """The one place that defines our collection layout: dense + sparse named vectors."""
+def create_collection(client: QdrantClient, name: str, dimension: int, cold: bool = False) -> None:
+    """The one place that defines our collection layout: dense + sparse named vectors.
+
+    cold=True (A5, D-063: the uploads collection on the 2 GB server): vectors, sparse index
+    and payload stay on DISK and are read only when a search needs them ("cold"), so RAM
+    stays flat however many files visitors upload. The small main library stays in RAM
+    (Qdrant's defaults), because it answers every question. Qdrant 1.19: `memory` replaces
+    the deprecated `on_disk` flags (checked in qdrant-client 1.19.1, 2026-10-23).
+    """
+    memory = models.Memory.COLD if cold else None  # None = Qdrant's default
     client.create_collection(
         collection_name=name,
         # size must equal the embedding length (384); COSINE matches how BGE was trained
         vectors_config={
-            DENSE: models.VectorParams(size=dimension, distance=models.Distance.COSINE)
+            DENSE: models.VectorParams(
+                size=dimension, distance=models.Distance.COSINE, memory=memory
+            )
         },
         # IDF modifier: Qdrant computes each word's rarity over the whole collection, the
         # half of BM25 a single chunk cannot know (embedding/sparse.py has the other half).
-        sparse_vectors_config={SPARSE: models.SparseVectorParams(modifier=models.Modifier.IDF)},
+        sparse_vectors_config={
+            SPARSE: models.SparseVectorParams(
+                modifier=models.Modifier.IDF, index=models.SparseIndexParams(memory=memory)
+            )
+        },
+        payload=models.PayloadStorageParams(memory=memory) if cold else None,
     )
+    if cold:
+        # Every upload search filters on chat_id, and deletes filter on chat_id / source.
+        # A payload index keeps those values in RAM (tiny), so filtering never reads the
+        # cold payload from disk (Qdrant's storage docs recommend this).
+        for field in ("chat_id", "source"):
+            client.create_payload_index(name, field, models.PayloadSchemaType.KEYWORD)
 
 
 def delete_where(client: QdrantClient, name: str, key: str, value: str) -> None:
