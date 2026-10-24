@@ -59,8 +59,9 @@ ENV HF_HUB_OFFLINE=1 \
 
 EXPOSE 8000
 # Docker marks the container "unhealthy" if /health stops answering. The slim image has no
-# curl, so Python does the request. start-period: model loading takes a while.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+# curl, so Python does the request. start-period: imports + model loading took about 78 s
+# on the laptop (B6, 2026-10-24); a 2-vCPU server may be slower, so 180 s.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=180s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"
 
 # 0.0.0.0 = listen on all of the container's network cards (127.0.0.1 would be unreachable

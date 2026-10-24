@@ -114,6 +114,7 @@ GitHub Actions cache only changed layers rebuild, so small code changes build fa
 
 | Check | Result | Date |
 |---|---|---|
-| First image build in Actions | n/a (not run yet) | |
-| Second build (cache) | n/a | |
-| Image in GHCR + visibility | n/a | |
+| First try (run 40065210124) | failed in 17 s at the tag step: "Cannot infer ref from detached HEAD"; fixed (sha tag from `git rev-parse`) | 2026-10-24 |
+| First image build in Actions (run 40066900526) | **success, 3 min 33 s** (job start to end, cold cache); my prediction: 3 min | 2026-10-24 |
+| Second build (cache) | n/a (happens on the next merge to main) | |
+| Image in GHCR + visibility | `latest` + `sha-2a64dc0`, made public; `docker pull` worked on my laptop: 1.86 GB, same size as my local build | 2026-10-24 |

@@ -210,3 +210,116 @@ tag `sha-<first 7 characters>` ourselves. Same result, no branch needed. actionl
 **Lesson:** a pipeline is code too: it can only be fully tested by running it. The
 first run found a mix of two settings (checkout by commit + git context) that the linter
 cannot see. I predicted 3 minutes; it failed after about 15 seconds of the build job.
+
+**Second real run, after the fix (2026-10-24) - PASS:**
+| What | Result |
+|---|---|
+| fix PR merged -> `ci` on main | success |
+| `image` run 40066900526 (started by itself) | **success in 3 min 33 s** (cold cache). My prediction: 3 min. Close. |
+| tags in GHCR | `latest` and `sha-2a64dc0` (commit `2a64dc0743369e602585ce3a274323ec9cc924c7`) |
+| package visibility | changed to **public** (so the server can pull without a password) |
+| `docker pull ghcr.io/ramcharan-aiml/docpilot:latest` on my laptop | worked; 4 layers "Already exists" (the Python base image was already on my laptop), 8 new layers downloaded; image **1.86 GB**, same as my local build |
+
+**Why "Already exists" (small concept):** an image is a stack of layers, each with a
+fingerprint (sha256). Docker downloads only the layers it does not have yet. Like a
+puzzle box where you already own the 4 corner pieces: you only buy the rest.
+
+**Why it was faster than I feared (the plan said about 10 min for torch):** GitHub's
+runners have a fast network, and torch CPU is one big wheel download, not a compile.
+The next build should be faster again (layer cache `type=gha`): to be measured.
+
+**Important commands:**
+```powershell
+gh pr create --base main --head production --title "B5 fix: image tag from the exact commit" --body "Fixes image.yml run 40065210124 (Cannot infer ref from detached HEAD). D-067."
+gh pr checks --watch
+gh pr merge --merge
+gh run list --workflow image.yml --limit 3
+gh run watch
+docker pull ghcr.io/ramcharan-aiml/docpilot:latest
+```
+**B5: DONE.**
+
+---
+
+## Step B6: measure the prod stack in Linux containers (2026-10-24) - started
+
+**Problem:** the AWS `t3.small` has 2 GB RAM. Before Stage C we must KNOW (not guess)
+that app + Qdrant + Caddy + Linux fit. Windows numbers from Phase 6 do not count: the
+containers run Linux inside Docker's VM.
+
+**Simple picture: packing a suitcase.** Before the flight (AWS), weigh every bag at home
+(B6). If the total is over the limit, decide now: a bigger suitcase (bigger server) or
+another airline (Oracle, 12 GB). Not at the airport.
+
+**What we measure:**
+| Measure | How |
+|---|---|
+| start-up time until `/ready` | stopwatch loop from `up -d` until `"status":"ready"` |
+| RAM idle | `docker stats --no-stream` |
+| RAM after one question | same, right after an answer |
+| RAM peak during a big upload | a sampler loop every 2 s while uploading a 258-page, 8.6 MB PDF |
+| `.env` not in the image | `ls -la /app` inside a one-off container |
+
+**My predictions (before the run):** app idle **0**, app after a question **2**,
+Qdrant **2** (unit not written: recorded as given), start-up **5 s**.
+
+**Real results (2026-10-24, laptop, Docker Desktop Linux containers, image `sha-2a64dc0`, n = 1 each):**
+| Measure | My guess | Real |
+|---|---|---|
+| app RAM idle | 0 | **516 MiB** (torch + 3 models are loaded at start: the cook is in the kitchen before the first order) |
+| app RAM after one question | 2 | **681 MiB** (the reranker and the first answer's working memory) |
+| app RAM peak, 258-page upload | - | **1,100 MiB** (1.074 GiB), then it stays at about 1,022 MiB |
+| Qdrant RAM | 2 | **448 MiB** idle, peak 468 MiB |
+| Caddy RAM | - | 24 MiB |
+| upload 258 pages / 8.6 MB | - | **105 s** to the green tick, 494 chunks (87 s of it = embedding: 16 batches of about 5.5 s) |
+| start-up until `/ready` | 5 s | about **78 s** (container timestamps; my stopwatch said 119 s, see below) |
+| `.env` in the image | - | **absent**: `/app` has only `.cache`, `data`, `src`, `web`, 2 requirements files |
+
+**Why the stopwatch said 119 s (mentor's mistake in the commands):** `$t = Get-Date`
+started the clock, but I typed the next commands one by one, so my typing time was
+counted. The container timestamps are exact: Qdrant started 06:54:15, the first
+`/ready 200` was 06:55:33.9. Lesson: measure with the system's own clocks (logs), not a
+stopwatch that includes a human.
+
+**Why start-up takes about 78 s:** 72 s is Python IMPORTING torch, transformers and
+sentence-transformers (reading thousands of files). Loading the model weights is only
+about 5 s. A bare `import docpilot.api` takes 46-57 s in a fresh container and 70 s on
+Windows itself: the laptop is slow at this, not Docker.
+
+**Why memory does not go down after the upload (small concept):** Python keeps the
+memory it freed for later, like a restaurant that keeps the extra tables after a
+party. It is reused for the next upload, so the peak (1,100) is what matters, not "back
+to idle".
+
+**Does it fit the t3.small (2 GB)?**
+```text
+Caddy 24 + app 1,100 (peak) + Qdrant 468 = about 1,590 MiB
++ Linux + Docker about 300-400 MiB      = about 1.9-2.0 GB   -> tight; 2 GB swap = safety net
+```
+Not "clearly above 2 GB" (the plan's decision point), so: **keep t3.small** (D-068).
+
+**What changed:**
+| File | Change | Why |
+|---|---|---|
+| `docker-compose.prod.yml` | limits kept 128m / 1400m / 600m, comments now hold the real numbers | each limit is about 25 % above its measured peak |
+| `Dockerfile` | HEALTHCHECK `start-period` 60 s -> **180 s** | 78 s on a 20-thread laptop; the server has 2 vCPUs |
+| `docs/3_decisions.md` | D-068 | the measurement + decision |
+
+**Honest notes:** n = 1 run each, laptop not server. Everything is re-measured on the
+real server in Stage C. The new `start-period` reaches GHCR with the next merge to main.
+
+**Important commands:**
+```powershell
+docker compose -f docker-compose.prod.yml up -d
+docker stats --no-stream --format "table {{.Name}}`t{{.MemUsage}}`t{{.CPUPerc}}"
+1..90 | ForEach-Object { docker stats --no-stream --format "{{.Name}} {{.MemUsage}}" docpilot-prod-app-1 docpilot-prod-qdrant-1; Start-Sleep 2 }
+docker inspect -f '{{.Name}} started {{.State.StartedAt}}' docpilot-prod-app-1
+docker logs -t docpilot-prod-app-1                     # -t = timestamps on every line
+docker run --rm ghcr.io/ramcharan-aiml/docpilot:latest ls -la /app
+```
+**B6: DONE.**
+
+
+---
+
+Continues in [3_production_log.md](3_production_log.md) (500-line rule).

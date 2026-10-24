@@ -339,3 +339,58 @@ Continues [2_decisions.md](2_decisions.md) (D-038 to D-056), which reached the
   detached HEAD" (checkout of a commit id = no branch). Fix: a step writes the full and
   short commit from `git rev-parse HEAD`; tags `type=raw,value=sha-<short>` + `latest`;
   label `org.opencontainers.image.revision=<full>`. actionlint clean again.
+- **Second run (2026-10-24, run 40066900526):** success in 3 min 33 s (cold cache); tags
+  `latest` + `sha-2a64dc0`; package made public; `docker pull` OK, 1.86 GB.
+
+## D-068: memory limits and server size from the B6 measurement (Phase 7 B6) (2026-10-24)
+
+- **Measured (Docker Desktop, Linux containers, laptop, 20 CPU threads, image
+  `sha-2a64dc0`, public library 413 chunks, n = 1 run each):** Caddy peak 24 MiB; app idle
+  516 MiB, after one question 681 MiB, peak 1,100 MiB (1.074 GiB) while indexing a
+  258-page / 8.6 MB PDF (494 chunks, 105 s), stays at about 1,022 MiB afterwards (Python
+  keeps freed memory); Qdrant idle 448 MiB, peak 468 MiB. Peak sum of the 3 containers:
+  about 1,590 MiB.
+- **Start-up:** container start -> `/ready` 200 in about 78 s; 72 s of it is Python
+  importing torch / transformers / sentence-transformers (46-57 s for a bare import in a
+  fresh container; 70 s natively on the same laptop, so not a Docker problem). Model load
+  about 5 s. (The learner's stopwatch showed 119 s because the commands were typed one at
+  a time; container timestamps were used instead.)
+- **Decision:** keep `t3.small` (2 GB) + 2 GB swap: about 1.6 GB of containers + about
+  300-400 MB for Linux and Docker is tight but not "clearly above 2 GB" (the plan's decision
+  point). Limits unchanged (128m / 1400m / 600m): each is about 25 % above its measured
+  peak. HEALTHCHECK `start-period` 60 s -> 180 s (78 s measured on the laptop; the server
+  has 2 vCPUs). Re-measure all of this on the server in Stage C.
+- **Why not:** a bigger instance now (about 3x the credit burn, not needed by the numbers);
+  Oracle now (D-062: AWS first); lower limits (an OOM kill restarts the app mid-answer).
+- **`.env` not in the image:** `ls -la /app` in the pulled image shows `.cache`, `data`,
+  `src`, `web`, two requirements files; no `.env`.
+
+## D-069: AWS infrastructure in Terraform, run from CloudShell (Phase 7 C1-C3) (2026-10-24)
+
+- **Account (checked in the console 2026-10-24):** new-style AWS sign-up: Free plan, $100
+  credits, 183 days (ends 2027-04-24). The login is a **project identity** ("Fresh
+  Deploy"); root is centrally managed by AWS (only 2 privileged actions offered), and
+  Organizations / Control Tower / IAM Identity Center are greyed out. So the planned root
+  MFA + daily IAM user steps were skipped: there is no root password in use and no access
+  key. Budget alert still planned.
+- **Tools pinned:** Terraform 1.16.5, AWS provider 6.68.0 (newest releases at least 2
+  weeks old; 1.17.0 / 6.70.0 skipped as days old). `terraform fmt` + `validate` passed in
+  `hashicorp/terraform:1.16.5`; shellcheck 0.10.0 clean on `cloud-init.sh` (only the
+  expected "template variable not assigned" notes).
+- **`infra/aws/`:** default VPC; security group 80 + 443 in (no 22); IAM role with
+  `AmazonSSMManagedInstanceCore` + `ssm:GetParameter` on `/docpilot/*` + `s3:GetObject` on
+  the seed bucket; private versioned S3 seed bucket (public access blocked,
+  `force_destroy`); `t3.small`, Ubuntu 24.04 (Canonical AMI lookup), gp3 20 GB encrypted,
+  `cpu_credits = "standard"` (never buys extra CPU), IMDSv2 required; Elastic IP;
+  `lifecycle.ignore_changes = [ami, user_data]` so nothing silently replaces the server;
+  default tags `project=docpilot`, `managed_by=terraform`.
+- **`cloud-init.sh`:** 2 GB swap, Docker from Docker's apt repo, AWS CLI (snap), compose +
+  Caddyfile (base64 so Terraform does not touch their `${...}`), waits for
+  `/docpilot/GROQ_API_KEY` then writes a root-only `.env` (no `set -x`: the key would land
+  in the log), `compose pull/up`, waits for the snapshot in S3, runs the seed.
+- **Image pinned to `sha-2a64dc0`** (not `latest`): rollback = previous tag.
+- **Why not:** clicking in the console (no record, easy to forget a paid resource);
+  access keys on the laptop (leak risk); SSH (open port + key file); custom VPC / NAT /
+  load balancer (cost; Stage D); Amazon Linux (fine too, but the Docker Compose plugin is
+  not in its repos, Ubuntu has Docker's official repo); S3 state backend (Stage D: the
+  state stays in CloudShell for now and a copy is downloaded after every apply).

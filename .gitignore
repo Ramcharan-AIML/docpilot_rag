@@ -89,3 +89,12 @@ web/dist/
 # docs/3_progress.md
 # docs/failure_log_phase1.md
 # docs/CHAT_CONTEXT.md
+
+# Terraform (Phase 7 C3): state holds resource ids and can hold secrets; never in git
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+# upload bundle for AWS CloudShell (copy of infra + the snapshot); rebuilt any time
+data/cloudshell/
