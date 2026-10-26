@@ -145,9 +145,16 @@ def cot_pdf() -> None:
 
 
 def interview_notes() -> None:
-    """The learner's own notes: copied as they are (the Word file is built separately)."""
+    """The author's own notes: copied as they are (the Word file is built separately).
+
+    They are private (local_only) and not in the public repository, so a fresh clone
+    skips them; the public library is built from the other sources.
+    """
     for name in INTERVIEW_FILES:
         source = config.PROJECT_ROOT / "docs" / "interview" / name
+        if not source.exists():
+            print(f"  skipped {name} (private notes, not in this repository)")
+            continue
         target = config.DOCS_DIR / "interview" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source, target)
@@ -169,7 +176,7 @@ def main() -> None:
     wikipedia_articles()
     print("interview:")
     interview_notes()
-    print("done. Word notes: python scripts/make_notes_docx.py")
+    print("done.")
 
 
 if __name__ == "__main__":
